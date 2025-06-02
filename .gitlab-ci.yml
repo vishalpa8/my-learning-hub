@@ -1,10 +1,13 @@
 image: node:23
 
+variables:
+  GIT_STRATEGY: clone  # force a fresh clone instead of fetch
+
 pages:
   script:
-    - npm install
+    - npm ci  # clean install, better for CI
     - npm run build
-    - mv build public
+    - mv dist public  # Vite outputs to dist by default, not build
   artifacts:
     paths:
       - public
