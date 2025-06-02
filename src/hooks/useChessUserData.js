@@ -61,13 +61,14 @@ export const useChessUserData = (structuredChessData) => {
           };
 
           // ELO Calculation: Recalculate based on total completed video pairs
-          const totalCompletedVideoCount = Object.values(updatedCompletedVideos).filter(
-            (isComplete) => isComplete === true
-          ).length;
+          const totalCompletedVideoCount = Object.values(
+            updatedCompletedVideos
+          ).filter((isComplete) => isComplete === true).length;
           const completedVideoPairs = Math.floor(totalCompletedVideoCount / 2);
-          
+
           // ELO is always INITIAL_ELO + gains from completed pairs
-          updatedProfile.elo = INITIAL_CHESS_ELO + (completedVideoPairs * ELO_GAIN_PER_TWO_VIDEOS);
+          updatedProfile.elo =
+            INITIAL_CHESS_ELO + completedVideoPairs * ELO_GAIN_PER_TWO_VIDEOS;
 
           // Streak logic: Update only if a video is newly completed.
           if (newCompletedStatus) {
@@ -85,7 +86,9 @@ export const useChessUserData = (structuredChessData) => {
               if (lastCompletion) {
                 const yesterday = new Date(today);
                 yesterday.setDate(today.getDate() - 1);
-                if (lastCompletion.toDateString() === yesterday.toDateString()) {
+                if (
+                  lastCompletion.toDateString() === yesterday.toDateString()
+                ) {
                   newCurrentStreak = (prevProfile.currentStreak || 0) + 1;
                 } else {
                   newCurrentStreak = 1; // Reset streak if not consecutive
@@ -96,7 +99,10 @@ export const useChessUserData = (structuredChessData) => {
               updatedProfile.lastActiveDate = todayDateString;
             }
             updatedProfile.currentStreak = newCurrentStreak;
-            updatedProfile.longestStreak = Math.max(newLongestStreak, newCurrentStreak);
+            updatedProfile.longestStreak = Math.max(
+              newLongestStreak,
+              newCurrentStreak
+            );
           }
 
           // Check for badges after all profile updates

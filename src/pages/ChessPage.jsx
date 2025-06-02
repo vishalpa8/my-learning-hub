@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { getStructuredChessData, calculateProgress } from "../utils/ChessUtils";
+import { getStructuredChessData, calculateProgress } from "../utils/chessUtils";
 import { useChessUserData } from "../hooks/useChessUserData"; // Import the custom hook
 import { useReward } from "../contexts/useReward"; // Updated import path
 import DailyNugget from "../components/chess/DailyNugget";
 import UserBadges from "../components/chess/UserBadges";
 import ProgressBarDisplay from "../components/shared/ProgressBarDisplay";
 import VideoListModal from "../components/chess/VideoListModal";
-import RewardModal from "../components/shared/RewardModal"; 
+import RewardModal from "../components/shared/RewardModal";
 import "../styles/ChessPage.css";
 
 /**
@@ -25,7 +25,6 @@ const ChessPage = () => {
     closeRewardModal,
     recordChessProgress, // Updated to use specific progress recorder
   } = useReward();
-
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
@@ -87,7 +86,7 @@ const ChessPage = () => {
           <div className="chess-hero-stats">
             <div>
               <span className="stat-label">ELO</span>
-              <span className="stat-value">{userProfile.elo ?? 'N/A'}</span>
+              <span className="stat-value">{userProfile.elo ?? "N/A"}</span>
             </div>
             <div>
               <span className="stat-label">Points</span>
@@ -172,8 +171,13 @@ const ChessPage = () => {
                   return (
                     <div key={playlist.id} className="card playlist-card">
                       <h3>
-                        {playlist.playlistUrl && playlist.playlistUrl !== "#" ? (
-                          <a href={playlist.playlistUrl} target="_blank" rel="noopener noreferrer">
+                        {playlist.playlistUrl &&
+                        playlist.playlistUrl !== "#" ? (
+                          <a
+                            href={playlist.playlistUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             {playlist.name}
                           </a>
                         ) : (
