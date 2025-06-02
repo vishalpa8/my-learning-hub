@@ -1,13 +1,12 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { getStructuredChessData, calculateProgress } from "../utils/chessUtils";
+import { getStructuredChessData, calculateProgress } from "../utils/ChessUtils";
 import { useChessUserData } from "../hooks/useChessUserData"; // Import the custom hook
 import { useReward } from "../contexts/RewardContext"; // Import the reward context
 import DailyNugget from "../components/chess/DailyNugget";
 import UserBadges from "../components/chess/UserBadges";
 import ProgressBarDisplay from "../components/shared/ProgressBarDisplay";
 import VideoListModal from "../components/chess/VideoListModal";
-import RewardModal from "../components/shared/RewardModal"; // Import RewardModal
-// import { DSA_COMPLETED_PROBLEMS_KEY } from "../constants/localStorageKeys"; // No longer needed here
+import RewardModal from "../components/shared/RewardModal"; 
 import "../styles/ChessPage.css";
 
 /**
