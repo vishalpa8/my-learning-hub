@@ -7,6 +7,7 @@ pages:
   script:
     - npm ci  # clean install, better for CI
     - npm run build
+    - ls dist
     - mv dist public  # Vite outputs to dist by default, not build
   artifacts:
     paths:
