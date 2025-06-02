@@ -1,5 +1,5 @@
 {
-  "homepage": "https://vishalpa8.github.io/my-learning-hub/",
+  "homepage": "https://gitlab.com/satya.prakash.pandey/my-learning-hub",
   "name": "my-learning-hub",
   "private": true,
   "version": "0.0.0",
@@ -8,9 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "preview": "vite preview"
   },
   "dependencies": {
     "chart.js": "^4.4.9",
