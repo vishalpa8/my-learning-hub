@@ -1,12 +1,11 @@
 import React, {
-  createContext,
-  useContext,
   useState,
   useCallback,
   useEffect,
 } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { DSA_REWARD_TRACKER_KEY } from "../constants/localStorageKeys";
+import { RewardContext } from "./useReward"; // Import RewardContext from the new file
 
 /** A list of predefined reward messages. */
 const REWARDS = [
@@ -32,17 +31,8 @@ const CHESS_VIDEOS_THRESHOLD = 6; // Example: 2 Chess videos
  * @property {boolean} rewardPending - Flag indicating if a reward has been determined and is waiting to be shown.
  * @property {string} pendingMessage - The message for the pending reward.
  */
-const RewardContext = createContext();
-
-/** Hook to consume the RewardContext. */
-export const useReward = () => {
-  const context = useContext(RewardContext);
-  if (!context) {
-    throw new Error("useReward must be used within a RewardProvider");
-  }
-  return context;
-};
-
+// The RewardContext object is now imported from './useReward.js'.
+// Consumers will import the useReward hook directly from './useReward.js'.
 /**
  * Provides reward-related state and functions to its children.
  * Manages modal visibility, reward messages, and the logic for triggering rewards

@@ -1,5 +1,4 @@
 import {
-  dsaData,
   difficultyOrder,
   TOPIC_DISPLAY_ORDER,
   NORMALIZED_TOPIC_MERGE_MAP,

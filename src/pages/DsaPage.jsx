@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { dsaData } from "../data/dsaData";
 import DashboardView from "../components/dsa/DashboardView";
-import RewardModal from "../components/shared/RewardModal";
-import { useReward } from "../contexts/RewardContext";
+import RewardModal from "../components/shared/RewardModal"; 
+import { useReward } from "../contexts/useReward"; // Updated import path
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
   DSA_COMPLETED_PROBLEMS_KEY,
@@ -226,7 +226,7 @@ const DsaPage = () => {
       } // Keep the warning, it's useful even in dev
     });
     return stats;
-  }, [baseProblemsForActiveView, completedProblems, activeView]); // activeView is kept for the console log
+  }, [baseProblemsForActiveView, completedProblems]);
 
   const filteredDifficultyStats = useMemo(() => {
     const stats = {
