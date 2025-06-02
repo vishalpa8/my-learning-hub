@@ -1,0 +1,117 @@
+/* VideoListModal - Uses only global variables for full theme consistency */
+
+.video-list-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(var(--dark-color-rgb), 0.6); /* Use theme variable */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-md);
+}
+
+.video-list-modal-content {
+  background-color: var(--background-color);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow-large);
+  width: var(--modal-width-mobile, 90%);
+  max-width: var(--modal-max-width, 600px);
+  max-height: var(--modal-max-height, 80vh);
+  display: flex;
+  flex-direction: column;
+  color: var(--text-color);
+}
+
+/* Responsive adjustment for smaller screens if needed */
+@media (max-width: 768px) {
+  .video-list-modal-content {
+    padding: var(--spacing-lg);
+  }
+}
+
+.video-list-modal-content .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.video-list-modal-content .modal-header h2 {
+  margin: 0;
+  font-size: var(--font-size-h2-modal, 1.4rem);
+  color: var(--primary-color);
+  /* Prevent text wrapping issues with long titles */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.video-list-modal-content .close-button {
+  background: none;
+  border: none;
+  font-size: var(--font-size-icon); /* Use theme variable */
+  cursor: pointer;
+  color: var(--text-muted-color);
+}
+
+.video-list-modal-content .modal-body {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.modal-playlist-progress {
+  margin-bottom: var(--spacing-md);
+}
+
+.chess-video-list-modal {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chess-video-item-modal {
+  padding: var(--spacing-sm);
+  border-bottom: var(--border-width-thin) solid var(--border-color-light);
+  cursor: pointer;
+  transition: background-color 0.2s var(--easing-cubic); /* Standardized easing */
+  display: flex;
+  align-items: center;
+}
+.chess-video-item-modal:hover,
+.chess-video-item-modal:focus-visible {
+  background-color: var(--light-bg-color); /* Use theme variable, matches fallback */
+}
+.chess-video-item-modal.completed .video-title-modal {
+  text-decoration: line-through;
+  color: var(--text-muted-color);
+}
+.video-title-modal {
+  font-size: var(--font-size-base);
+  flex-grow: 1;
+  /* Prevent long titles from overflowing */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Accessibility: focus style for keyboard navigation */
+.chess-video-item-modal:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Responsive: modal fits smaller screens */
+@media (max-width: 500px) {
+  .video-list-modal-content {
+    padding: var(--spacing-md);
+    max-width: 98vw;
+    width: 98vw;
+  }
+}

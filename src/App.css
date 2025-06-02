@@ -1,0 +1,9 @@
+#root {
+  /*
+  The #root element is typically just a mount point.
+  Global layout (like full height, page background) is handled by 'body' styles in index.css.
+  Max-width and padding for content areas are best handled by specific layout components (e.g., <main>, page wrappers).
+  Navbar and Footer components manage their own width and internal content constraints.
+  */
+}
+/*

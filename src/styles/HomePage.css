@@ -1,0 +1,337 @@
+.home-modern-container {
+  max-width: 1100px; /* Custom max-width for homepage layout */
+  margin: 2.5rem auto; /* Custom vertical margin */
+  padding: 2.5rem var(--spacing-md); /* Custom vertical, global horizontal padding */
+  background: var(--light-color); /* Using a global light background color */
+  border-radius: var(--border-radius-lg); /* Global large border radius */
+  box-shadow: 0 6px 24px rgba(44, 62, 80, 0.07); /* Custom shadow for overall container */
+}
+
+/* Hero Section */
+.home-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color-light) 60%,
+    var(--light-color) 100%
+  ); /* Using global colors */
+  border-radius: var(--border-radius-lg); /* Global large border radius */
+  padding: 2.5rem var(--spacing-lg) 2.5rem 2.5rem; /* Custom padding */
+  margin-bottom: 2.5rem; /* Custom margin */
+  box-shadow: 0 2px 12px rgba(44, 62, 80, 0.06); /* Custom shadow for hero */
+  gap: var(--spacing-lg); /* Global spacing for gap */
+}
+
+.home-hero-content {
+  flex: 2;
+}
+
+.home-hero-content h1 {
+  font-size: 2.3rem;
+  color: var(--primary-color-dark); /* Using a darker primary color */
+  font-weight: 800; /* Custom heavier font weight for hero title */
+  margin-bottom: 0.7rem;
+  letter-spacing: -1px; /* Custom letter spacing */
+}
+
+.home-hero-content p {
+  color: var(--text-muted-color); /* Using global muted text color */
+  font-size: 1.18rem; /* Custom font size */
+  margin-bottom: 1.5rem;
+  line-height: var(--line-height-base); /* Global line height */
+}
+
+.home-hero-actions {
+  display: flex;
+  gap: var(--spacing-sm); /* Global spacing for gap */
+  margin-top: 1rem;
+}
+
+.home-btn-primary,
+.home-btn-secondary,
+.btn-danger {
+  display: inline-block;
+  padding: 0.7em 1.6em;
+  border-radius: var(--border-radius); /* Global border radius */
+  font-size: var(--font-size-base); /* Global base font size */
+  font-weight: var(--font-weight-semibold); /* Global semibold font weight */
+  text-decoration: none;
+  transition: background-color var(--transition-fast),
+    border-color var(--transition-fast), color var(--transition-fast); /* Global transition */
+  border: none;
+  cursor: pointer;
+}
+
+.home-btn-primary {
+  background: var(--primary-color-dark); /* Custom dark blue */
+  color: var(--background-color); /* White text */
+}
+
+.home-btn-primary:hover,
+.home-btn-primary:focus-visible {
+  background: #19325c; /* Custom very dark blue for hover */
+}
+
+.home-btn-secondary {
+  background: var(--primary-color-light);
+  color: var(--primary-color-dark);
+  border: var(--border-width-thin) solid var(--primary-color-dark); /* Using global thin border */
+}
+
+.home-btn-secondary:hover,
+.home-btn-secondary:focus-visible {
+  background: #d1e3ff; /* Custom slightly darker light blue for hover */
+}
+
+.btn-danger {
+  background-color: #e74c3c; /* Red */
+  color: var(--background-color, #fff); /* White text */
+}
+
+.btn-danger:hover,
+.btn-danger:focus-visible {
+  background-color: #c0392b; /* Darker red */
+}
+
+.home-hero-image img {
+  width: 110px;
+  height: 110px;
+  border-radius: var(--border-radius-lg); /* Global large border radius */
+  box-shadow: 0 2px 12px rgba(44, 62, 80, 0.09); /* Custom shadow */
+  background: var(--background-color); /* Global background color */
+}
+
+/* Progress Overview */
+.home-progress-overview {
+  margin-bottom: 2.5rem; /* Custom margin */
+}
+
+.home-progress-overview h2 {
+  font-size: 1.45rem;
+  color: var(--primary-color-dark); /* Using a darker primary color */
+  margin-bottom: 1.2rem;
+  font-weight: var(--font-weight-bold); /* Global bold font weight */
+}
+
+.home-progress-cards {
+  display: flex;
+  gap: var(--spacing-lg); /* Global spacing for gap */
+  flex-wrap: wrap;
+}
+
+.progress-card {
+  flex: 1 1 320px;
+  background: var(--background-color); /* Global background color */
+  border-radius: 12px; /* Custom border radius for these cards */
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06); /* Custom shadow */
+  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md)
+    var(--spacing-md); /* Global spacing */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 260px;
+  margin-bottom: 0.5rem;
+}
+
+.progress-card-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+
+.progress-card-icon {
+  font-size: var(--font-size-icon-lg); /* Global icon font size */
+  margin-right: 0.7rem;
+}
+
+.progress-card-header h3 {
+  margin: 0;
+  color: var(--primary-color-dark); /* Using a darker primary color */
+  font-size: 1.18rem; /* Custom font size */
+  font-weight: var(--font-weight-bold); /* Global bold font weight */
+  flex: 1;
+}
+
+.progress-card-percent {
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-bold); /* Global bold font weight */
+  color: var(--primary-color-dark); /* Using a darker primary color */
+  background: var(--primary-color-light); /* Global light primary color */
+  border-radius: var(--border-radius-pill); /* Global pill radius */
+  padding: 0.22em 0.8em;
+  margin-left: 0.7rem;
+}
+
+/* Styling for the link within progress-card, now using .home-btn-primary */
+/* Ensure the Link component in ProgressCard uses className="home-btn-primary" */
+.progress-card .home-btn-primary {
+  margin-top: 1.1rem;
+  /* .home-btn-primary provides base styles, here we override padding if needed */
+  padding: 0.5em 1.2em; /* Specific padding for links in progress cards */
+  /* Other .home-btn-primary styles like background, color, hover are inherited */
+}
+
+/* Quick Links */
+.home-quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-lg); /* Global spacing for gap */
+  margin-bottom: 2.5rem; /* Custom margin */
+}
+
+.quick-link-card {
+  background: var(--background-color); /* Global background color */
+  border-radius: 12px; /* Custom border radius */
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06); /* Custom shadow */
+  padding: 1.7rem 1.3rem 1.5rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 220px;
+  transition: box-shadow var(--transition-fast); /* Global transition */
+}
+
+.quick-link-card:hover {
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.13); /* Custom larger shadow on hover */
+}
+
+.quick-link-icon {
+  font-size: var(--font-size-icon-lg); /* Global icon font size */
+  margin-bottom: 0.7rem;
+}
+
+.quick-link-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--primary-color-dark); /* Using a darker primary color */
+  font-size: 1.13rem; /* Custom font size */
+  font-weight: var(--font-weight-bold); /* Global bold font weight */
+}
+
+.quick-link-card p {
+  color: var(--text-muted-color); /* Global muted text color */
+  font-size: var(--font-size-base); /* Global base font size */
+  margin-bottom: 1.1rem;
+}
+
+.quick-link-card .home-btn-primary {
+  /* Uses the renamed local button style */
+  margin-top: auto;
+  font-size: var(--font-size-base); /* Global base font size */
+  padding: 0.5em 1.2em;
+}
+
+/* Features & Tips */
+.home-features-section {
+  margin-top: 2.5rem;
+  background: var(
+    --primary-color-xlight
+  ); /* Global extra light primary color */
+  border-radius: 12px; /* Custom border radius */
+  padding: 1.7rem 1.3rem;
+  box-shadow: 0 1px 6px rgba(44, 62, 80, 0.04); /* Custom shadow */
+}
+
+.home-features-section h3 {
+  color: var(--primary-color-dark); /* Using a darker primary color */
+  font-size: 1.18rem; /* Custom font size */
+  font-weight: var(--font-weight-bold); /* Global bold font weight */
+  margin-bottom: 1rem;
+}
+
+.home-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.7rem 2.5rem;
+}
+
+.home-features-list li {
+  color: var(--text-muted-color); /* Global muted text color */
+  font-size: var(--font-size-base); /* Global base font size */
+  background: var(--background-color); /* Global background color */
+  border-radius: var(--border-radius); /* Global border radius */
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.2rem;
+  box-shadow: 0 1px 4px rgba(44, 62, 80, 0.03);
+}
+
+/* Reset Progress Section */
+.home-reset-section {
+  /* Assuming .card-style provides base background, padding, border-radius, shadow */
+  /* Overrides or additions for a "warning" feel */
+  background-color: var(--danger-bg-light, #fff3f3); /* Light red background */
+  border: 1px solid var(--danger-border-color, #f7c5c5); /* Light red border */
+  padding: var(--spacing-lg); /* Use global spacing or customize */
+  margin-top: 2.5rem; /* Custom margin */
+  text-align: center; /* Center content */
+  border-radius: var(--border-radius-lg); /* Added for consistency with other cards */
+  box-shadow: 0 2px 8px rgba(192, 57, 43, 0.1); /* Subtle red shadow */
+}
+
+.home-reset-section h3 {
+  color: var(--danger-color-dark, #c0392b); /* Darker red for heading */
+  font-size: 1.18rem; /* Custom font size, consistent with other section titles */
+  font-weight: var(--font-weight-bold); /* Global bold font weight */
+  margin-bottom: 0.8rem;
+}
+
+.home-reset-section p {
+  color: var(--text-muted-color); /* Global muted text color */
+  font-size: var(--font-size-sm); /* Smaller font for descriptive text */
+  margin-bottom: 1.2rem;
+  line-height: var(--line-height-sm);
+}
+
+/* Responsive styles */
+@media (max-width: 900px) {
+  .home-hero {
+    flex-direction: column;
+    padding: var(--spacing-lg) var(--spacing-sm); /* Global spacing */
+    gap: var(--spacing-md); /* Global spacing */
+    text-align: center;
+  }
+  .home-hero-content {
+    align-items: center;
+    justify-content: center;
+  }
+  .home-hero-image img {
+    margin: 0 auto;
+  }
+  .home-progress-cards,
+  .home-quick-links {
+    /* flex-direction: column; /* This was causing issues with grid, removed for flex-wrap default */
+    gap: 1.2rem;
+    display: flex;
+  }
+  .home-features-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-modern-container {
+    padding: var(--spacing-sm) 0.3rem; /* Global spacing */
+    margin: 1.5rem auto; /* Reduced vertical margin for smaller screens */
+  }
+  .home-hero {
+    padding: var(--spacing-md) var(--spacing-xs); /* Global spacing */
+  }
+  .progress-card,
+  .quick-link-card,
+  .home-reset-section { /* Ensure reset section also adapts padding */
+    padding: var(--spacing-sm) 0.7rem; /* Global spacing */
+    min-width: 0;
+  }
+  .home-hero-content h1 {
+    font-size: 1.8rem; /* Slightly smaller hero title */
+  }
+  .home-hero-content p {
+    font-size: 1rem; /* Slightly smaller hero paragraph */
+  }
+}
