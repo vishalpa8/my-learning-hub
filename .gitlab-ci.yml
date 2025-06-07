@@ -24,11 +24,12 @@ build_job:
   script:
     - echo "Installing dependencies..."
     - npm ci
+    - echo "Installing vite globally..."
+    - npm install -g vite
     - echo "Building the application..."
     - npm run build
     - echo "Build contents:"
     - ls -la dist/
-    - ls -la dist/assets/
   artifacts:
     paths:
       - dist/
@@ -49,7 +50,6 @@ pages:
     - chmod -R u+rwX,go+rX,go-w public
     - echo "Verifying public directory content:"
     - ls -la public/
-    - ls -la public/assets/
   artifacts:
     paths:
       - public
