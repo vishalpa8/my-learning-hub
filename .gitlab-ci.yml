@@ -17,25 +17,25 @@ cache:
       - package-lock.json
   paths:
     - node_modules/
+    - .npm/
   policy: pull-push
 
 build_job:
   stage: build
+  before_script:
+    - npm config set registry https://registry.npmjs.org/
+    - npm config set cache .npm --global
   script:
     - echo "Installing dependencies..."
     - npm ci
-    - echo "Installing vite globally..."
-    - npm install -g vite
     - echo "Building the application..."
     - npm run build
     - echo "Build contents:"
-    - ls -la dist/
+    - ls -la dist/ || true
   artifacts:
     paths:
       - dist/
     expire_in: 1 week
-  cache:
-    policy: pull
 
 pages:
   stage: deploy
