@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  base: "/my-learning-hub-2a2c80/",
+  base: "/",
   plugins: [react()],
   build: {
     outDir: "dist",
