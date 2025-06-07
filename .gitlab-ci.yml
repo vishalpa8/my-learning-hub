@@ -4,12 +4,20 @@ stages:
   - build
   - deploy
 
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+variables:
+  NODE_ENV: production
+
 cache:
   key:
     files:
       - package-lock.json
   paths:
     - node_modules/
+  policy: pull-push
 
 build_job:
   stage: build
@@ -18,12 +26,15 @@ build_job:
     - npm ci
     - echo "Building the application..."
     - npm run build
-    - echo "Verifying build output..."
+    - echo "Build contents:"
     - ls -la dist/
+    - ls -la dist/assets/
   artifacts:
     paths:
       - dist/
     expire_in: 1 week
+  cache:
+    policy: pull
 
 pages:
   stage: deploy
@@ -35,8 +46,10 @@ pages:
     - mkdir -p public
     - cp -r dist/* public/
     - cp public/index.html public/404.html
-    - echo "Verifying public directory content..."
+    - chmod -R u+rwX,go+rX,go-w public
+    - echo "Verifying public directory content:"
     - ls -la public/
+    - ls -la public/assets/
   artifacts:
     paths:
       - public
