@@ -1,57 +1,33 @@
-image: node:lts
+image: node:23
 
 stages:
+  - install
   - build
   - deploy
 
-workflow:
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-variables:
-  NODE_ENV: production
-
 cache:
-  key:
-    files:
-      - package-lock.json
   paths:
     - node_modules/
-    - .npm/
-  policy: pull-push
 
-build_job:
-  stage: build
-  before_script:
-    - npm config set registry https://registry.npmjs.org/
-    - npm config set cache .npm --global
+install:
+  stage: install
   script:
-    - echo "Installing dependencies..."
     - npm ci
-    - echo "Building the application..."
-    - npx vite build
-    - echo "Build contents:"
-    - ls -la dist/ || true
+
+build:
+  stage: build
+  script:
+    - npm run build
   artifacts:
     paths:
-      - dist/
-    expire_in: 1 week
+      - dist
 
 pages:
   stage: deploy
-  dependencies:
-    - build_job
   script:
-    - echo "Deploying to GitLab Pages..."
-    - rm -rf public
-    - mkdir -p public
-    - cp -r dist/* public/
-    - cp public/index.html public/404.html
-    - chmod -R u+rwX,go+rX,go-w public
-    - echo "Verifying public directory content:"
-    - ls -la public/
+    - mv dist public
   artifacts:
     paths:
       - public
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  only:
+    - main
