@@ -4,7 +4,6 @@ stages:
   - build
   - deploy
 
-# Cache node_modules for faster pipeline runs
 cache:
   key:
     files:
@@ -19,6 +18,8 @@ build_job:
     - npm ci
     - echo "Building the application..."
     - npm run build
+    - echo "Verifying build output..."
+    - ls -la dist/
   artifacts:
     paths:
       - dist/
@@ -34,6 +35,8 @@ pages:
     - mkdir -p public
     - cp -r dist/* public/
     - cp public/index.html public/404.html
+    - echo "Verifying public directory content..."
+    - ls -la public/
   artifacts:
     paths:
       - public
