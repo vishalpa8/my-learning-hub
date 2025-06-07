@@ -58,8 +58,8 @@ function AppContent() {
  */
 function App() {
   return (
-    <Router basename="/my-learning-hub-2a2c80/">
-      <ScrollToTop />
+    <Router>
+      <ScrollToTop/>
       <RewardProvider>
         <AppContent />
       </RewardProvider>
