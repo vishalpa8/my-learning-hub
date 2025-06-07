@@ -24,8 +24,6 @@ build:
 
 pages:
   stage: deploy
-  dependencies:
-    - build
   script:
     - mv dist public
   artifacts:
