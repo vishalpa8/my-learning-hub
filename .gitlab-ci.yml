@@ -1,7 +1,5 @@
-# Use a stable Node.js image
-image: node:23
+image: node:lts
 
-# Define the stages. Build happens first, then deploy.
 stages:
   - build
   - deploy
@@ -14,18 +12,17 @@ cache:
   paths:
     - node_modules/
 
-# This job builds your React/Vite application
 build_job:
   stage: build
   script:
     - echo "Installing dependencies..."
-    - npm install
+    - npm ci
     - echo "Building the application..."
     - npm run build
   artifacts:
     paths:
-      # Save the 'dist' folder to be used by the 'pages' job
       - dist/
+    expire_in: 1 week
 
 pages:
   stage: deploy
@@ -33,10 +30,12 @@ pages:
     - build_job
   script:
     - echo "Deploying to GitLab Pages..."
-    - cp dist/index.html dist/404.html
-    - mv dist public
+    - rm -rf public
+    - mkdir -p public
+    - cp -r dist/* public/
+    - cp public/index.html public/404.html
   artifacts:
     paths:
       - public
-  only:
-    - master
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
