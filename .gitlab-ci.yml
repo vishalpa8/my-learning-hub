@@ -1,0 +1,42 @@
+# Use a stable Node.js image
+image: node:lts-alpine
+
+# Define the stages. Build happens first, then deploy.
+stages:
+  - build
+  - deploy
+
+# Cache node_modules for faster pipeline runs
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+
+# This job builds your React/Vite application
+build_job:
+  stage: build
+  script:
+    - echo "Installing dependencies..."
+    - npm install
+    - echo "Building the application..."
+    - npm run build
+  artifacts:
+    paths:
+      # Save the 'dist' folder to be used by the 'pages' job
+      - dist/
+
+pages:
+  stage: deploy
+  dependencies:
+    - build_job
+  script:
+    - echo "Deploying to GitLab Pages..."
+    - cp dist/index.html dist/404.html
+    - mv dist public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master

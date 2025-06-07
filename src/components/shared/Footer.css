@@ -1,0 +1,44 @@
+/* Footer - Uses only global variables for full theme consistency */
+
+.footer {
+  background-color: var(--dark-color); /* Using variable from your theme */
+  color: var(--light-color); /* Using variable from your theme */
+  text-align: center;
+  padding: var(--spacing-lg) var(--spacing-md); /* Use theme variables */
+  margin-top: auto; /* Pushes footer to bottom if main content is short and App.js is structured for it */
+  border-top: var(--border-width-thin) solid var(--border-color); /* Subtle border, using variable */
+  width: 100%; /* Make footer full width */
+}
+
+.footer-container {
+  max-width: var(--container-max-width); /* Consistent with a common content width, using variable */
+  margin: 0 auto; /* Center the container */
+  padding: 0 var(--spacing-lg); /* Use theme variable */
+}
+
+.footer p {
+  margin: var(--spacing-sm) 0; /* Use theme variable */
+  font-size: var(--font-size-sm); /* Use theme variable */
+}
+
+.footer a {
+  color: var(--primary-color); /* Using variable for links */
+  text-decoration: none;
+  transition: color 0.18s var(--easing-cubic); /* Standardized easing */
+}
+
+.footer a:hover,
+.footer a:focus-visible {
+  text-decoration: underline;
+  color: var(--primary-color-dark);
+}
+
+/* Responsive: reduce padding on small screens */
+@media (max-width: 700px) {
+  .footer {
+    padding: var(--spacing-md) var(--spacing-xs);
+  }
+  .footer-container {
+    padding: 0 var(--spacing-sm);
+  }
+}

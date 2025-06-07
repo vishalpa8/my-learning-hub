@@ -1,0 +1,324 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap");
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Color Palette */
+  --primary-color: #007bff;
+  --primary-color-rgb: 0, 123, 255;
+  --primary-color-dark: #005cb2;
+  --primary-color-light: #e0f0ff;
+  --primary-color-xlight: #e7f3ff;
+  --primary-color-lightest: #e3f0ff; /* Added for DSA Hero */
+  --secondary-color: #6c757d;
+  --secondary-color-background: #e3eaf5; /* Added for DSA pattern tag */
+  --secondary-color-border: #b3c6e0; /* Added for DSA pattern tag */
+  --success-color: #28a745;
+  --success-color-light: #d4edda;
+  --success-color-dark: #1e7e34;
+  --success-color-background: #e6f4ea; /* Added for DSA difficulty/completed */
+  --success-color-border: #b7e4c7; /* Added for DSA difficulty */
+  --warning-color: #ffc107;
+  --warning-color-dark: #d39e00;
+  --warning-color-background: #fff8e1; /* Added for DSA difficulty */
+  --warning-color-border: #ffe082; /* Added for DSA difficulty */
+  --danger-color: #dc3545;
+  --danger-color-dark: #bd2130;
+  --danger-color-background: #fdecea; /* Added for DSA difficulty */
+  --danger-color-border: #f5c6cb; /* Added for DSA difficulty */
+  --light-color: #f8f9fa;
+  --light-bg-color: #f9f9f9;
+  --dark-color: #343a40;
+  --dark-color-rgb: 52, 58, 64;
+  --text-color: #212529;
+  --text-muted-color: #5a6268;
+  --text-color-secondary: #555555;
+  --background-color: #fff;
+  --page-background-color: #eef2f7;
+  --border-color: #e9ecef;
+  --border-color-light: #f1f3f5;
+  --border-color-soft: #e3eaf5; /* Added for DSA card */
+  --border-color-muted: #e0e0e0; /* Added for DSA N/A difficulty */
+  --background-color-offset: #e6f7ff;
+  --background-color-subtle: #eaf1fb; /* Added for DSA progress/tags */
+  --background-color-muted: #f0f0f0; /* Added for DSA N/A difficulty */
+  --glass-border-color: rgba(180, 200, 255, 0.13);
+  --scrollbar-thumb-color: rgba(var(--dark-color-rgb), 0.1);
+
+  /* Chart Specific Dimensions */
+  --chart-height: 250px;
+  --chart-max-width: 350px;
+
+  /* Typography */
+  --font-family-sans-serif: "Open Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-size-base: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2rem;
+  --font-size-h1: 2.5rem; /* Specific for h1, can be same as xxl */
+  --font-size-h2: 1.75rem; /* Specific for h2, can be same as xl */
+  --font-size-h3: 1.3rem;
+  --font-size-h4: 1.2rem;
+  --font-size-icon: 1.8rem;
+  --font-size-icon-lg: 2rem;
+  --line-height-base: 1.6;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing & Layout */
+  --spacing-xxxs: 0.125rem; /* ~2px */
+  --spacing-xxs: 0.25rem; /* ~4px */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 2.5rem; /* Added for larger spacing needs */
+  --container-max-width: 1200px;
+  --navbar-height: 60px;
+  --modal-width-default: 90%; /* For RewardModal */
+  --modal-max-width-sm: 450px; /* For RewardModal */
+
+  /* Border & Radius */
+  --border-radius-sm: 0.2rem;
+  --border-radius: 8px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 12px; /* Added for DSA dashboard card */
+  --border-radius-pill: 999px;
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 3px;
+  --border-width-accent: 4px;
+
+  /* Glassmorphism & Shadows */
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-blur: blur(4px) saturate(1.18);
+  --shadow-elevate: 0 8px 32px 0 rgba(40, 60, 90, 0.16),
+    0 2px 8px 0 rgba(40, 60, 90, 0.1);
+  --box-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  --box-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07); /* Added for DSA dashboard card */
+  --box-shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.1);
+  --box-shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.12); /* Added for DSA dashboard card hover */
+  --box-shadow-small: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --box-shadow-large: 0 4px 15px rgba(0, 0, 0, 0.08);
+
+  /* Transitions & Focus */
+  --transition-fast: all 0.15s var(--easing-cubic);
+  --transition-base: all 0.2s var(--easing-cubic);
+  --transition-color: color 0.18s var(--easing-cubic),
+    background-color 0.18s var(--easing-cubic),
+    border-color 0.18s var(--easing-cubic); /* Added easing */
+  --transition-all: all 0.22s var(--easing-cubic);
+  --easing-cubic: cubic-bezier(0.4, 0, 0.2, 1);
+  --focus-ring: 0 0 0 3px rgba(var(--primary-color-rgb), 0.22);
+}
+
+/* Typography */
+body {
+  font-family: var(--font-family-sans-serif);
+  color: var(--text-color);
+  background-color: var(--page-background-color);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  letter-spacing: 0.01em;
+  margin: 0;
+  padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-shadow: 0 1px 2px rgba(40, 60, 90, 0.07);
+  letter-spacing: 0.02em;
+  margin-top: 0;
+}
+h1 {
+  font-size: var(--font-size-h1); /* Use specific h1 font size variable */
+  font-weight: var(--font-weight-bold);
+}
+h2 {
+  font-size: var(--font-size-h2); /* Use specific h2 font size variable */
+  font-weight: var(--font-weight-bold);
+}
+h3 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-bold);
+}
+h4 {
+  font-size: var(--font-size-h4);
+  font-weight: var(--font-weight-semibold);
+}
+h5,
+h6 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+}
+
+.dashboard-description {
+  color: var(--text-muted-color);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Links */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: var(--transition-color);
+  border-radius: var(--border-radius-sm);
+  outline: none;
+}
+a:hover,
+a:focus-visible {
+  color: var(--primary-color-dark);
+  text-decoration: underline;
+  box-shadow: var(--focus-ring);
+}
+
+/* Buttons */
+button {
+  font-family: var(--font-family-sans-serif);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: var(--transition-base);
+  border: var(--border-width-thin) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  font-weight: var(--font-weight-semibold);
+  box-shadow: 0 1px 2px rgba(40, 60, 90, 0.05);
+  outline: none;
+}
+button:hover,
+button:focus-visible {
+  border-color: var(--primary-color);
+  background-color: var(--light-color);
+  color: var(--primary-color);
+  box-shadow: var(--focus-ring);
+}
+button.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--background-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.08); /* Use RGB var */
+}
+button.btn-primary:hover,
+button.btn-primary:focus-visible {
+  background-color: var(--primary-color-dark);
+  border-color: var(--primary-color-dark);
+  color: var(--background-color);
+}
+button.btn-secondary {
+  background-color: var(--secondary-color);
+  color: var(--background-color);
+  border-color: var(--secondary-color);
+}
+button.btn-secondary:hover,
+button.btn-secondary:focus-visible {
+  background-color: var(--dark-color);
+  border-color: var(--dark-color);
+  color: var(--background-color);
+}
+
+/* Card Styles */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-elevate);
+  border: 1px solid var(--glass-border-color);
+  padding: var(--spacing-lg);
+  transition: var(--transition-all);
+  margin-bottom: var(--spacing-lg);
+  animation: fadeInCard 0.7s var(--easing-cubic); /* Use easing var */
+}
+@keyframes fadeInCard {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.card:hover {
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 12px 40px 0 rgba(40, 60, 90, 0.18);
+  border-color: var(--primary-color);
+}
+.card-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Accessibility: visually hidden */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Hide scrollbars for a cleaner look */
+::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: 8px;
+}
+
+/* Responsive: larger tap targets on mobile */
+@media (max-width: 768px) {
+  .card {
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+  }
+  button,
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+    font-size: 1.08em;
+  }
+}
+
+/* General page loading spinner style */
+.page-loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  font-size: var(--font-size-lg);
+  color: var(--primary-color);
+}
+
+/* Subtle fade-in for all main content */
+.main-content {
+  animation: fadeInCard 0.7s var(--easing-cubic); /* Use easing var */
+}

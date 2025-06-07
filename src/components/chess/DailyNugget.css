@@ -1,0 +1,38 @@
+/* DailyNugget - Uses only global variables for full theme consistency */
+
+.daily-nugget-section {
+  background-color: var(--background-color-offset);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-lg);
+  border: var(--border-width-thin) solid var(--primary-color-light);
+  box-shadow: var(--box-shadow-small);
+}
+
+.daily-nugget-section h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+  font-size: var(--font-size-h3);
+  margin-bottom: var(--spacing-sm);
+}
+
+.daily-nugget-section blockquote {
+  font-style: italic;
+  margin: 0; /* Reset browser default margins */
+  margin-bottom: var(--spacing-sm); /* Apply specific bottom margin */
+  padding-left: var(--spacing-md);
+  border-left: var(--border-width-medium) solid var(--secondary-color);
+  color: var(--text-muted-color);
+}
+
+.nugget-description {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-base);
+}
+
+/* Responsive: reduce padding on small screens */
+@media (max-width: 600px) {
+  .daily-nugget-section {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+}

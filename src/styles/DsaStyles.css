@@ -1,0 +1,794 @@
+/* --- DSA PAGE MODERN REDESIGN --- */
+
+/* Layout */
+.dsa-page-outer {
+  max-width: var(--container-max-width);
+  margin: 2.5rem auto;
+  padding: 0 1.5rem;
+  background: var(--page-background-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-elevate);
+}
+
+.dsa-hero {
+  background: linear-gradient(
+    120deg,
+    var(--primary-color-lightest, #e3f0ff) 0%,
+    /* Lighter shade for gradient start */
+      var(--background-color-offset, #f8f9fa) 100%
+      /* Offset background for gradient end */
+  );
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  box-shadow: 0 2px 12px 0 rgba(40, 60, 90, 0.07);
+  padding: 2.5rem 2rem 2rem 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+.dsa-hero::after {
+  content: "";
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(
+    circle,
+    var(--primary-color-light, #b3d8ff) 0%,
+    /* Light primary for radial effect */ transparent 70%
+  );
+  opacity: 0.25;
+  z-index: 0;
+}
+.dsa-hero-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+.dsa-hero-content h1 {
+  margin: 0 0 0.5rem 0;
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.dsa-hero-subtitle {
+  color: var(--text-muted-color);
+  font-size: 1.15rem;
+  margin-bottom: 1.5rem;
+  font-weight: var(--font-weight-semibold);
+}
+.dsa-hero-progress {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+.dsa-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.08rem;
+  margin-bottom: 0.25rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color-dark);
+}
+.dsa-progress-bar {
+  width: 100%;
+  height: 14px;
+  border-radius: 7px;
+  background: #eafafc; /* very light blue-green */
+  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.08) inset;
+  overflow: hidden;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  accent-color: unset;
+  position: relative;
+}
+
+/* Chrome, Safari, Edge */
+.dsa-progress-bar::-webkit-progress-bar {
+  background: #eafafc;
+  border-radius: 7px;
+}
+.dsa-progress-bar::-webkit-progress-value {
+  background: linear-gradient(90deg, #90c2ff 0%, #43e97b 100%);
+  /* #90c2ff is light blue, #43e97b is green */
+  border-radius: 7px;
+  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.10) inset;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Firefox */
+.dsa-progress-bar::-moz-progress-bar {
+  background: linear-gradient(90deg, #90c2ff 0%, #43e97b 100%);
+  border-radius: 7px;
+  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.10) inset;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* IE/Edge */
+.dsa-progress-bar::-ms-fill {
+  background: linear-gradient(90deg, #90c2ff 0%, #43e97b 100%);
+  border-radius: 7px;
+  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.10) inset;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glassy overlay for extra polish */
+.dsa-progress-bar::after {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; right: 0; bottom: 0;
+  border-radius: 7px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.03) 100%);
+}
+
+.dsa-nav-tabs {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+.dsa-nav-tabs button {
+  background: var(
+    --primary-color-x-light,
+    #f0f6ff
+  ); /* Extra light primary for button background */
+  color: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius-lg);
+  padding: 0.7em 1.5em;
+  font-size: 1.08rem;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: var(--transition-color);
+  box-shadow: var(--box-shadow-sm);
+  outline: none; /* Custom focus style below */
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.dsa-nav-tabs button.active,
+.dsa-nav-tabs button:focus-visible {
+  background: var(--primary-color);
+  color: var(--light-color, #fff); /* Ensure contrast with primary color */
+  box-shadow: 0 2px 8px 0 rgba(40, 60, 90, 0.1),
+    0 0 0 2px var(--primary-color-light, #b3d8ff); /* Added focus ring */
+}
+
+/* Main Content */
+.dsa-main-content-wrapper {
+  /* Added wrapper for potential outer spacing/styling */
+  /* Example: margin-top: var(--spacing-lg); */
+}
+.dsa-main-section {
+  margin-top: 0; /* Assuming .dsa-hero provides top margin */
+  padding: 2.2rem 1.5rem;
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+  background: var(--background-color);
+  box-shadow: 0 2px 8px 0 rgba(40, 60, 90, 0.04);
+  min-height: 400px;
+}
+.dsa-main-section.full-width {
+  /* For dashboard view */
+  padding: 0; /* Dashboard might have its own internal padding */
+  border-radius: var(
+    --border-radius-lg
+  ); /* Full card radius if no hero above */
+}
+
+/* Problem Card & List View */
+.topic-group {
+  margin-bottom: var(--spacing-xl);
+}
+.topic-header {
+  font-size: var(--font-size-h3);
+  color: var(--primary-color-dark);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: var(--border-width-medium) solid var(--primary-color-light);
+}
+.problem-list {
+  list-style: none;
+  padding: 0;
+}
+.problem-item {
+  background: var(
+    --glass-bg,
+    var(--background-color-offset, #fff)
+  ); /* Fallback for glass-bg */
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color-soft, #e3eaf5); /* Softer border color */
+  transition: var(--transition-color), box-shadow 0.2s var(--easing-cubic),
+    transform 0.2s var(--easing-cubic);
+  padding: 1.2rem 1rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.problem-item.completed-problem-card {
+  background: var(
+    --success-color-background,
+    #e6f4ea
+  ); /* Success background for completed items */
+  border-color: var(
+    --success-color-light,
+    var(--success-color-border, #b7e4c7)
+  );
+}
+.problem-item:hover {
+  background: var(--primary-color-x-light, #f0f6ff);
+  box-shadow: var(--box-shadow-lg);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+.problem-main-content {
+  flex-grow: 1;
+  margin-right: 1.2rem; /* Renamed from problem-details for clarity */
+  min-width: 0; /* Prevents overflow in flex containers */
+}
+.problem-title {
+  font-size: 1.08rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-color);
+  text-decoration: none;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  /* Removed white-space, overflow, text-overflow to allow wrapping if needed */
+}
+.problem-title-link:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+.problem-item.completed-problem-card .problem-title-link {
+  text-decoration: line-through;
+  color: var(--text-muted-color, #b0b8c1);
+}
+.problem-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-top: var(--spacing-xs);
+}
+.problem-difficulty,
+.problem-pattern {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-semibold);
+  padding: 0.22em 0.7em;
+  border-radius: var(--border-radius-pill);
+  background-color: var(--background-color-subtle, #eaf1fb);
+  border: 1px solid var(--border-color-light, #dbe7fa);
+  color: var(--primary-color);
+  /* margin-right: 0.5em; Removed as 'gap' on parent handles spacing */
+}
+.problem-difficulty.difficulty-easy {
+  color: var(--success-color);
+  background: var(--success-color-background, #e6f4ea);
+  border-color: var(--success-color-border, #b7e4c7);
+}
+.problem-difficulty.difficulty-medium {
+  color: var(--warning-color-dark);
+  background: var(--warning-color-background, #fff8e1);
+  border-color: var(--warning-color-border, #ffe082);
+}
+.problem-difficulty.difficulty-hard {
+  color: var(--danger-color-dark);
+  background: var(--danger-color-background, #fdecea);
+  border-color: var(--danger-color-border, #f5c6cb);
+}
+.problem-difficulty.difficulty-n\/a {
+  /* Escaped slash */
+  color: var(--text-muted-color, #b0b8c1);
+  background: var(--background-color-muted, #f0f0f0);
+  border-color: var(--border-color-muted, #e0e0e0);
+}
+.problem-pattern {
+  color: var(--secondary-color);
+  background: var(--secondary-color-background, #e3eaf5);
+  border-color: var(--secondary-color-border, #b3c6e0);
+}
+
+/* Add to DsaStyles.css */
+
+.problem-list-view-container {
+  /* Add any overall styling for the problem list view area */
+  padding: var(--spacing-md);
+}
+
+.view-main-title {
+  font-size: var(--font-size-xl);
+  color: var(--text-color-strong);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.view-stats-tile {
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column; /* Stack text stats and pie chart vertically on small screens */
+  gap: var(--spacing-lg);
+  align-items: center; /* Center items if they don't fill width */
+}
+
+@media (min-width: 768px) {
+  .view-stats-tile {
+    flex-direction: row; /* Side-by-side on larger screens */
+    justify-content: space-around;
+    align-items: flex-start;
+  }
+}
+
+.difficulty-stats-breakdown {
+  flex-basis: 45%; /* Adjust as needed */
+  text-align: left;
+}
+
+.difficulty-stats-breakdown h3 {
+  font-size: var(--font-size-lg);
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.stats-subheader { /* New class for subheaders within the stats tile */
+  font-size: var(--font-size-md); /* Slightly smaller than the main h4 */
+  color: var(--text-color-strong);
+  margin-top: var(--spacing-md); /* Add some space above subheaders */
+  margin-bottom: var(--spacing-xs);
+}
+
+.difficulty-stats-breakdown p {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.6;
+}
+
+.difficulty-stats-breakdown p strong {
+  color: var(--text-color-default);
+  min-width: 70px; /* For alignment */
+  display: inline-block;
+}
+
+.view-pie-chart-container {
+  flex-basis: 50%; /* Adjust as needed */
+  max-width: 380px; /* Max width for the pie chart area */
+  width: 100%;
+}
+
+
+/* Problem Card - Mark as Complete Toggle Enhancement */
+.problem-complete-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6em 1em; /* Increased padding for a larger clickable area */
+  border: 1px solid var(--border-color, #ccc); /* Default border from index.css */
+  border-radius: var(
+    --border-radius,
+    8px
+  ); /* Consistent border radius from index.css */
+  cursor: pointer;
+  font-size: 0.9rem; /* Slightly larger font */
+  font-weight: var(--font-weight-semibold, 600); /* Use global variable */
+  transition: background-color 0.2s var(--easing-cubic),
+    border-color 0.2s var(--easing-cubic), color 0.2s var(--easing-cubic); /* Use global easing */
+  background-color: var(
+    --light-bg-color,
+    #f9f9f9
+  ); /* Default background from index.css */
+  color: var(--primary-color, #007bff); /* Default text color as primary */
+  user-select: none; /* Prevent text selection on click */
+  min-width: 150px; /* Ensure a minimum width for consistency */
+  text-align: center;
+  box-shadow: var(
+    --box-shadow-sm,
+    0 1px 3px rgba(0, 0, 0, 0.05)
+  ); /* Adding a subtle shadow */
+}
+
+.problem-complete-toggle:hover {
+  border-color: var(--primary-color-dark, #005cb2); /* Use global variable */
+  background-color: var(
+    --primary-color-xlight,
+    #e7f3ff
+  ); /* Use global variable */
+  color: var(--primary-color-dark, #005cb2); /* Use global variable */
+}
+
+/* Visually hide the checkbox but keep it accessible and functional */
+.problem-complete-toggle input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute; /* Take it out of the layout flow */
+}
+
+/* Style for the "Completed" state */
+.problem-complete-toggle.completed {
+  background-color: var(
+    --success-color-light,
+    #d4edda
+  ); /* Greenish background for completed from index.css */
+  border-color: var(--success-color, #28a745); /* Use global variable */
+  color: var(
+    --success-color-dark,
+    #1e7e34
+  ); /* Darker text for contrast from index.css */
+  font-weight: var(
+    --font-weight-bold,
+    700
+  ); /* Make "Completed" text a bit bolder, use global */
+}
+
+.problem-complete-toggle.completed:hover {
+  background-color: var(--success-color, #28a745); /* Use global variable */
+  border-color: var(--success-color-dark, #1e7e34); /* Use global variable */
+  color: var(
+    --light-color,
+    #f8f9fa
+  ); /* Use global light color for text on dark background */
+}
+
+.problem-meta {
+  /* For checkbox and explanation link */
+  display: flex;
+  flex-direction: row; /* Changed from column to row */
+  align-items: center; /* Vertically align items when side-by-side */
+  justify-content: flex-end; /* Align items to the end of the flex container */
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  min-width: 0; /* Ensure it can shrink if needed */
+}
+
+/* Styling for the Explanation Link (btn-secondary-outline) */
+.problem-meta .btn-secondary-outline {
+  display: inline-flex; /* Consistent with the toggle */
+  align-items: center;
+  justify-content: center;
+  padding: 0.6em 1em; /* Consistent padding */
+  border: 1px solid var(--primary-color, #007bff); /* Primary color border */
+  border-radius: var(--border-radius, 8px);
+  cursor: pointer;
+  font-size: 0.9rem; /* Consistent font size */
+  font-weight: var(--font-weight-semibold, 600);
+  transition: background-color 0.2s var(--easing-cubic),
+    border-color 0.2s var(--easing-cubic), color 0.2s var(--easing-cubic),
+    box-shadow 0.2s var(--easing-cubic);
+  background-color: transparent; /* Outline style */
+  color: var(--primary-color, #007bff); /* Primary color text */
+  user-select: none;
+  min-width: 120px; /* Adjusted min-width, can be same as toggle if preferred */
+  text-align: center;
+  text-decoration: none; /* Remove underline from <a> tag */
+  box-shadow: var(--box-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+}
+
+.problem-meta .btn-secondary-outline:hover,
+.problem-meta .btn-secondary-outline:focus-visible {
+  background-color: var(--primary-color, #007bff); /* Fill on hover */
+  color: var(--light-color, #f8f9fa); /* Light text on hover */
+  border-color: var(--primary-color, #007bff);
+  text-decoration: none;
+  box-shadow: var(--box-shadow, 0 3px 8px rgba(0, 0, 0, 0.08));
+}
+
+/* In DsaStyles.css, within .difficulty-stats-breakdown or a new class */
+.difficulty-stats-breakdown p.total-view-problems-info,
+.difficulty-stats-breakdown p.last-visited-info {
+  font-weight: var(--font-weight-semibold); /* Example */
+  margin-bottom: var(--spacing-xs); /* Example */
+  color: var(--text-color-subtle); /* Example */
+}
+/* In DsaStyles.css */
+.chart-wrapper {
+  position: relative; /* Keep position relative for potential absolute positioned elements inside */
+  height: var(--chart-height); 
+  width: 100%;
+  max-width: var(--chart-max-width); 
+  margin: var(--spacing-sm) auto 0; /* Use existing spacing variable for top margin */
+}
+
+.no-problems-message {
+  text-align: center;
+  font-style: italic; /* Added from the other definition */
+  font-size: var(--font-size-lg);
+  color: var(--text-muted-color);
+  padding: var(--spacing-xl) 0;
+}
+.view-title {
+  /* For "Filtered Problems (10)" */
+  font-size: var(--font-size-h2);
+  color: var(--primary-color-dark);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+/* Dashboard Cards - Enhanced UI */
+.dashboard-view {
+  /* This class is on the parent div in DashboardView.jsx */
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem; /* Slightly increased gap for better visual separation */
+  padding: var(--spacing-lg); /* Ensure consistent and ample padding */
+}
+
+.dashboard-card {
+  background: var(--glass-bg, var(--background-color-offset, #fff));
+  border-radius: var(--border-radius-xl); /* Softer, larger radius */
+  box-shadow: var(
+    --box-shadow-md
+  ); /* Slightly more pronounced default shadow */
+  border: 1px solid var(--border-color-soft, #e3eaf5);
+  padding: var(--spacing-lg); /* Unified padding */
+  transition: box-shadow 0.25s var(--easing-cubic),
+    transform 0.25s var(--easing-cubic);
+  position: relative; /* For pseudo-elements like top border */
+  overflow: hidden; /* To clip the top border accent */
+}
+
+.dashboard-card::before {
+  /* Top border accent */
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px; /* Thickness of the accent */
+  background-color: var(
+    --primary-color, #007bff /* Added fallback for robustness */
+  ); /* Or a specific accent color per card type */
+  opacity: 0.8;
+}
+
+.dashboard-card:hover {
+  box-shadow: var(--box-shadow-xl); /* More pronounced hover shadow */
+  transform: translateY(-5px); /* Slightly more lift */
+}
+
+.dashboard-card h2,
+.dashboard-card h3 {
+  margin-top: var(--spacing-sm); /* Account for ::before element */
+  margin-bottom: var(--spacing-lg); /* More space after title */
+  font-size: 1.3rem; /* Larger, more prominent title */
+  color: var(--primary-color-dark);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.01em;
+  position: relative; /* Ensure title is above ::before if it overlaps */
+}
+/* If you add icons to titles:
+.dashboard-card h2 .icon,
+.dashboard-card h3 .icon {
+  margin-right: var(--spacing-xs);
+  color: var(--primary-color);
+  vertical-align: middle;
+}
+*/
+
+.dashboard-card p {
+  color: var(--text-color-secondary);
+  line-height: 1.65;
+  margin-bottom: var(--spacing-md);
+}
+.dashboard-card p:last-child {
+  margin-bottom: 0;
+}
+
+.dashboard-card ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: var(--spacing-md);
+}
+.dashboard-card ul li {
+  padding-left: var(--spacing-lg); /* Indent for custom bullet */
+  position: relative;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-color-secondary);
+  font-size: 0.95rem;
+}
+.dashboard-card ul li::before {
+  /* Custom bullet */
+  content: "▹"; /* Or use an SVG, or var(--icon-bullet) */
+  position: absolute;
+  left: 0;
+  top: 1px; /* Fine-tune vertical alignment */
+  color: var(--primary-color);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Progress bar styling within dashboard cards */
+.dashboard-card .progress-display-wrapper {
+  /* Assuming ProgressBarDisplay has a wrapper */
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-sm); /* Space if content follows */
+}
+.dashboard-card .progress-label {
+  /* Class from ProgressBarDisplay.jsx */
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  margin-bottom: var(--spacing-xs);
+  font-weight: var(--font-weight-semibold);
+}
+.dashboard-card progress {
+  /* For ProgressBarDisplay within dashboard cards */
+  width: 100%;
+  height: 10px; /* Slimmer progress bar */
+  border-radius: var(--border-radius-pill);
+  accent-color: var(--primary-color);
+  background: var(--background-color-subtle, #eaf1fb);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle inner shadow */
+}
+
+/* Optional: Style for the .dashboard-engagement-grid if used */
+.dashboard-engagement-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(230px, 1fr)
+  ); /* Slightly smaller min for more items */
+  gap: var(--spacing-lg);
+  /* margin-top: var(--spacing-lg); */
+}
+
+/* Loading Spinner */
+.page-loading-spinner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  font-size: var(--font-size-lg);
+  color: var(--primary-color);
+}
+
+/* Filters Bar - Modern, Search | Difficulty | Topic */
+.dsa-filters-bar {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  align-items: center;
+  background: var(--background-color-offset, #f8f9fa);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  box-shadow: var(--box-shadow-small);
+  border: var(--border-width-thin) solid var(--border-color-light);
+}
+.filter-item {
+  /* Wrapper for label + select/input */
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+.dsa-filter-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  /* margin-right: var(--spacing-xs); Removed, using gap on .filter-item */
+  font-size: var(--font-size-base);
+}
+
+.dsa-filter-select {
+  padding: 0.45em 1.1em;
+  border-radius: var(--border-radius);
+  border: 1.5px solid var(--border-color);
+  background: var(--light-color, #fff); /* Ensure contrast */
+  font-size: 1rem;
+  color: var(--primary-color);
+  transition: var(--transition-color);
+  outline: none; /* Custom focus style below */
+  box-shadow: var(--box-shadow-sm);
+  min-width: 140px;
+}
+
+.dsa-filter-select:focus,
+.dsa-filter-select:focus-visible {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-light, #b3d8ff); /* Focus ring using theme variable */
+}
+
+.dsa-filter-input[type="search"] {
+  background: var(--light-color, #fff); /* Ensure contrast */
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.45em 1.1em;
+  font-size: 1rem;
+  color: var(--primary-color);
+  box-shadow: var(--box-shadow-sm);
+  transition: var(--transition-color);
+  outline: none; /* Custom focus style below */
+  min-width: 220px;
+}
+
+.dsa-filter-input[type="search"]:focus,
+.dsa-filter-input[type="search"]:focus-visible {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-light, #b3d8ff); /* Focus ring using theme variable */
+}
+
+/* Responsive: stack filters on mobile */
+@media (max-width: 768px) {
+  /* Adjusted breakpoint for better stacking */
+  .dsa-filters-bar {
+    flex-direction: column;
+    align-items: stretch; /* Make filter items take full width */
+    gap: var(--spacing-sm); /* Increased gap for stacked items */
+  }
+  .filter-item {
+    width: 100%; /* Ensure filter items take full width */
+  }
+  .dsa-filter-input[type="search"],
+  .dsa-filter-select {
+    min-width: 0; /* Allow full width */
+    width: 100%;
+  }
+  .dsa-hero-content h1 {
+    font-size: 2rem; /* Adjust hero title for smaller screens */
+  }
+  .dsa-hero-subtitle {
+    font-size: 1rem;
+  }
+  .dsa-nav-tabs {
+    gap: var(--spacing-sm);
+  }
+  .dsa-nav-tabs button {
+    padding: 0.6em 1em;
+    font-size: 0.95rem;
+  }
+}
+
+/* Utility */
+.sr-only,
+.sr-only-focusable:not(:focus):not(:active) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/***** Engagement Dashboard Styles *****/
+.engagement-container {
+  max-width: var(--container-max-width, 850px);
+  margin: 2.5rem auto;
+  padding: 0 1.5rem 2.5rem 1.5rem;
+  background: var(--page-background-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-elevate);
+}
+.engagement-section-cards {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+.engagement-card {
+  flex: 1 1 250px;
+  min-width: 220px;
+  background: var(--background-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 2px 8px rgba(40, 60, 90, 0.09);
+  padding: 1.7rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+/* Shared DSA typography, button, progress, etc. can be reused */

@@ -1,0 +1,61 @@
+/* UserBadges - Uses only global variables for full theme consistency */
+
+.user-badges-section {
+  background-color: var(
+    --background-color-offset
+  ); /* A slightly different shade */
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-lg);
+  border: var(--border-width-thin) solid
+    var(--primary-color-light); /* Use border width variable */
+  box-shadow: var(--box-shadow-small);
+}
+
+.user-badges-section h4 {
+  margin-top: 0;
+  color: var(--primary-color);
+  font-size: var(--font-size-h4); /* Use font size variable */
+  margin-bottom: var(--spacing-md);
+}
+
+.badges-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: help; /* Show help cursor on hover for the title tooltip - no change needed */
+  background: var(--glass-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 4px rgba(40, 60, 90, 0.07);
+  padding: 0.5em 1em;
+  font-size: 1.3em;
+  transition: background 0.18s var(--easing-cubic), box-shadow 0.18s var(--easing-cubic); /* Standardized easing */
+}
+.badge-item:focus-visible,
+.badge-item:hover {
+  background: var(--primary-color-light);
+  box-shadow: 0 4px 18px 0 rgba(40, 60, 90, 0.13);
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.badge-icon {
+  font-size: var(--font-size-icon); /* Use font size variable for icons */
+}
+
+/* Responsive: badges stack on small screens */
+@media (max-width: 600px) {
+  .badges-grid {
+    gap: var(--spacing-xs);
+  }
+  .user-badges-section {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+}

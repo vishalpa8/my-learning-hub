@@ -1,0 +1,825 @@
+/* Background and Overall Layout */
+.engagement-page-layout {
+  background: linear-gradient(
+    120deg,
+    var(--primary-color-xlight) 0%,
+    var(--page-background-color) 100%
+  );
+  min-height: 100vh;
+  padding: var(--spacing-lg) var(--spacing-sm);
+  font-family: var(--font-family-sans-serif);
+}
+
+/* Main Container - Card Style */
+.engagement-main-container {
+  max-width: var(--container-max-width, 1200px);
+  margin: var(--spacing-md) auto;
+  padding: var(--spacing-lg);
+  background: var(--background-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+/* Page Title */
+.engagement-page-layout h2 {
+  /* Target h2 within the layout for specificity */
+  font-size: var(--font-size-h1, 2.5rem); /* Use theme variable */
+  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
+  color: var(--primary-color-dark, #005cb2); /* Use theme variable */
+  margin-top: 0;
+  margin-bottom: var(--spacing-lg); /* Use theme variable */
+  letter-spacing: 1px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Widgets layout */
+.engagement-widgets-layout {
+  display: flex;
+  gap: var(--spacing-xl);
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: flex-start;
+}
+
+/* New wrapper for calendar and its controls */
+.calendar-widget-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 400px; /* Mirrors .improved-task-list for consistent sizing */
+  max-width: 600px; /* Mirrors .improved-task-list */
+  /* This container itself doesn't need card styling, its children do. */
+}
+
+/* Task List & Calendar Card Base */
+.improved-task-list,
+.activity-calendar {
+  border-radius: var(--border-radius-lg); /* Use theme variable */
+  background: var(
+    --background-color-subtle,
+    #f8fafd
+  ); /* Use theme variable for a slightly off-white bg */
+  box-shadow: var(
+    --box-shadow-md,
+    0 4px 12px rgba(0, 0, 0, 0.07)
+  ); /* Use theme variable */
+  padding: var(--spacing-lg); /* Use theme variable */
+  border: 1px solid var(--border-color-light); /* Use theme variables */
+  transition: var(--transition-all); /* Use theme variable */
+  min-width: 300px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.improved-task-list:focus-within,
+.activity-calendar:focus-within {
+  box-shadow: var(--box-shadow-xl), var(--focus-ring);
+  border-color: var(--primary-color);
+}
+
+/* Focus Enhancement for Card */
+.improved-task-list:focus-within,
+.activity-calendar:focus-within {
+  box-shadow: var(--box-shadow-xl, 0 8px 24px rgba(0, 0, 0, 0.12)),
+    var(--focus-ring); /* Use theme variables */
+  border-color: var(--primary-color, #007bff); /* Use theme variable */
+}
+
+/* ---------- Calendar Layout and Styles ---------- */
+/* .activity-calendar {} /* Base styles are already set above, this can be for overrides if needed */
+
+/* Calendar Header */
+.activity-calendar header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 1rem); /* Use theme variable */
+  margin-bottom: var(--spacing-md, 1.5rem); /* Use theme variable */
+}
+
+.activity-calendar .calendar-header-icon {
+  font-size: 1.3em; /* Restoring font size for the calendar icon */
+}
+
+.activity-calendar h3 {
+  color: var(--primary-color-dark, #005cb2); /* Use theme variable */
+  font-size: var(--font-size-h3, 1.3rem); /* Use theme variable */
+  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+.activity-calendar-content {
+  display: flex;
+  gap: var(--spacing-lg, 2rem); /* Use theme variable */
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.calendar-grid-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xxs, 4px); /* Use theme variable for smaller gap */
+  background: var(
+    --background-color,
+    #fff
+  ); /* Use theme variable for contrast */
+  padding: var(--spacing-sm, 1rem); /* Use theme variable */
+  border-radius: var(--border-radius, 8px); /* Use theme variable */
+  box-shadow: var(
+    --box-shadow-sm,
+    0 1px 3px rgba(0, 0, 0, 0.05)
+  ); /* Use theme variable */
+  min-width: 330px;
+}
+
+/* Weekday Headers */
+.calendar-header-day {
+  text-align: center;
+  opacity: 0.8;
+  font-weight: var(--font-weight-semibold, 600); /* Use theme variable */
+  padding: var(--spacing-xs, 0.5rem) 0; /* Use theme variable */
+  font-size: var(--font-size-sm, 0.875rem); /* Use theme variable */
+  color: var(--text-muted-color, #5a6268); /* Use theme variable */
+  background: transparent;
+  border-radius: 0;
+  letter-spacing: 0.01em;
+}
+
+/* Calendar Days */
+.calendar-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-width-thin, 1px) solid var(--border-color, #e9ecef); /* Use theme variables */
+  border-radius: var(
+    --border-radius-sm,
+    0.2rem
+  ); /* Use theme variable for smaller radius */
+  min-width: 38px;
+  min-height: 38px;
+  font-size: var(--font-size-base, 1rem); /* Use theme variable */
+  background: var(--background-color, #fff); /* Use theme variable */
+  box-sizing: border-box;
+  font-weight: var(--font-weight-normal, 400); /* Use theme variable */
+  color: var(--text-color, #212529); /* Use theme variable */
+  margin: 1px;
+  cursor: pointer;
+  transition: var(--transition-all); /* Use theme variable */
+  outline: none;
+  position: relative;
+}
+
+.calendar-day:not(.empty):hover,
+.calendar-day:not(.empty):focus {
+  background: var(--primary-color-xlight, #e7f3ff); /* Use theme variable */
+  transform: translateY(-2px);
+  box-shadow: var(
+    --box-shadow,
+    0 3px 8px rgba(0, 0, 0, 0.08)
+  ); /* Use theme variable */
+  border-color: var(--primary-color, #007bff); /* Use theme variable */
+  z-index: 2;
+}
+
+/* Special States */
+.calendar-day.empty {
+  background: transparent !important;
+  border-color: transparent !important;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* Today Highlight */
+.calendar-day.today {
+  border: var(--border-width-medium, 2px) solid var(--primary-color, #007bff); /* Use theme variables */
+  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
+  color: var(--primary-color, #007bff); /* Use theme variable */
+  background-color: var(
+    --primary-color-xlight,
+    #e7f3ff
+  ); /* Subtle background for today */
+}
+
+/* No Activity */
+.calendar-day.no-activity,
+.calendar-day.no-activity-data {
+  background: var(--background-color-muted, #f0f0f0); /* Use theme variable */
+  color: var(--text-muted-color, #5a6268); /* Use theme variable */
+  font-weight: var(--font-weight-normal, 400); /* Use theme variable */
+}
+
+/* No activity hover effect */
+.calendar-day.no-activity:hover:not(.empty) {
+  background: var(--border-color-light, #f1f3f5); /* Use theme variable */
+}
+
+/* Worked but no task completed */
+.calendar-day.activity-worked {
+  background: var(--primary-color-light, #e0f0ff); /* Use theme variable */
+  color: var(--primary-color-dark, #005cb2); /* Use theme variable */
+  font-weight: var(--font-weight-semibold, 600); /* Use theme variable */
+}
+
+/* Activity Intensity Colors */
+.calendar-day.activity-low {
+  background: var(--success-color-light, #d4edda); /* Use theme variable */
+  color: var(--success-color-dark, #1e7e34); /* Use theme variable */
+  font-weight: var(--font-weight-semibold, 600); /* Use theme variable */
+}
+
+.calendar-day.activity-medium {
+  background: var(--warning-color, #ffc107); /* Use theme variable */
+  color: var(--dark-color, #343a40); /* Use theme variable for contrast */
+  font-weight: var(--font-weight-semibold, 600); /* Use theme variable */
+}
+
+.calendar-day.activity-high {
+  background: var(--primary-color, #007bff); /* Use theme variable */
+  color: var(--light-color, #f8f9fa); /* Use theme variable */
+  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
+  box-shadow: var(
+    --box-shadow-sm,
+    0 1px 3px rgba(0, 0, 0, 0.05)
+  ); /* Use theme variable */
+}
+
+/* ---------- Activity Legend ---------- */
+.activity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-md); /* Use theme variables */
+  margin: var(--spacing-md) 0 var(--spacing-xs) 0; /* Use theme variables */
+  font-size: var(--font-size-sm, 0.875rem); /* Use theme variable */
+  align-items: center;
+  padding-left: var(--spacing-xs); /* Use theme variable */
+  max-width: 275px;
+}
+
+.activity-legend-title {
+  width: 100%;
+  margin-bottom: var(--spacing-xs); /* Use theme variable */
+  letter-spacing: 0.03em;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 0.5rem); /* Use theme variable */
+  margin-bottom: var(--spacing-xxs, 4px); /* Use theme variable */
+}
+
+.legend-color-box {
+  width: 16px; /* Standardized size */
+  height: 16px; /* Standardized size */
+  margin-right: var(--spacing-xs, 0.5rem); /* Use theme variable */
+  border-radius: var(--border-radius-sm, 0.2rem); /* Use theme variable */
+  display: inline-block;
+  border: 1px solid transparent;
+}
+
+.legend-color-box.high {
+  background-color: var(--primary-color, #007bff);
+}
+.legend-color-box.medium {
+  background-color: var(--warning-color, #ffc107);
+}
+.legend-color-box.low {
+  background-color: var(--success-color-light, #d4edda);
+}
+.legend-color-box.worked {
+  background-color: var(--primary-color-light, #e0f0ff);
+  border-color: var(--primary-color-xlight, #e7f3ff);
+}
+.legend-color-box.none {
+  background-color: var(--background-color-muted, #f0f0f0);
+  border-color: var(--border-color-muted, #e0e0e0);
+}
+.legend-color-box.today-indicator {
+  width: 12px; /* Slightly smaller for indicator */
+  height: 12px; /* Slightly smaller for indicator */
+  border: var(--border-width-medium, 2px) solid var(--primary-color, #007bff); /* Use theme variables */
+  border-radius: 50%;
+  background: transparent;
+}
+
+/* ---------- Miscellaneous ---------- */
+
+/* Calendar Note in Footer */
+.calendar-note {
+  font-size: var(--font-size-sm, 0.875rem); /* Use theme variable */
+  color: var(--text-muted-color, #5a6268); /* Use theme variable */
+  margin: var(--spacing-md, 1.5rem) 0 0 0; /* Use theme variable */
+  padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 1rem); /* Use theme variables */
+  text-align: center;
+  line-height: var(--line-height-base, 1.5); /* Use theme variable */
+  background: var(--primary-color-xlight, #e7f3ff); /* Use theme variable */
+  border-radius: var(--border-radius, 8px); /* Use theme variable */
+  display: inline-block;
+}
+
+/* Styles for .improved-task-list */
+.improved-task-list {
+  /* Base styles are set above, this can be for overrides */
+}
+
+/* Task List Header Alignment */
+.task-list-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 0.5rem); /* Space between icon and text */
+}
+
+/* Task List Title */
+.task-list-header h3 {
+  /* Adjusted selector for nested h3 */
+  font-size: var(--font-size-h3, 1.3rem); /* Use theme variable */
+  color: var(--primary-color-dark, #005cb2); /* Use theme variable */
+  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
+  /* display, align-items, and gap are handled by .task-list-header */
+  margin: 0; /* Remove default h3 margin as spacing is handled by header/parent */
+  /* margin-bottom from .task-list-header will provide space below the entire header */
+  letter-spacing: 0.08em;
+}
+
+.clickable-time-selector:hover,
+.clickable-time-selector:focus-visible {
+  border-color: var(--primary-color, #007bff);
+  /* Box-shadow will be handled by the parent group :focus-within */
+}
+
+/* Task List Header Icon */
+.task-list-header-icon {
+  font-size: 1.2em; /* Consistent icon sizing */
+}
+
+.task-input-group {
+  display: flex;
+  flex-grow: 1;
+  align-items: stretch; /* Ensures inputs stretch to the same height */
+  position: relative; /* For z-index and containing shadow */
+  /* Apply border-radius to the group to match the outer shape of its children */
+  /* Left radius from task-input, right side is square as it meets the button */
+  border-radius: var(--border-radius, 8px) 0 0 var(--border-radius, 8px);
+}
+
+.task-input-group:focus-within {
+  box-shadow: var(--focus-ring); /* Apply shadow to the entire group */
+  z-index: 2; /* Ensure shadow is on top of other elements if needed */
+}
+
+.task-clickable-area {
+  flex-grow: 1; /* Allows this area to take up available space */
+  display: flex;
+  flex-direction: column; /* Stack text and time */
+  cursor: pointer; /* Indicate it's clickable */
+  padding: var(--spacing-xxs, 4px) 0; /* Add some padding for click area */
+  margin: calc(var(--spacing-sm, 1rem) * -1) 0; /* Negative margin to extend click area into li padding */
+  justify-content: center; /* Vertically center content */
+  outline: none; /* Remove default outline */
+}
+
+.task-clickable-area:focus-visible {
+  box-shadow: var(--focus-ring); /* Add focus ring for keyboard navigation */
+  border-radius: var(--border-radius-sm, 0.2rem);
+}
+
+.task-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column; /* Stack text and time */
+}
+
+.task-time-input-inline:focus {
+  border-color: var(--primary-color, #007bff);
+  box-shadow: var(--focus-ring-sm); /* Smaller focus ring */
+}
+/* Task Input Fields */
+.task-input {
+  flex-grow: 1;
+  padding: var(--spacing-sm, 1rem) var(--spacing-sm, 1rem); /* Use theme variable */
+  /* Explicitly define borders for clarity and control */
+  border-top: var(--border-width-medium, 2px) solid var(--border-color, #e9ecef);
+  border-bottom: var(--border-width-medium, 2px) solid
+    var(--border-color, #e9ecef);
+  border-left: var(--border-width-medium, 2px) solid
+    var(--border-color, #e9ecef);
+  border-radius: var(--border-radius, 8px) 0 0 var(--border-radius, 8px); /* Use theme variable */
+  border-right: none; /* Visually merge with the time input */
+  font-size: var(--font-size-base, 1rem); /* Use theme variable */
+  background: var(--background-color, #fff); /* Use theme variable */
+  transition: var(--transition-color); /* Use theme variable */
+  outline: none;
+}
+.task-input:focus {
+  border-color: var(--primary-color, #007bff); /* Use theme variable */
+  background: var(--background-color, #fff); /* Use theme variable */
+  /* Box-shadow will be handled by the parent group :focus-within */
+}
+
+.add-task-btn {
+  /* Add button within .improved-task-list */
+  padding: var(--spacing-sm, 1rem) var(--spacing-md, 1.5rem); /* Use theme variables */
+  min-width: 85px;
+  background: linear-gradient(
+    95deg,
+    var(--primary-color, #2186eb) 60%,
+    var(--primary-color-light, #21c3f3) 100%
+  ); /* Use global vars */
+  color: var(--light-color, #fff); /* Use global var */
+  /* Ensure consistent top/bottom border with input fields for merged look */
+  border-top: var(--border-width-medium, 2px) solid var(--border-color, #e9ecef);
+  border-bottom: var(--border-width-medium, 2px) solid
+    var(--border-color, #e9ecef);
+  border-left: none; /* Merge with clickable-time-selector */
+  border-right: none; /* Button edge defined by background and border-radius */
+  border-radius: 0 var(--border-radius, 8px) var(--border-radius, 8px) 0; /* Use theme variable */
+  font-size: var(--font-size-base, 1rem); /* Use theme variable */
+  font-weight: var(--font-weight-bold, 700); /* Use global var */
+  cursor: pointer;
+  transition: background 0.17s var(--easing-cubic),
+    box-shadow 0.19s var(--easing-cubic), border-color 0.19s var(--easing-cubic); /* Add border-color to transition */
+  box-shadow: 0 1px 6px rgba(0, 123, 255, 0.15); /* Use rgba with fallback color */
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 7px); /* Use global var */
+}
+.add-task-btn:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+.add-task-btn:hover:not(:disabled),
+.add-task-btn:focus-visible {
+  background: linear-gradient(
+    95deg,
+    var(--primary-color-dark, #196cc3) 60%,
+    var(--primary-color, #16a1d9) 100%
+  ); /* Use global vars */
+  border-top-color: var(
+    --primary-color,
+    #007bff
+  ); /* Unify focus border color */
+  border-bottom-color: var(
+    --primary-color,
+    #007bff
+  ); /* Unify focus border color */
+  box-shadow: 0 3px 18px rgba(0, 123, 255, 0.1); /* Use rgba with fallback color */
+}
+.add-btn-icon {
+  font-size: 1.18em; /* Relative to button font size */
+}
+
+.improved-task-list form {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: var(
+    --spacing-md,
+    1.5rem
+  ); /* Reduced space between form and task list */
+}
+
+.improved-task-list-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.improved-task-list-li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 1rem); /* Use theme variable */
+  background: var(
+    --background-color,
+    #fff
+  ); /* Use theme variable for contrast */
+  border-radius: var(--border-radius, 8px); /* Use theme variable */
+  padding: var(--spacing-sm, 1rem) var(--spacing-sm, 1rem); /* Use theme variables */
+  margin-bottom: var(--spacing-sm, 1rem);
+  font-size: var(--font-size-base, 1rem); /* Use theme variable */
+  border: var(--border-width-thin, 1px) solid var(--border-color-light, #f1f3f5); /* Use theme variables */
+  cursor: pointer;
+  box-shadow: var(
+    --box-shadow-sm,
+    0 1px 3px rgba(0, 0, 0, 0.05)
+  ); /* Use theme variable */
+  transition: background 0.18s var(--easing-cubic),
+    /* Use global var */ color 0.14s var(--easing-cubic),
+    box-shadow 0.19s var(--easing-cubic); /* Use global var */
+  font-weight: var(--font-weight-semibold, 500); /* Use global var */
+  letter-spacing: 0.01em;
+}
+
+.improved-task-list-li:hover,
+.improved-task-list-li:focus-within {
+  background: var(--primary-color-xlight, #e1effb); /* Use global var */
+  box-shadow: var(
+    --box-shadow,
+    0 3px 8px rgba(0, 0, 0, 0.08)
+  ); /* Use theme variable */
+}
+
+.improved-task-list-li.completed {
+  text-decoration: line-through;
+  color: var(--text-muted-color, #5a6268); /* Use global var */
+  background: var(--background-color-muted, #f2f2f2); /* Use global var */
+}
+
+.task-text {
+  flex-grow: 1;
+  line-height: var(--line-height-base, 1.6); /* Ensure consistent line height */
+
+  white-space: pre-wrap; /* Allows text to wrap */
+}
+
+/* Delete Button within Task List Item (flex item) */
+.delete-task-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted-color, #5a6268); /* Use theme variable */
+  font-size: var(--font-size-lg, 1.25rem); /* Use theme variable */
+  padding: var(--spacing-xxs, 4px) var(--spacing-xs, 0.5rem); /* Use theme variables */
+  cursor: pointer;
+  transition: var(--transition-color);
+  margin-left: auto; /* Push button to the right */
+  line-height: 1; /* Center the 'x' vertically */
+  opacity: 0.7;
+}
+
+.delete-task-btn:hover,
+.delete-task-btn:focus-visible {
+  color: var(--danger-color, #dc3545); /* Use theme variable */
+  background: none;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.check-container {
+  display: flex;
+  align-items: center;
+  /* gap is not strictly needed if no content follows the checkbox span within the label */
+  /* flex-grow: 1; Removed, as .task-clickable-area should take up the flexible space */
+  cursor: pointer;
+  position: relative;
+}
+.check-container input[type="checkbox"] {
+  /* Visually hide default checkbox */
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.custom-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--border-radius-sm, 0.2rem); /* Use theme variable */
+  border: var(--border-width-medium, 2px) solid
+    var(--border-color-light, #f1f3f5); /* Use theme variables */
+  background: var(--background-color-subtle, #f7fbfe); /* Use global var */
+  transition: border-color 0.18s var(--easing-cubic),
+    background 0.18s var(--easing-cubic);
+  /* Removed display: flex, align-items, justify-content as absolute positioning handles centering */
+  position: relative;
+}
+
+.check-container input[type="checkbox"]:focus + .custom-checkbox {
+  border-color: var(--primary-color, #2186eb); /* Use global var */
+  box-shadow: var(--focus-ring); /* Use global var */
+  outline: none;
+}
+.check-container input[type="checkbox"]:checked + .custom-checkbox {
+  border-color: var(--success-color, #1db876); /* Use global var */
+  background: var(--success-color-background, #e6f6e6); /* Use global var */
+}
+.check-container input[type="checkbox"]:checked + .custom-checkbox:after {
+  content: "";
+  display: block;
+  width: 9px;
+  height: 16px;
+  border: solid var(--success-color, #1db876);
+  border-width: 0 3px 3px 0;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -58%) rotate(41deg) scale(1.13); /* Visually centered tick */
+  transition: border-color 0.16s var(--easing-cubic);
+}
+
+.improved-empty {
+  /* Empty state message for task list */
+  text-align: center;
+  color: var(--text-muted-color, #5a6268); /* Use theme variable */
+  margin: var(--spacing-md, 1.5rem) 0 var(--spacing-sm, 1rem) 0; /* Consistent theme vars */
+  font-weight: var(--font-weight-semibold, 500);
+  font-size: var(--font-size-base, 1rem); /* Use theme variable */
+  opacity: 0.92;
+}
+
+/* Task List Empty State Icon */
+.task-list-empty-icon {
+  font-size: 1.5em; /* Slightly larger for emphasis */
+  display: block; /* Ensure it takes its own line if needed */
+  margin-bottom: var(--spacing-xs, 0.5rem);
+}
+
+.improved-tip {
+  /* Tip below task list */
+  font-size: var(--font-size-sm, 0.98em); /* Use global var */
+  color: var(--primary-color, #216bd6);
+  background: var(--primary-color-xlight, #e7f3ff); /* Use theme variable */
+  text-align: center;
+  border-radius: var(--border-radius, 8px);
+  padding: var(--spacing-sm, 1rem) 0 var(--spacing-xs, 0.5rem) 0; /* Consistent theme vars */
+  margin-top: var(--spacing-sm, 1rem); /* Consistent theme vars */
+  box-shadow: var(
+    --box-shadow-sm,
+    0 1px 3px rgba(0, 0, 0, 0.05)
+  ); /* Use theme variable */
+}
+
+/* Calendar Navigation Controls */
+.calendar-controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm, 1rem); /* Use theme variable */
+  /* Adjusted margin: now below calendar, so use margin-top */
+  margin-top: var(
+    --spacing-md,
+    1.5rem
+  ); /* Space above controls, after calendar */
+  width: 100%; /* Make controls take full width to center properly */
+}
+
+.calendar-nav-btn {
+  padding: var(--spacing-xs, 0.5rem) var(--spacing-md, 1.5rem); /* Use theme variables */
+  font-size: var(--font-size-sm, 0.875rem); /* Use theme variable */
+}
+
+/* Layout */
+.engagement-page-layout {
+  background: linear-gradient(
+    120deg,
+    var(--primary-color-xlight) 0%,
+    var(--page-background-color) 100%
+  );
+  min-height: 100vh;
+  padding: var(--spacing-lg) var(--spacing-sm);
+}
+
+/* Main container as a card */
+.engagement-main-container {
+  max-width: var(--container-max-width, 1200px);
+  margin: var(--spacing-md) auto;
+  padding: var(--spacing-lg);
+  background: var(--background-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+/* Widgets layout */
+.engagement-widgets-layout {
+  display: flex;
+  gap: var(--spacing-xl);
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: flex-start;
+}
+
+/* Calendar and Task List Card Base */
+.improved-task-list,
+.activity-calendar {
+  border-radius: var(--border-radius-lg);
+  background: var(--background-color-subtle);
+  box-shadow: var(--box-shadow-md);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-color-light);
+  transition: var(--transition-all);
+  min-width: 300px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.improved-task-list:focus-within,
+.activity-calendar:focus-within {
+  box-shadow: var(--box-shadow-xl), var(--focus-ring);
+  border-color: var(--primary-color);
+}
+
+/* Calendar widget wrapper */
+.calendar-widget-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 400px;
+  max-width: 600px;
+}
+
+/* Activity legend (specific layout only) */
+.activity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-md);
+  margin: var(--spacing-md) 0 var(--spacing-xs) 0;
+  align-items: center;
+  padding-left: var(--spacing-xs);
+  max-width: 275px;
+}
+.task-time-input,
+.task-time-input-inline {
+  font-size: 1rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 4px;
+  background: #fff;
+  color: #212529;
+  min-width: 90px;
+  margin-left: 8px;
+}
+.activity-legend-title {
+  width: 100%;
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: 0.03em;
+}
+
+/* Legend color boxes (color comes from index.css) */
+.legend-color-box {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  display: inline-block;
+}
+.legend-color-box.today-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+/* Tip below task list */
+.task-list-tip {
+  font-size: var(--font-size-sm, 0.98em);
+  color: var(--primary-color, #216bd6);
+  background: var(--primary-color-xlight, #e7f3ff);
+  text-align: center;
+  border-radius: var(--border-radius, 8px);
+  padding: var(--spacing-sm, 1rem) 0 var(--spacing-xs, 0.5rem) 0;
+  margin-top: var(--spacing-sm, 1rem);
+  box-shadow: var(--box-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .engagement-widgets-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+  .improved-task-list,
+  .calendar-widget-container {
+    min-width: 275px;
+    width: 98%;
+    max-width: 600px;
+  }
+  .engagement-main-container {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+}
+
+@media (max-width: 600px) {
+  .engagement-main-container {
+    max-width: 95vw;
+    padding: var(--spacing-md) var(--spacing-sm);
+    border-radius: var(--border-radius-lg);
+    margin: var(--spacing-sm) auto;
+  }
+  .calendar-grid-container {
+    min-width: auto;
+    width: 100%;
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-xs);
+  }
+  .activity-calendar,
+  .improved-task-list {
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+    padding: var(--spacing-md);
+  }
+  .engagement-page-layout h2 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-md);
+  }
+}
+
+/* ---- End Engagement Page: Component-Specific Layout & Overrides ---- */
+
+/* End of EngagementPage.css Redesign */

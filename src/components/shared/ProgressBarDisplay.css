@@ -1,0 +1,59 @@
+.progress-bar-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.progress-bar-display progress {
+  width: 100%;
+  height: var(--progress-bar-height, 8px);
+  border-radius: var(--border-radius-pill);
+  background: var(--border-color);
+  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.07) inset;
+  overflow: hidden;
+  appearance: none;
+  accent-color: var(--primary-color);
+  transition: width 0.7s var(--easing-cubic),
+    background 0.3s var(--easing-cubic);
+}
+
+.progress-bar-display progress::-webkit-progress-bar {
+  background: var(--border-color);
+  border-radius: var(--border-radius-pill);
+}
+
+.progress-bar-display progress::-webkit-progress-value {
+  background: linear-gradient(
+    90deg,
+    var(--success-color),
+    var(--primary-color) 90%
+  );
+  border-radius: var(--border-radius-pill);
+  transition: width 0.7s var(--easing-cubic),
+    background 0.3s var(--easing-cubic);
+}
+
+.progress-bar-display progress::-moz-progress-bar {
+  background: linear-gradient(
+    90deg,
+    var(--success-color),
+    var(--primary-color) 90%
+  );
+  border-radius: var(--border-radius-pill);
+  transition: width 0.7s var(--easing-cubic),
+    background 0.3s var(--easing-cubic);
+}
+
+.progress-bar-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-color-secondary);
+}
+
+/* Responsive: slightly larger bar on mobile for easier touch */
+@media (max-width: 600px) {
+  .progress-bar-display progress {
+    height: 12px;
+  }
+}
+
