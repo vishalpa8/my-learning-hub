@@ -1,5 +1,5 @@
 # Use a stable Node.js image
-image: node:lts-alpine
+image: node:23
 
 # Define the stages. Build happens first, then deploy.
 stages:
