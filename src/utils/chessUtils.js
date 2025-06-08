@@ -104,7 +104,7 @@ export const calculateProgress = (
 
 /**
  * Default initial structure for a chess user's profile.
- * This is used as the default value in `useLocalStorage` for the chess user profile.
+ * This is used as the default value in `useIndexedDb` for the chess user profile.
  * @type {Object}
  * @property {number} points - User's current points.
  * @property {string | null} lastActiveDate - Date string of the last active day.

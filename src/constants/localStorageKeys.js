@@ -1,6 +1,6 @@
 /**
- * @file Defines constants for localStorage keys used throughout the application.
- * This helps prevent typos and ensures consistency when accessing localStorage.
+ * @file Defines constants for indexedDB keys used throughout the application.
+ * This helps prevent typos and ensures consistency when accessing indexedDB.
  */
 
 // --- Chess Feature Keys ---

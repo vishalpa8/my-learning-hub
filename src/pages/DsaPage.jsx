@@ -3,7 +3,7 @@ import { dsaData } from "../data/dsaData";
 import DashboardView from "../components/dsa/DashboardView";
 import RewardModal from "../components/shared/RewardModal"; 
 import { useReward } from "../contexts/useReward"; // Updated import path
-import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useIndexedDb } from "../hooks/useIndexedDb";
 import {
   DSA_COMPLETED_PROBLEMS_KEY,
   DSA_LAST_ACTIVE_VIEW_KEY,
@@ -38,11 +38,11 @@ const DsaPage = () => {
     closeRewardModal,
   } = useReward();
 
-  const [completedProblems, setCompletedProblems] = useLocalStorage(
+  const [completedProblems, setCompletedProblems] = useIndexedDb(
     DSA_COMPLETED_PROBLEMS_KEY,
     {}
   );
-  const [activeView, setActiveView] = useLocalStorage(
+  const [activeView, setActiveView] = useIndexedDb(
     DSA_LAST_ACTIVE_VIEW_KEY,
     "dashboard"
   );
@@ -54,12 +54,12 @@ const DsaPage = () => {
     searchTerm: "",
   });
 
-  const [streakData, setStreakData] = useLocalStorage(DSA_STREAK_KEY, {
+  const [streakData, setStreakData] = useIndexedDb(DSA_STREAK_KEY, {
     currentStreak: 0,
     lastCompletionDate: null,
   });
 
-  const [lastVisitedViewDates, setLastVisitedViewDates] = useLocalStorage(
+  const [lastVisitedViewDates, setLastVisitedViewDates] = useIndexedDb(
     DSA_LAST_VISITED_VIEW_DATES_KEY,
     {} // { viewKey: dateString }
   );

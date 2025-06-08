@@ -3,7 +3,7 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
-import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useIndexedDb } from "../hooks/useIndexedDb";
 import { DSA_REWARD_TRACKER_KEY } from "../constants/localStorageKeys";
 import { RewardContext } from "./useReward"; // Import RewardContext from the new file
 
@@ -44,7 +44,7 @@ const CHESS_VIDEOS_THRESHOLD = 6; // Example: 2 Chess videos
 export const RewardProvider = ({ children }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [rewardTracker, setRewardTracker] = useLocalStorage(
+  const [rewardTracker, setRewardTracker] = useIndexedDb(
     DSA_REWARD_TRACKER_KEY,
     /** @type {RewardTracker} */
     {

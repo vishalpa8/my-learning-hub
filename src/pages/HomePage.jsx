@@ -1,24 +1,19 @@
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom"; // Import Link for client-side navigation
+import { Link } from "react-router-dom";
 import ProgressBarDisplay from "../components/shared/ProgressBarDisplay";
-import { useLocalStorage } from "../hooks/useLocalStorage";
+// VVVV 1. CORRECT THE IMPORT HERE VVVV
+import { useIndexedDb, db } from "../hooks/useIndexedDb";
 import {
   DSA_COMPLETED_PROBLEMS_KEY,
   CHESS_LEARNING_PROGRESS_KEY,
 } from "../constants/localStorageKeys";
-import { dsaData } from "../data/dsaData"; // To get total DSA problems
-import { playlistVideoData } from "../data/chessData"; // To get total Chess videos
+import { dsaData } from "../data/dsaData";
+import { playlistVideoData } from "../data/chessData";
 import "../styles/HomePage.css";
 
 const HomePage = () => {
-  const [completedDsaProblems] = useLocalStorage(
-    DSA_COMPLETED_PROBLEMS_KEY,
-    {}
-  );
-  const [completedChessVideos] = useLocalStorage(
-    CHESS_LEARNING_PROGRESS_KEY,
-    {}
-  );
+  const [completedDsaProblems] = useIndexedDb(DSA_COMPLETED_PROBLEMS_KEY, {});
+  const [completedChessVideos] = useIndexedDb(CHESS_LEARNING_PROGRESS_KEY, {});
 
   const dsaProgress = useMemo(() => {
     const completed = Object.keys(completedDsaProblems || {}).length;
@@ -41,16 +36,28 @@ const HomePage = () => {
     return { completed, total, percent };
   }, [completedChessVideos]);
 
-  const handleResetAllProgress = () => {
+  const handleResetAllProgress = async () => {
     if (
       window.confirm(
-        "Are you sure you want to reset ALL progress and clear ALL application data from local storage? This action is irreversible and will affect all data for this site."
+        "Are you sure you want to reset ALL progress? This will clear all application data from the database and is irreversible."
       )
     ) {
-      console.log("[Reset] Clearing ALL localStorage for this origin.");
-      localStorage.clear();
-      console.log("[Reset] localStorage cleared. Reloading page...");
-      window.location.reload(); // Reload the page to reflect changes
+      try {
+        console.log("[Reset] Attempting to delete the IndexedDB database...");
+        
+        // VVVV 2. CORRECT THE FUNCTION CALL HERE VVVV
+        await db.delete();
+
+        console.log(
+          "[Reset] IndexedDB database deleted successfully. Reloading page..."
+        );
+        window.location.reload();
+      } catch (error) {
+        console.error("Failed to delete IndexedDB:", error);
+        alert(
+          "Could not clear the database. Please check the console for the specific error."
+        );
+      }
     }
   };
 
@@ -87,9 +94,6 @@ const HomePage = () => {
           </div>
         </div>
         <div className="home-hero-image" aria-hidden="true">
-          {/* Consider using a local asset for the hero image.
-            Place the image in your public/assets/images folder
-            and update the src path accordingly, e.g., "/assets/images/hero-image.svg" */}
           <img
             src="https://img.icons8.com/color/96/000000/learning.png"
             alt="Illustration of learning and growth"
@@ -185,16 +189,7 @@ const HomePage = () => {
   );
 };
 
-/**
- * Displays a progress card for a specific learning area.
- * @param {object} props
- * @param {string} props.icon - Emoji icon for the card.
- * @param {string} props.title - Title of the learning area.
- * @param {number} props.completed - Number of items completed.
- * @param {number} props.total - Total number of items.
- * @param {number} props.percent - Completion percentage.
- * @param {string} props.link - Path to navigate to for more details.
- */
+
 const ProgressCard = ({ icon, title, completed, total, percent, link }) => (
   <div className="progress-card">
     <div className="progress-card-header">
@@ -213,15 +208,7 @@ const ProgressCard = ({ icon, title, completed, total, percent, link }) => (
   </div>
 );
 
-/**
- * Displays a quick link card to a specific section of the hub.
- * @param {object} props
- * @param {string} props.title - Title of the card.
- * @param {string} props.description - Description of the section.
- * @param {string} props.href - Path to navigate to.
- * @param {string} props.cta - Call to action text for the button.
- * @param {string} props.icon - Emoji icon for the card.
- */
+
 const QuickLinkCard = ({ title, description, href, cta, icon }) => (
   <div className="quick-link-card">
     <span className="quick-link-icon">{icon}</span>

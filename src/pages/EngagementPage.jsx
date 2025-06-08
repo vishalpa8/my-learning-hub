@@ -1,31 +1,18 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import TaskList from "../components/engagement/TaskList";
 import ActivityCalendar from "../components/engagement/ActivityCalendar";
 import {
   ENGAGEMENT_TASKS_KEY,
   ENGAGEMENT_ACTIVITY_KEY,
 } from "../constants/localStorageKeys";
+// VVVV 1. CORRECT THE IMPORT HERE VVVV
+import { useIndexedDb } from "../hooks/useIndexedDb";
 import "../components/engagement/EngagementPage.css";
 
 // Utility to get today's date as "YYYY-MM-DD"
 const getTodayStr = () => new Date().toISOString().split("T")[0];
 
-// Load persisted state from localStorage
-const loadState = () => {
-  try {
-    const savedTasks = localStorage.getItem(ENGAGEMENT_TASKS_KEY);
-    const savedActivity = localStorage.getItem(ENGAGEMENT_ACTIVITY_KEY);
-    return {
-      tasks: savedTasks ? JSON.parse(savedTasks) : [],
-      activityData: savedActivity ? JSON.parse(savedActivity) : {},
-    };
-  } catch (error) {
-    console.error("Failed to load state from localStorage:", error);
-    return { tasks: [], activityData: {} };
-  }
-};
-
-// Derive summary of activity from tasks (used for initial state)
+// --- Helper functions (no changes needed) ---
 const deriveActivityDataFromTasks = (tasksArray) => {
   const activity = {};
   tasksArray.forEach((task) => {
@@ -42,7 +29,6 @@ const deriveActivityDataFromTasks = (tasksArray) => {
   return activity;
 };
 
-// Helper to calculate activity for a specific date based on a tasks array
 const calculateActivityForDate = (dateStr, allTasks) => {
   const tasksOnDate = allTasks.filter((task) => task.date === dateStr);
   const completedOnDate = tasksOnDate.filter((task) => task.completed).length;
@@ -51,34 +37,37 @@ const calculateActivityForDate = (dateStr, allTasks) => {
 };
 
 const EngagementPage = () => {
-  const initialState = useMemo(loadState, []);
-  const initialTasksToUse = initialState.tasks || [];
-  const [tasks, setTasks] = useState(initialTasksToUse);
-  const [activityData, setActivityData] = useState(
-    initialState.activityData &&
-      Object.keys(initialState.activityData).length > 0
-      ? initialState.activityData
-      : deriveActivityDataFromTasks(initialTasksToUse)
+  // VVVV 2. USE THE HOOK DIRECTLY FOR STATE MANAGEMENT VVVV
+  const [tasks, setTasks] = useIndexedDb(ENGAGEMENT_TASKS_KEY, []);
+  const [activityData, setActivityData] = useIndexedDb(
+    ENGAGEMENT_ACTIVITY_KEY,
+    {}
   );
-  const [displayDate, setDisplayDate] = useState(() => new Date());
 
+  // Derive activity data if it's not present in the DB
+  useEffect(() => {
+    if (tasks.length > 0 && Object.keys(activityData).length === 0) {
+      setActivityData(deriveActivityDataFromTasks(tasks));
+    }
+  }, [tasks, activityData, setActivityData]);
+
+
+  // --- All other state and logic remains the same ---
+  const [displayDate, setDisplayDate] = useState(() => new Date());
   const todayStr = getTodayStr();
   const [selectedDay, setSelectedDay] = useState(todayStr);
+  const [currentTime, setCurrentTime] = useState(() =>
+    new Date().toTimeString().slice(0, 5)
+  );
 
-  // Add this state and effect at the top of EngagementPage
-  const [currentTime, setCurrentTime] = useState(() => {
-    const now = new Date();
-    return now.toTimeString().slice(0, 5); // "HH:MM"
-  });
   useEffect(() => {
     const interval = setInterval(() => {
-      const now = new Date();
-      setCurrentTime(now.toTimeString().slice(0, 5));
-    }, 1000); // Update every second
-    return () => clearInterval(interval); // Cleanup interval on component unmount
+      setCurrentTime(new Date().toTimeString().slice(0, 5));
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  // --- Task operations ---
+  // --- Task operations (no changes required here) ---
   const addTask = useCallback(
     ({ text, time }) => {
       const newTask = {
@@ -98,14 +87,13 @@ const EngagementPage = () => {
         },
       }));
     },
-    [selectedDay]
+    [selectedDay, setTasks, setActivityData]
   );
 
   const toggleTask = useCallback((id) => {
     setTasks((prevTasks) => {
       const taskToToggle = prevTasks.find((task) => task.id === id);
       if (!taskToToggle) return prevTasks;
-
       const updatedTasks = prevTasks.map((task) =>
         task.id === id
           ? {
@@ -115,20 +103,18 @@ const EngagementPage = () => {
             }
           : task
       );
-
       const taskDate = taskToToggle.date || getTodayStr();
       const newActivityForDate = calculateActivityForDate(
         taskDate,
         updatedTasks
       );
-
       setActivityData((prevActivityData) => ({
         ...prevActivityData,
         [taskDate]: newActivityForDate,
       }));
       return updatedTasks;
     });
-  }, []);
+  }, [setTasks, setActivityData]);
 
   const updateTaskTime = useCallback((id, time) => {
     setTasks((prevTasks) =>
@@ -136,42 +122,29 @@ const EngagementPage = () => {
         task.id === id ? { ...task, time: time || null } : task
       )
     );
-  }, []);
+  }, [setTasks]);
 
   const deleteTask = useCallback((id) => {
     setTasks((prevTasks) => {
       const taskToDelete = prevTasks.find((task) => task.id === id);
       if (!taskToDelete) return prevTasks;
-
       const updatedTasks = prevTasks.filter((task) => task.id !== id);
       const taskDate = taskToDelete.date || getTodayStr();
       const newActivityForDate = calculateActivityForDate(
         taskDate,
         updatedTasks
       );
-
       setActivityData((prevActivityData) => ({
         ...prevActivityData,
         [taskDate]: newActivityForDate,
       }));
       return updatedTasks;
     });
-  }, []);
+  }, [setTasks, setActivityData]);
 
-  // --- Persist state ---
-  useEffect(() => {
-    try {
-      localStorage.setItem(ENGAGEMENT_TASKS_KEY, JSON.stringify(tasks));
-      localStorage.setItem(
-        ENGAGEMENT_ACTIVITY_KEY,
-        JSON.stringify(activityData)
-      );
-    } catch (err) {
-      console.error("Failed to save state to localStorage:", err);
-    }
-  }, [tasks, activityData]);
+  // VVVV 3. NO MORE MANUAL SAVING/LOADING LOGIC NEEDED! VVVV
 
-  // --- Calendar navigation handlers ---
+  // --- Calendar navigation and derived state (no changes required) ---
   const handlePreviousMonth = () =>
     setDisplayDate((date) => {
       const d = new Date(date);
@@ -217,6 +190,7 @@ const EngagementPage = () => {
     [tasks, selectedDay]
   );
 
+  // --- Render logic ---
   return (
     <main className="engagement-page-layout main-content">
       <section className="dashboard-hero">
@@ -253,7 +227,7 @@ const EngagementPage = () => {
               onToggleTask={toggleTask}
               onDeleteTask={deleteTask}
               onUpdateTime={updateTaskTime}
-              currentTime={currentTime} // Ensure currentTime is passed
+              currentTime={currentTime}
             />
           </div>
         </div>

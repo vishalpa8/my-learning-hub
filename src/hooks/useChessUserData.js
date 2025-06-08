@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useLocalStorage } from "./useLocalStorage";
+import { useIndexedDb } from "./useIndexedDb";
 import {
   INITIAL_CHESS_ELO, // Import the constant
   initialChessUserProfile,
@@ -25,11 +25,11 @@ const ELO_GAIN_PER_TWO_VIDEOS = 10; // Define how much ELO is gained for every 2
  * }}
  */
 export const useChessUserData = (structuredChessData) => {
-  const [completedVideos, setCompletedVideos] = useLocalStorage(
+  const [completedVideos, setCompletedVideos] = useIndexedDb(
     CHESS_LEARNING_PROGRESS_KEY,
     {}
   );
-  const [userProfile, setUserProfile] = useLocalStorage(
+  const [userProfile, setUserProfile] = useIndexedDb(
     CHESS_USER_PROFILE_KEY,
     initialChessUserProfile
   );
