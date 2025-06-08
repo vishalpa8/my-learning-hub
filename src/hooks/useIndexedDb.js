@@ -1,81 +1,94 @@
-import { useState, useEffect, useCallback, useDebugValue } from "react";
+import { useState, useEffect, useCallback, useDebugValue, useRef } from "react";
 import Dexie from 'dexie';
 
 // --- Dexie Database Setup ---
-// This db instance is exported so it can be used elsewhere (e.g., for a reset function)
+// This db instance is exported so it can be used for global operations, like a full reset.
 export const db = new Dexie('keyval-db');
 db.version(1).stores({
-  // We will store items as {id: key, value: data}
-  // The 'id' field will be our primary key (the string key we pass to the hook)
+  // We will store items as {id: key, value: data}.
+  // The 'id' field is our primary key (the string key we pass to the hook).
   'keyval-store': 'id'
 });
 
 
-// --- useIndexedDb Hook ---
+// --- The Final, Stable useIndexedDb Hook ---
 
 /**
- * A custom React hook that syncs state with IndexedDB.
- * @param {string} key - The IndexedDB key to use.
- * @param {any} defaultValue - The initial value to use if no value is found.
- * @returns {[any, function(any): void]} A stateful value, and a function to update it.
+ * A robust and stable React hook that syncs state with IndexedDB.
+ *
+ * @param {string} key - The unique key for the data in IndexedDB.
+ * @param {any} defaultValue - The initial value to use if none is found in the database.
+ * @returns {[any, function(any | function(any): any): void]} A stateful value and a function to update it.
  */
 export function useIndexedDb(key, defaultValue) {
+  // The core state for our value.
   const [value, setValue] = useState(defaultValue);
 
-  // Effect to load initial value from IndexedDB on mount
+  // This ref helps us prevent saving to the DB during the initial render,
+  // before we've had a chance to load existing data.
+  const isInitialMount = useRef(true);
+
+  // --- EFFECT 1: Load initial value from IndexedDB ---
+  // This effect runs once when the component mounts.
   useEffect(() => {
+    // Don't run on the server.
     if (typeof window === "undefined") return;
 
     const fetchValue = async () => {
-      console.log(`[useIndexedDB] Fetching for key: "${key}"`);
       try {
-        // Dexie will automatically open the database if it's not already open.
+        // Dexie automatically handles opening the database.
         const storedRecord = await db['keyval-store'].get(key);
         if (storedRecord) {
-          console.log(`[useIndexedDB] Found for key: "${key}", value:`, storedRecord.value);
+          // If we find data, we update our state with it.
           setValue(storedRecord.value);
-        } else {
-          console.log(`[useIndexedDB] Not Found for key: "${key}". Using default value.`);
         }
       } catch (error) {
-        console.error(`[useIndexedDB] Error Fetching for key: "${key}"`, error);
+        console.error(`[useIndexedDb] Error fetching for key "${key}":`, error);
       }
     };
 
     fetchValue();
   }, [key]);
 
+
+  // --- EFFECT 2: Write state changes to IndexedDB ---
+  // This effect runs whenever `value` changes.
+  useEffect(() => {
+    // On the very first render, we don't want to save anything.
+    // We set the ref to false and exit, so this only runs on subsequent updates.
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const saveValue = async () => {
+      try {
+        await db['keyval-store'].put({ id: key, value });
+      } catch (error) {
+        console.error(`[useIndexedDb] Error saving for key "${key}":`, error);
+      }
+    };
+
+    saveValue();
+  }, [key, value]);
+
+
   /**
-   * Provides a STABLE setter function that updates React state and writes to IndexedDB.
+   * Provides a STABLE setter function that updates the component's state.
+   * The change in state will then trigger the save-effect above.
    */
   const setStoredValue = useCallback(
     (valOrFn) => {
-      // Use the functional update form to get the previous value
-      setValue(prevValue => {
-        const newValue = typeof valOrFn === 'function' ? valOrFn(prevValue) : valOrFn;
-
-        console.log(`[useIndexedDB] Saving for key: "${key}", new value:`, newValue);
-        
-        // Perform the async database write operation immediately.
-        (async () => {
-          try {
-            await db['keyval-store'].put({ id: key, value: newValue });
-            console.log(`[useIndexedDB] Save successful for key: "${key}"`);
-          } catch (error) {
-            console.error(`[useIndexedDB] Error Saving for key: "${key}"`, error);
-          }
-        })();
-
-        // Return the new value to update React state.
-        return newValue;
-      });
+      setValue(valOrFn);
     },
-    [key] // Dependency on key ensures the correct key is used in the closure.
+    [] // This setter function is stable and will not cause re-renders.
   );
 
-  useDebugValue(value, (val) => `IndexedDB['${key}']: ${JSON.stringify(val)}`);
+  // Provides a helpful label in React DevTools.
+  useDebugValue(value, (val) => `[IndexedDB] ${key}: ${JSON.stringify(val)}`);
 
   return [value, setStoredValue];
 }
 
+// The default export is the hook itself.
 export default useIndexedDb;
