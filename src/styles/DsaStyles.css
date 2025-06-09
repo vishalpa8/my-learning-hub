@@ -1,5 +1,6 @@
 /* --- DSA PAGE MODERN REDESIGN --- */
 
+
 /* Layout */
 .dsa-page-outer {
   max-width: var(--container-max-width);
@@ -546,7 +547,7 @@
   right: 0;
   height: 5px; /* Thickness of the accent */
   background-color: var(
-    --primary-color, #007bff /* Added fallback for robustness */
+    --primary-color, #007bff
   ); /* Or a specific accent color per card type */
   opacity: 0.8;
 }

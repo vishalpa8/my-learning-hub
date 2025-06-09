@@ -1,3 +1,4 @@
+// EngagementPage.jsx
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import TaskList from "../components/engagement/TaskList";
 import ActivityCalendar from "../components/engagement/ActivityCalendar";
@@ -67,7 +68,7 @@ const EngagementPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // --- Task operations (no changes required here) ---
+  // --- Task operations ---
   const addTask = useCallback(
     ({ text, time }) => {
       const newTask = {
@@ -122,6 +123,15 @@ const EngagementPage = () => {
         task.id === id ? { ...task, time: time || null } : task
       )
     );
+  }, [setTasks]);
+
+  const updateTaskText = useCallback((id, newText) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === id ? { ...task, text: newText.trim() } : task
+      )
+    );
+    // Note: Activity data is not directly affected by text changes.
   }, [setTasks]);
 
   const deleteTask = useCallback((id) => {
@@ -227,6 +237,7 @@ const EngagementPage = () => {
               onToggleTask={toggleTask}
               onDeleteTask={deleteTask}
               onUpdateTime={updateTaskTime}
+              onUpdateTaskText={updateTaskText} // Pass the new handler
               currentTime={currentTime}
             />
           </div>

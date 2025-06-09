@@ -1,3 +1,4 @@
+/* c:\Users\satya.pandey\OneDrive - Qualitest Group\Desktop\My Studies\my-learning-hub\src\components\engagement\EngagementPage.css */
 /* Background and Overall Layout */
 .engagement-page-layout {
   background: linear-gradient(
@@ -26,12 +27,11 @@
 
 /* Page Title */
 .engagement-page-layout h2 {
-  /* Target h2 within the layout for specificity */
-  font-size: var(--font-size-h1, 2.5rem); /* Use theme variable */
-  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
-  color: var(--primary-color-dark, #005cb2); /* Use theme variable */
+  font-size: var(--font-size-h1, 2.5rem);
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--primary-color-dark, #005cb2);
   margin-top: 0;
-  margin-bottom: var(--spacing-lg); /* Use theme variable */
+  margin-bottom: var(--spacing-lg);
   letter-spacing: 1px;
   text-align: center;
   line-height: 1.2;
@@ -51,71 +51,55 @@
 .calendar-widget-container {
   display: flex;
   flex-direction: column;
-  flex: 1 1 400px; /* Mirrors .improved-task-list for consistent sizing */
-  max-width: 600px; /* Mirrors .improved-task-list */
-  /* This container itself doesn't need card styling, its children do. */
+  flex: 1 1 400px;
+  max-width: 600px;
 }
 
 /* Task List & Calendar Card Base */
 .improved-task-list,
 .activity-calendar {
-  border-radius: var(--border-radius-lg); /* Use theme variable */
-  background: var(
-    --background-color-subtle,
-    #f8fafd
-  ); /* Use theme variable for a slightly off-white bg */
-  box-shadow: var(
-    --box-shadow-md,
-    0 4px 12px rgba(0, 0, 0, 0.07)
-  ); /* Use theme variable */
-  padding: var(--spacing-lg); /* Use theme variable */
-  border: 1px solid var(--border-color-light); /* Use theme variables */
-  transition: var(--transition-all); /* Use theme variable */
+  border-radius: var(--border-radius-lg);
+  background: var(--background-color-subtle, #f8fafd);
+  box-shadow: var(--box-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.07));
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-color-light);
+  transition: var(--transition-all);
   min-width: 300px;
   max-width: 600px;
   width: 100%;
-}
-
-.improved-task-list:focus-within,
-.activity-calendar:focus-within {
-  box-shadow: var(--box-shadow-xl), var(--focus-ring);
-  border-color: var(--primary-color);
 }
 
 /* Focus Enhancement for Card */
 .improved-task-list:focus-within,
 .activity-calendar:focus-within {
   box-shadow: var(--box-shadow-xl, 0 8px 24px rgba(0, 0, 0, 0.12)),
-    var(--focus-ring); /* Use theme variables */
-  border-color: var(--primary-color, #007bff); /* Use theme variable */
+    var(--focus-ring);
+  border-color: var(--primary-color, #007bff);
 }
 
 /* ---------- Calendar Layout and Styles ---------- */
-/* .activity-calendar {} /* Base styles are already set above, this can be for overrides if needed */
-
-/* Calendar Header */
 .activity-calendar header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm, 1rem); /* Use theme variable */
-  margin-bottom: var(--spacing-md, 1.5rem); /* Use theme variable */
+  gap: var(--spacing-sm, 1rem);
+  margin-bottom: var(--spacing-md, 1.5rem);
 }
 
 .activity-calendar .calendar-header-icon {
-  font-size: 1.3em; /* Restoring font size for the calendar icon */
+  font-size: 1.3em;
 }
 
 .activity-calendar h3 {
-  color: var(--primary-color-dark, #005cb2); /* Use theme variable */
-  font-size: var(--font-size-h3, 1.3rem); /* Use theme variable */
-  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
+  color: var(--primary-color-dark, #005cb2);
+  font-size: var(--font-size-h3, 1.3rem);
+  font-weight: var(--font-weight-bold, 700);
   margin: 0;
   letter-spacing: 0.03em;
 }
 
 .activity-calendar-content {
   display: flex;
-  gap: var(--spacing-lg, 2rem); /* Use theme variable */
+  gap: var(--spacing-lg, 2rem);
   align-items: flex-start;
   flex-wrap: wrap;
 }
@@ -123,70 +107,55 @@
 .calendar-grid-container {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: var(--spacing-xxs, 4px); /* Use theme variable for smaller gap */
-  background: var(
-    --background-color,
-    #fff
-  ); /* Use theme variable for contrast */
-  padding: var(--spacing-sm, 1rem); /* Use theme variable */
-  border-radius: var(--border-radius, 8px); /* Use theme variable */
-  box-shadow: var(
-    --box-shadow-sm,
-    0 1px 3px rgba(0, 0, 0, 0.05)
-  ); /* Use theme variable */
+  gap: var(--spacing-xxs, 4px);
+  background: var(--background-color, #fff);
+  padding: var(--spacing-sm, 1rem);
+  border-radius: var(--border-radius, 8px);
+  box-shadow: var(--box-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
   min-width: 330px;
 }
 
-/* Weekday Headers */
 .calendar-header-day {
   text-align: center;
   opacity: 0.8;
-  font-weight: var(--font-weight-semibold, 600); /* Use theme variable */
-  padding: var(--spacing-xs, 0.5rem) 0; /* Use theme variable */
-  font-size: var(--font-size-sm, 0.875rem); /* Use theme variable */
-  color: var(--text-muted-color, #5a6268); /* Use theme variable */
+  font-weight: var(--font-weight-semibold, 600);
+  padding: var(--spacing-xs, 0.5rem) 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-muted-color, #5a6268);
   background: transparent;
   border-radius: 0;
   letter-spacing: 0.01em;
 }
 
-/* Calendar Days */
 .calendar-day {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: var(--border-width-thin, 1px) solid var(--border-color, #e9ecef); /* Use theme variables */
-  border-radius: var(
-    --border-radius-sm,
-    0.2rem
-  ); /* Use theme variable for smaller radius */
+  border: var(--border-width-thin, 1px) solid var(--border-color, #e9ecef);
+  border-radius: var(--border-radius-sm, 0.2rem);
   min-width: 38px;
   min-height: 38px;
-  font-size: var(--font-size-base, 1rem); /* Use theme variable */
-  background: var(--background-color, #fff); /* Use theme variable */
+  font-size: var(--font-size-base, 1rem);
+  background: var(--background-color, #fff);
   box-sizing: border-box;
-  font-weight: var(--font-weight-normal, 400); /* Use theme variable */
-  color: var(--text-color, #212529); /* Use theme variable */
+  font-weight: var(--font-weight-normal, 400);
+  color: var(--text-color, #212529);
   margin: 1px;
   cursor: pointer;
-  transition: var(--transition-all); /* Use theme variable */
+  transition: var(--transition-all);
   outline: none;
   position: relative;
 }
 
 .calendar-day:not(.empty):hover,
 .calendar-day:not(.empty):focus {
-  background: var(--primary-color-xlight, #e7f3ff); /* Use theme variable */
+  background: var(--primary-color-xlight, #e7f3ff);
   transform: translateY(-2px);
-  box-shadow: var(
-    --box-shadow,
-    0 3px 8px rgba(0, 0, 0, 0.08)
-  ); /* Use theme variable */
-  border-color: var(--primary-color, #007bff); /* Use theme variable */
+  box-shadow: var(--box-shadow, 0 3px 8px rgba(0, 0, 0, 0.08));
+  border-color: var(--primary-color, #007bff);
   z-index: 2;
 }
 
-/* Special States */
 .calendar-day.empty {
   background: transparent !important;
   border-color: transparent !important;
@@ -194,90 +163,102 @@
   box-shadow: none;
 }
 
-/* Today Highlight */
 .calendar-day.today {
-  border: var(--border-width-medium, 2px) solid var(--primary-color, #007bff); /* Use theme variables */
-  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
-  color: var(--primary-color, #007bff); /* Use theme variable */
-  background-color: var(
-    --primary-color-xlight,
-    #e7f3ff
-  ); /* Subtle background for today */
+  border: var(--border-width-medium, 2px) solid var(--primary-color, #007bff);
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--primary-color, #007bff);
+  background-color: var(--primary-color-xlight, #e7f3ff);
 }
 
-/* No Activity */
 .calendar-day.no-activity,
 .calendar-day.no-activity-data {
-  background: var(--background-color-muted, #f0f0f0); /* Use theme variable */
-  color: var(--text-muted-color, #5a6268); /* Use theme variable */
-  font-weight: var(--font-weight-normal, 400); /* Use theme variable */
+  background: var(--background-color-muted, #f0f0f0);
+  color: var(--text-muted-color, #5a6268);
+  font-weight: var(--font-weight-normal, 400);
 }
 
-/* No activity hover effect */
 .calendar-day.no-activity:hover:not(.empty) {
-  background: var(--border-color-light, #f1f3f5); /* Use theme variable */
+  background: var(--border-color-light, #f1f3f5);
 }
 
-/* Worked but no task completed */
 .calendar-day.activity-worked {
-  background: var(--primary-color-light, #e0f0ff); /* Use theme variable */
-  color: var(--primary-color-dark, #005cb2); /* Use theme variable */
-  font-weight: var(--font-weight-semibold, 600); /* Use theme variable */
+  background: var(--primary-color-light, #e0f0ff);
+  color: var(--primary-color-dark, #005cb2);
+  font-weight: var(--font-weight-semibold, 600);
 }
 
-/* Activity Intensity Colors */
+.task-time-select-inline { /* For the time input/select during task edit */
+  font-size: var(--font-size-base, 1rem);
+  padding: var(--spacing-xxs, 6px) var(--spacing-xs, 8px);
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--background-color, #fff);
+  color: var(--text-color, #212529);
+  line-height: 1.4;
+  box-sizing: border-box;
+  width: auto;
+  min-width: 100px;
+}
+
+.task-edit-input { /* For text input during task edit mode */
+  flex-grow: 1;
+  padding: var(--spacing-xxs, 6px) var(--spacing-xs, 8px);
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: var(--border-radius-sm, 4px);
+  font-size: inherit;
+  box-sizing: border-box;
+  width: 100%;
+}
+
 .calendar-day.activity-low {
-  background: var(--success-color-light, #d4edda); /* Use theme variable */
-  color: var(--success-color-dark, #1e7e34); /* Use theme variable */
-  font-weight: var(--font-weight-semibold, 600); /* Use theme variable */
+  background: var(--success-color-light, #d4edda);
+  color: var(--success-color-dark, #1e7e34);
+  font-weight: var(--font-weight-semibold, 600);
 }
 
 .calendar-day.activity-medium {
-  background: var(--warning-color, #ffc107); /* Use theme variable */
-  color: var(--dark-color, #343a40); /* Use theme variable for contrast */
-  font-weight: var(--font-weight-semibold, 600); /* Use theme variable */
+  background: var(--warning-color, #ffc107);
+  color: var(--dark-color, #343a40);
+  font-weight: var(--font-weight-semibold, 600);
 }
 
 .calendar-day.activity-high {
-  background: var(--primary-color, #007bff); /* Use theme variable */
-  color: var(--light-color, #f8f9fa); /* Use theme variable */
-  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
-  box-shadow: var(
-    --box-shadow-sm,
-    0 1px 3px rgba(0, 0, 0, 0.05)
-  ); /* Use theme variable */
+  background: var(--primary-color, #007bff);
+  color: var(--light-color, #f8f9fa);
+  font-weight: var(--font-weight-bold, 700);
+  box-shadow: var(--box-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
 }
 
 /* ---------- Activity Legend ---------- */
 .activity-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-xs) var(--spacing-md); /* Use theme variables */
-  margin: var(--spacing-md) 0 var(--spacing-xs) 0; /* Use theme variables */
-  font-size: var(--font-size-sm, 0.875rem); /* Use theme variable */
+  gap: var(--spacing-xs) var(--spacing-md);
+  margin: var(--spacing-md) 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-sm, 0.875rem);
   align-items: center;
-  padding-left: var(--spacing-xs); /* Use theme variable */
+  padding-left: var(--spacing-xs);
   max-width: 275px;
 }
 
 .activity-legend-title {
   width: 100%;
-  margin-bottom: var(--spacing-xs); /* Use theme variable */
+  margin-bottom: var(--spacing-xs);
   letter-spacing: 0.03em;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs, 0.5rem); /* Use theme variable */
-  margin-bottom: var(--spacing-xxs, 4px); /* Use theme variable */
+  gap: var(--spacing-xs, 0.5rem);
+  margin-bottom: var(--spacing-xxs, 4px);
 }
 
 .legend-color-box {
-  width: 16px; /* Standardized size */
-  height: 16px; /* Standardized size */
-  margin-right: var(--spacing-xs, 0.5rem); /* Use theme variable */
-  border-radius: var(--border-radius-sm, 0.2rem); /* Use theme variable */
+  width: 16px;
+  height: 16px;
+  margin-right: var(--spacing-xs, 0.5rem);
+  border-radius: var(--border-radius-sm, 0.2rem);
   display: inline-block;
   border: 1px solid transparent;
 }
@@ -300,189 +281,173 @@
   border-color: var(--border-color-muted, #e0e0e0);
 }
 .legend-color-box.today-indicator {
-  width: 12px; /* Slightly smaller for indicator */
-  height: 12px; /* Slightly smaller for indicator */
-  border: var(--border-width-medium, 2px) solid var(--primary-color, #007bff); /* Use theme variables */
+  width: 12px;
+  height: 12px;
+  border: var(--border-width-medium, 2px) solid var(--primary-color, #007bff);
   border-radius: 50%;
   background: transparent;
 }
 
 /* ---------- Miscellaneous ---------- */
-
-/* Calendar Note in Footer */
 .calendar-note {
-  font-size: var(--font-size-sm, 0.875rem); /* Use theme variable */
-  color: var(--text-muted-color, #5a6268); /* Use theme variable */
-  margin: var(--spacing-md, 1.5rem) 0 0 0; /* Use theme variable */
-  padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 1rem); /* Use theme variables */
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-muted-color, #5a6268);
+  margin: var(--spacing-md, 1.5rem) 0 0 0;
+  padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 1rem);
   text-align: center;
-  line-height: var(--line-height-base, 1.5); /* Use theme variable */
-  background: var(--primary-color-xlight, #e7f3ff); /* Use theme variable */
-  border-radius: var(--border-radius, 8px); /* Use theme variable */
+  line-height: var(--line-height-base, 1.5);
+  background: var(--primary-color-xlight, #e7f3ff);
+  border-radius: var(--border-radius, 8px);
   display: inline-block;
 }
 
-/* Styles for .improved-task-list */
-.improved-task-list {
-  /* Base styles are set above, this can be for overrides */
-}
-
-/* Task List Header Alignment */
+/* ---------- Task List Specific Styles ---------- */
 .task-list-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs, 0.5rem); /* Space between icon and text */
+  gap: var(--spacing-xs, 0.5rem);
+  margin-bottom: var(--spacing-md);
 }
 
-/* Task List Title */
 .task-list-header h3 {
-  /* Adjusted selector for nested h3 */
-  font-size: var(--font-size-h3, 1.3rem); /* Use theme variable */
-  color: var(--primary-color-dark, #005cb2); /* Use theme variable */
-  font-weight: var(--font-weight-bold, 700); /* Use theme variable */
-  /* display, align-items, and gap are handled by .task-list-header */
-  margin: 0; /* Remove default h3 margin as spacing is handled by header/parent */
-  /* margin-bottom from .task-list-header will provide space below the entire header */
+  font-size: var(--font-size-h3, 1.3rem);
+  color: var(--primary-color-dark, #005cb2);
+  font-weight: var(--font-weight-bold, 700);
+  margin: 0;
   letter-spacing: 0.08em;
 }
 
-.clickable-time-selector:hover,
-.clickable-time-selector:focus-visible {
-  border-color: var(--primary-color, #007bff);
-  /* Box-shadow will be handled by the parent group :focus-within */
+.task-list-header-icon {
+  font-size: 1.2em;
 }
 
-/* Task List Header Icon */
-.task-list-header-icon {
-  font-size: 1.2em; /* Consistent icon sizing */
+/* Add New Task Form Styling */
+.task-list-form {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow-md); /* Enhanced shadow for the form */
+  overflow: hidden;
 }
 
 .task-input-group {
   display: flex;
   flex-grow: 1;
-  align-items: stretch; /* Ensures inputs stretch to the same height */
-  position: relative; /* For z-index and containing shadow */
-  /* Apply border-radius to the group to match the outer shape of its children */
-  /* Left radius from task-input, right side is square as it meets the button */
-  border-radius: var(--border-radius, 8px) 0 0 var(--border-radius, 8px);
+  align-items: stretch;
+  position: relative;
+  background-color: var(--background-color, #fff);
+  border: var(--border-width-medium, 2px) solid var(--border-color, #e9ecef);
+  border-right: none; /* Key for merging with button */
+  border-radius: var(--border-radius-lg) 0 0 var(--border-radius-lg);
+  transition: border-color var(--transition-duration, 0.2s) var(--easing-cubic),
+              box-shadow var(--transition-duration, 0.2s) var(--easing-cubic);
 }
 
 .task-input-group:focus-within {
-  box-shadow: var(--focus-ring); /* Apply shadow to the entire group */
-  z-index: 2; /* Ensure shadow is on top of other elements if needed */
-}
-
-.task-clickable-area {
-  flex-grow: 1; /* Allows this area to take up available space */
-  display: flex;
-  flex-direction: column; /* Stack text and time */
-  cursor: pointer; /* Indicate it's clickable */
-  padding: var(--spacing-xxs, 4px) 0; /* Add some padding for click area */
-  margin: calc(var(--spacing-sm, 1rem) * -1) 0; /* Negative margin to extend click area into li padding */
-  justify-content: center; /* Vertically center content */
-  outline: none; /* Remove default outline */
-}
-
-.task-clickable-area:focus-visible {
-  box-shadow: var(--focus-ring); /* Add focus ring for keyboard navigation */
-  border-radius: var(--border-radius-sm, 0.2rem);
-}
-
-.task-details {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column; /* Stack text and time */
-}
-
-.task-time-input-inline:focus {
   border-color: var(--primary-color, #007bff);
-  box-shadow: var(--focus-ring-sm); /* Smaller focus ring */
+  box-shadow: var(--focus-ring-inset, inset 0 0 0 2px var(--primary-color-xlight));
 }
-/* Task Input Fields */
+
+.task-input,
+.task-time-input {
+  padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1rem);
+  font-size: var(--font-size-base, 1rem);
+  background-color: transparent; /* Use group's background */
+  border: none; /* Border handled by group */
+  outline: none;
+  color: var(--text-color, #212529);
+  line-height: 1.5;
+}
+
 .task-input {
   flex-grow: 1;
-  padding: var(--spacing-sm, 1rem) var(--spacing-sm, 1rem); /* Use theme variable */
-  /* Explicitly define borders for clarity and control */
-  border-top: var(--border-width-medium, 2px) solid var(--border-color, #e9ecef);
-  border-bottom: var(--border-width-medium, 2px) solid
-    var(--border-color, #e9ecef);
-  border-left: var(--border-width-medium, 2px) solid
-    var(--border-color, #e9ecef);
-  border-radius: var(--border-radius, 8px) 0 0 var(--border-radius, 8px); /* Use theme variable */
-  border-right: none; /* Visually merge with the time input */
-  font-size: var(--font-size-base, 1rem); /* Use theme variable */
-  background: var(--background-color, #fff); /* Use theme variable */
-  transition: var(--transition-color); /* Use theme variable */
-  outline: none;
 }
-.task-input:focus {
-  border-color: var(--primary-color, #007bff); /* Use theme variable */
-  background: var(--background-color, #fff); /* Use theme variable */
-  /* Box-shadow will be handled by the parent group :focus-within */
+
+.task-input::placeholder {
+  color: var(--text-muted-color, #6c757d);
+  opacity: 1;
+}
+
+.task-time-input {
+  flex-grow: 0;
+  min-width: 100px; /* Adjust as needed */
+  border-left: var(--border-width-thin, 1px) solid var(--border-color-light, #f1f3f5);
+  text-align: center;
+  margin-left: 0;
+}
+
+.task-time-input::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
+}
+.task-time-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.9;
 }
 
 .add-task-btn {
-  /* Add button within .improved-task-list */
-  padding: var(--spacing-sm, 1rem) var(--spacing-md, 1.5rem); /* Use theme variables */
-  min-width: 85px;
-  background: linear-gradient(
-    95deg,
-    var(--primary-color, #2186eb) 60%,
-    var(--primary-color-light, #21c3f3) 100%
-  ); /* Use global vars */
-  color: var(--light-color, #fff); /* Use global var */
-  /* Ensure consistent top/bottom border with input fields for merged look */
-  border-top: var(--border-width-medium, 2px) solid var(--border-color, #e9ecef);
-  border-bottom: var(--border-width-medium, 2px) solid
-    var(--border-color, #e9ecef);
-  border-left: none; /* Merge with clickable-time-selector */
-  border-right: none; /* Button edge defined by background and border-radius */
-  border-radius: 0 var(--border-radius, 8px) var(--border-radius, 8px) 0; /* Use theme variable */
-  font-size: var(--font-size-base, 1rem); /* Use theme variable */
-  font-weight: var(--font-weight-bold, 700); /* Use global var */
-  cursor: pointer;
-  transition: background 0.17s var(--easing-cubic),
-    box-shadow 0.19s var(--easing-cubic), border-color 0.19s var(--easing-cubic); /* Add border-color to transition */
-  box-shadow: 0 1px 6px rgba(0, 123, 255, 0.15); /* Use rgba with fallback color */
-  letter-spacing: 0.03em;
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs, 7px); /* Use global var */
+  justify-content: center;
+  gap: var(--spacing-xxs, 0.3em); /* Reduced gap for "+A" */
+  padding: var(--spacing-sm, 0.75rem) var(--spacing-sm, 0.9rem); /* Adjusted padding */
+  min-width: 50px; /* Ensure a minimum visible width */
+  background: linear-gradient(
+    135deg,
+    var(--primary-color, #007bff) 0%,
+    var(--primary-color-light, #56abff) 100%
+  );
+  color: var(--light-color, #fff);
+  /* Match all borders with the input group's default border for seamless look */
+  border: var(--border-width-medium, 2px) solid var(--border-color, #e9ecef);
+  border-left: none; /* Remove left border to merge with input group */
+  border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+  font-size: var(--font-size-base, 1rem);
+  font-weight: var(--font-weight-bold, 600);
+  cursor: pointer;
+  transition: background 0.2s var(--easing-cubic),
+              transform 0.1s var(--easing-cubic),
+              box-shadow 0.2s var(--easing-cubic),
+              border-color 0.2s var(--easing-cubic);
+  letter-spacing: 0.03em;
+  /* Ensure button height matches input group height */
+  align-self: stretch;
+}
+
+/* When the input group is focused, the button's border should also highlight */
+.task-input-group:focus-within + .add-task-btn,
+.add-task-btn:focus-visible {
+  border-color: var(--primary-color, #007bff); /* Highlight all borders */
+  box-shadow: var(--focus-ring);
+  z-index: 2;
 }
 .add-task-btn:disabled {
-  opacity: 0.62;
+  background: var(--background-color-muted, #e9ecef);
+  color: var(--text-muted-color, #6c757d);
   cursor: not-allowed;
+  border-color: var(--border-color-light, #f1f3f5);
+  box-shadow: none;
+  transform: none;
 }
-.add-task-btn:hover:not(:disabled),
-.add-task-btn:focus-visible {
+.add-task-btn:hover:not(:disabled) {
   background: linear-gradient(
-    95deg,
-    var(--primary-color-dark, #196cc3) 60%,
-    var(--primary-color, #16a1d9) 100%
-  ); /* Use global vars */
-  border-top-color: var(
-    --primary-color,
-    #007bff
-  ); /* Unify focus border color */
-  border-bottom-color: var(
-    --primary-color,
-    #007bff
-  ); /* Unify focus border color */
-  box-shadow: 0 3px 18px rgba(0, 123, 255, 0.1); /* Use rgba with fallback color */
+    135deg,
+    var(--primary-color-dark, #0056b3) 0%,
+    var(--primary-color, #007bff) 100%
+  );
+  transform: translateY(-1px);
+  box-shadow: var(--box-shadow-lg);
+}
+.add-task-btn:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: var(--box-shadow-sm);
 }
 .add-btn-icon {
-  font-size: 1.18em; /* Relative to button font size */
+  font-size: 1.2em;
+  line-height: 1;
 }
 
-.improved-task-list form {
-  display: flex;
-  align-items: stretch;
-  margin-bottom: var(
-    --spacing-md,
-    1.5rem
-  ); /* Reduced space between form and task list */
-}
-
+/* Task List Items */
 .improved-task-list-ul {
   list-style: none;
   padding: 0;
@@ -492,82 +457,85 @@
 .improved-task-list-li {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm, 1rem); /* Use theme variable */
-  background: var(
-    --background-color,
-    #fff
-  ); /* Use theme variable for contrast */
-  border-radius: var(--border-radius, 8px); /* Use theme variable */
-  padding: var(--spacing-sm, 1rem) var(--spacing-sm, 1rem); /* Use theme variables */
-  margin-bottom: var(--spacing-sm, 1rem);
-  font-size: var(--font-size-base, 1rem); /* Use theme variable */
-  border: var(--border-width-thin, 1px) solid var(--border-color-light, #f1f3f5); /* Use theme variables */
-  cursor: pointer;
-  box-shadow: var(
-    --box-shadow-sm,
-    0 1px 3px rgba(0, 0, 0, 0.05)
-  ); /* Use theme variable */
+  gap: var(--spacing-sm, 0.75rem);
+  background: var(--background-color, #fff);
+  border-radius: var(--border-radius, 8px);
+  padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1rem);
+  margin-bottom: var(--spacing-sm, 0.75rem);
+  font-size: var(--font-size-base, 1rem);
+  border: var(--border-width-thin, 1px) solid var(--border-color-light, #f1f3f5);
+  box-shadow: var(--box-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
   transition: background 0.18s var(--easing-cubic),
-    /* Use global var */ color 0.14s var(--easing-cubic),
-    box-shadow 0.19s var(--easing-cubic); /* Use global var */
-  font-weight: var(--font-weight-semibold, 500); /* Use global var */
+    color 0.14s var(--easing-cubic),
+    box-shadow 0.19s var(--easing-cubic);
+  font-weight: var(--font-weight-semibold, 500);
   letter-spacing: 0.01em;
 }
-
-.improved-task-list-li:hover,
-.improved-task-list-li:focus-within {
-  background: var(--primary-color-xlight, #e1effb); /* Use global var */
-  box-shadow: var(
-    --box-shadow,
-    0 3px 8px rgba(0, 0, 0, 0.08)
-  ); /* Use theme variable */
+.improved-task-list-li.editing {
+  background-color: var(--primary-color-xlight, #e7f3ff);
+  box-shadow: var(--box-shadow-md);
 }
 
-.improved-task-list-li.completed {
+.improved-task-list-li:hover:not(.editing),
+.improved-task-list-li:focus-within:not(.editing) {
+  background: var(--primary-color-xlight, #e1effb);
+  box-shadow: var(--box-shadow, 0 3px 8px rgba(0, 0, 0, 0.08));
+}
+
+.improved-task-list-li.completed .task-view-content .task-text,
+.improved-task-list-li.completed .task-view-content .task-time-display {
   text-decoration: line-through;
-  color: var(--text-muted-color, #5a6268); /* Use global var */
-  background: var(--background-color-muted, #f2f2f2); /* Use global var */
+  color: var(--text-muted-color, #5a6268);
+  opacity: 0.7;
+}
+.improved-task-list-li.completed {
+  background: var(--background-color-muted, #f2f2f2);
 }
 
 .task-text {
-  flex-grow: 1;
-  line-height: var(--line-height-base, 1.6); /* Ensure consistent line height */
-
-  white-space: pre-wrap; /* Allows text to wrap */
+  line-height: var(--line-height-base, 1.6);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-/* Delete Button within Task List Item (flex item) */
+.task-time-display {
+  margin-top: var(--spacing-xxs, 2px);
+  min-width: 90px;
+  display: inline-block;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: var(--text-muted-color);
+  background-color: var(--background-color-subtle, #f8fafd);
+}
+
 .delete-task-btn {
   background: none;
   border: none;
-  color: var(--text-muted-color, #5a6268); /* Use theme variable */
-  font-size: var(--font-size-lg, 1.25rem); /* Use theme variable */
-  padding: var(--spacing-xxs, 4px) var(--spacing-xs, 0.5rem); /* Use theme variables */
+  color: var(--text-muted-color, #5a6268);
+  font-size: var(--font-size-lg, 1.25rem);
+  padding: var(--spacing-xxs, 4px);
   cursor: pointer;
   transition: var(--transition-color);
-  margin-left: auto; /* Push button to the right */
-  line-height: 1; /* Center the 'x' vertically */
-  opacity: 0.7;
+  line-height: 1;
+  opacity: 0.6;
+  margin-left: auto;
 }
 
 .delete-task-btn:hover,
 .delete-task-btn:focus-visible {
-  color: var(--danger-color, #dc3545); /* Use theme variable */
-  background: none;
-  box-shadow: none;
+  color: var(--danger-color, #dc3545);
   opacity: 1;
 }
 
 .check-container {
   display: flex;
   align-items: center;
-  /* gap is not strictly needed if no content follows the checkbox span within the label */
-  /* flex-grow: 1; Removed, as .task-clickable-area should take up the flexible space */
   cursor: pointer;
   position: relative;
+  padding-right: var(--spacing-xxs, 4px);
 }
 .check-container input[type="checkbox"] {
-  /* Visually hide default checkbox */
   opacity: 0;
   width: 0;
   height: 0;
@@ -576,24 +544,22 @@
 .custom-checkbox {
   width: 22px;
   height: 22px;
-  border-radius: var(--border-radius-sm, 0.2rem); /* Use theme variable */
-  border: var(--border-width-medium, 2px) solid
-    var(--border-color-light, #f1f3f5); /* Use theme variables */
-  background: var(--background-color-subtle, #f7fbfe); /* Use global var */
+  border-radius: var(--border-radius-sm, 0.2rem);
+  border: var(--border-width-medium, 2px) solid var(--border-color-light, #f1f3f5);
+  background: var(--background-color-subtle, #f7fbfe);
   transition: border-color 0.18s var(--easing-cubic),
     background 0.18s var(--easing-cubic);
-  /* Removed display: flex, align-items, justify-content as absolute positioning handles centering */
   position: relative;
 }
 
 .check-container input[type="checkbox"]:focus + .custom-checkbox {
-  border-color: var(--primary-color, #2186eb); /* Use global var */
-  box-shadow: var(--focus-ring); /* Use global var */
+  border-color: var(--primary-color, #2186eb);
+  box-shadow: var(--focus-ring);
   outline: none;
 }
 .check-container input[type="checkbox"]:checked + .custom-checkbox {
-  border-color: var(--success-color, #1db876); /* Use global var */
-  background: var(--success-color-background, #e6f6e6); /* Use global var */
+  border-color: var(--success-color, #1db876);
+  background: var(--success-color-background, #e6f6e6);
 }
 .check-container input[type="checkbox"]:checked + .custom-checkbox:after {
   content: "";
@@ -605,166 +571,25 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -58%) rotate(41deg) scale(1.13); /* Visually centered tick */
+  transform: translate(-50%, -58%) rotate(41deg) scale(1.13);
   transition: border-color 0.16s var(--easing-cubic);
 }
 
 .improved-empty {
-  /* Empty state message for task list */
   text-align: center;
-  color: var(--text-muted-color, #5a6268); /* Use theme variable */
-  margin: var(--spacing-md, 1.5rem) 0 var(--spacing-sm, 1rem) 0; /* Consistent theme vars */
+  color: var(--text-muted-color, #5a6268);
+  margin: var(--spacing-md, 1.5rem) 0 var(--spacing-sm, 1rem) 0;
   font-weight: var(--font-weight-semibold, 500);
-  font-size: var(--font-size-base, 1rem); /* Use theme variable */
+  font-size: var(--font-size-base, 1rem);
   opacity: 0.92;
 }
 
-/* Task List Empty State Icon */
 .task-list-empty-icon {
-  font-size: 1.5em; /* Slightly larger for emphasis */
-  display: block; /* Ensure it takes its own line if needed */
+  font-size: 1.5em;
+  display: block;
   margin-bottom: var(--spacing-xs, 0.5rem);
 }
 
-.improved-tip {
-  /* Tip below task list */
-  font-size: var(--font-size-sm, 0.98em); /* Use global var */
-  color: var(--primary-color, #216bd6);
-  background: var(--primary-color-xlight, #e7f3ff); /* Use theme variable */
-  text-align: center;
-  border-radius: var(--border-radius, 8px);
-  padding: var(--spacing-sm, 1rem) 0 var(--spacing-xs, 0.5rem) 0; /* Consistent theme vars */
-  margin-top: var(--spacing-sm, 1rem); /* Consistent theme vars */
-  box-shadow: var(
-    --box-shadow-sm,
-    0 1px 3px rgba(0, 0, 0, 0.05)
-  ); /* Use theme variable */
-}
-
-/* Calendar Navigation Controls */
-.calendar-controls {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-sm, 1rem); /* Use theme variable */
-  /* Adjusted margin: now below calendar, so use margin-top */
-  margin-top: var(
-    --spacing-md,
-    1.5rem
-  ); /* Space above controls, after calendar */
-  width: 100%; /* Make controls take full width to center properly */
-}
-
-.calendar-nav-btn {
-  padding: var(--spacing-xs, 0.5rem) var(--spacing-md, 1.5rem); /* Use theme variables */
-  font-size: var(--font-size-sm, 0.875rem); /* Use theme variable */
-}
-
-/* Layout */
-.engagement-page-layout {
-  background: linear-gradient(
-    120deg,
-    var(--primary-color-xlight) 0%,
-    var(--page-background-color) 100%
-  );
-  min-height: 100vh;
-  padding: var(--spacing-lg) var(--spacing-sm);
-}
-
-/* Main container as a card */
-.engagement-main-container {
-  max-width: var(--container-max-width, 1200px);
-  margin: var(--spacing-md) auto;
-  padding: var(--spacing-lg);
-  background: var(--background-color);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--box-shadow-xl);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-lg);
-}
-
-/* Widgets layout */
-.engagement-widgets-layout {
-  display: flex;
-  gap: var(--spacing-xl);
-  justify-content: center;
-  flex-wrap: wrap;
-  width: 100%;
-  align-items: flex-start;
-}
-
-/* Calendar and Task List Card Base */
-.improved-task-list,
-.activity-calendar {
-  border-radius: var(--border-radius-lg);
-  background: var(--background-color-subtle);
-  box-shadow: var(--box-shadow-md);
-  padding: var(--spacing-lg);
-  border: 1px solid var(--border-color-light);
-  transition: var(--transition-all);
-  min-width: 300px;
-  max-width: 600px;
-  width: 100%;
-}
-
-.improved-task-list:focus-within,
-.activity-calendar:focus-within {
-  box-shadow: var(--box-shadow-xl), var(--focus-ring);
-  border-color: var(--primary-color);
-}
-
-/* Calendar widget wrapper */
-.calendar-widget-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 400px;
-  max-width: 600px;
-}
-
-/* Activity legend (specific layout only) */
-.activity-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs) var(--spacing-md);
-  margin: var(--spacing-md) 0 var(--spacing-xs) 0;
-  align-items: center;
-  padding-left: var(--spacing-xs);
-  max-width: 275px;
-}
-.task-time-input,
-.task-time-input-inline {
-  font-size: 1rem;
-  padding: 0.5rem;
-  border: 1px solid var(--border-color, #e9ecef);
-  border-radius: 4px;
-  background: #fff;
-  color: #212529;
-  min-width: 90px;
-  margin-left: 8px;
-}
-.activity-legend-title {
-  width: 100%;
-  margin-bottom: var(--spacing-xs);
-  letter-spacing: 0.03em;
-}
-
-/* Legend color boxes (color comes from index.css) */
-.legend-color-box {
-  width: 16px;
-  height: 16px;
-  margin-right: var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
-  display: inline-block;
-}
-.legend-color-box.today-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: transparent;
-}
-
-/* Tip below task list */
 .task-list-tip {
   font-size: var(--font-size-sm, 0.98em);
   color: var(--primary-color, #216bd6);
@@ -774,6 +599,110 @@
   padding: var(--spacing-sm, 1rem) 0 var(--spacing-xs, 0.5rem) 0;
   margin-top: var(--spacing-sm, 1rem);
   box-shadow: var(--box-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+}
+
+.calendar-controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm, 1rem);
+  margin-top: var(--spacing-md, 1.5rem);
+  width: 100%;
+}
+
+.calendar-nav-btn {
+  padding: var(--spacing-xs, 0.5rem) var(--spacing-md, 1.5rem);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+/* Task Item Edit Mode Styles */
+.task-content-area {
+  flex-grow: 1;
+  display: flex;
+  min-width: 0;
+}
+
+.edit-pencil-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted-color, #5a6268);
+  font-size: 1.1rem;
+  padding: var(--spacing-xxs, 4px);
+  cursor: pointer;
+  transition: var(--transition-color);
+  opacity: 0.6;
+  margin-left: var(--spacing-xs, 0.5rem);
+  align-self: center;
+}
+
+.edit-pencil-btn:hover,
+.edit-pencil-btn:focus-visible {
+  color: var(--primary-color, #007bff);
+  opacity: 1;
+}
+
+.task-edit-form {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.5rem);
+  min-width: 0;
+}
+
+.task-edit-form .task-edit-time-select {
+  align-self: flex-start;
+  margin-left: 0;
+}
+
+.task-edit-actions {
+  display: flex;
+  gap: var(--spacing-xs, 0.5rem);
+  margin-top: var(--spacing-xs, 0.5rem);
+  align-self: flex-start;
+}
+
+.task-edit-save-btn,
+.task-edit-cancel-btn {
+  padding: var(--spacing-xxs, 5px) var(--spacing-xs, 10px);
+  border-radius: var(--border-radius-sm, 0.2rem);
+  cursor: pointer;
+  font-size: 0.875rem;
+  border: 1px solid transparent;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+}
+
+.task-edit-save-btn {
+  background-color: var(--success-color, #28a745);
+  color: white;
+}
+.task-edit-save-btn:hover {
+  background-color: var(--success-color-dark, #1e7e34);
+}
+
+.task-edit-cancel-btn {
+  background-color: var(--background-color-muted, #f0f0f0);
+  color: var(--text-color);
+  border-color: var(--border-color, #e9ecef);
+}
+.task-edit-cancel-btn:hover {
+  background-color: var(--border-color-light, #e0e0e0);
+}
+
+.task-view-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs, 2px);
+  cursor: pointer;
+  padding: var(--spacing-xxs, 2px) 0;
+  outline: none;
+  min-width: 0;
+}
+
+.task-view-content:focus-visible {
+  outline: 2px solid var(--primary-color-light);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-sm);
 }
 
 /* Responsive adjustments */
@@ -818,8 +747,33 @@
     font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-md);
   }
+  .task-edit-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .task-edit-save-btn,
+  .task-edit-cancel-btn {
+    width: 100%;
+    text-align: center;
+  }
+  .task-list-form {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    box-shadow: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+  .task-input-group {
+    border-radius: var(--border-radius-lg);
+    border-right: var(--border-width-medium, 2px) solid var(--border-color, #e9ecef);
+  }
+  .add-task-btn {
+    border-radius: var(--border-radius-lg);
+    border-left: var(--border-width-medium, 2px) solid var(--border-color, #e9ecef);
+  }
+  .task-input-group:focus-within + .add-task-btn,
+  .add-task-btn:focus-visible {
+    border-color: var(--primary-color, #007bff);
+  }
 }
-
-/* ---- End Engagement Page: Component-Specific Layout & Overrides ---- */
-
 /* End of EngagementPage.css Redesign */

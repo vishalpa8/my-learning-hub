@@ -1,20 +1,7 @@
+// TaskList.jsx
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./EngagementPage.css";
-
-// Generate time options in 15-minute intervals
-const generateTimeOptions = () => {
-  const options = [];
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 15) {
-      const hour = h.toString().padStart(2, "0");
-      const min = m.toString().padStart(2, "0");
-      options.push(`${hour}:${min}`);
-    }
-  }
-  return options;
-};
-const TIME_OPTIONS = generateTimeOptions();
 
 function formatTime12Hour(timeStr) {
   if (!timeStr) return "--:--";
@@ -31,25 +18,37 @@ const TaskList = ({
   onToggleTask,
   onDeleteTask,
   onUpdateTime,
+  onUpdateTaskText,
   currentTime,
 }) => {
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskTime, setNewTaskTime] = useState("");
-  const [userManuallySetNewTaskTime, setUserManuallySetNewTaskTime] = useState(false);
-  const [editingTimeTaskId, setEditingTimeTaskId] = useState(null);
+  const [userManuallySetNewTaskTime, setUserManuallySetNewTaskTime] =
+    useState(false);
+
+  // State for combined text and time editing
+  const [editingDetailsForTaskId, setEditingDetailsForTaskId] = useState(null);
+  const [currentEditText, setCurrentEditText] = useState("");
+  const [currentEditTime, setCurrentEditTime] = useState("");
+
   const inputRef = useRef(null);
+  const editInputRef = useRef(null); // For the task text edit input
 
   const handleInputChange = useCallback(
     (e) => setNewTaskText(e.target.value),
     []
   );
-  const handleTimeChange = useCallback(
-    (e) => {
-      setNewTaskTime(e.target.value);
-      setUserManuallySetNewTaskTime(true); // Mark that user has interacted
-    },
-    []
-  );
+  const handleTimeChange = useCallback((e) => {
+    setNewTaskTime(e.target.value);
+    setUserManuallySetNewTaskTime(true);
+  }, []);
+
+  // Helper to reset combined editing state
+  const resetEditDetailsState = useCallback(() => {
+    setEditingDetailsForTaskId(null);
+    setCurrentEditText("");
+    setCurrentEditTime("");
+  }, []);
 
   const handleAddTaskSubmit = useCallback(
     (e) => {
@@ -57,22 +56,101 @@ const TaskList = ({
       if (!newTaskText.trim()) return;
       onAddTask({ text: newTaskText.trim(), time: newTaskTime });
       setNewTaskText("");
-      setNewTaskTime(""); // Clear current new task time
-      setUserManuallySetNewTaskTime(false); // Reset flag for the next new task
-      inputRef.current && inputRef.current.focus();
+      setNewTaskTime("");
+      setUserManuallySetNewTaskTime(false);
+      inputRef.current?.focus();
     },
     [newTaskText, newTaskTime, onAddTask]
   );
 
-  // Keep new task time synced with live time until the user manually sets it
   useEffect(() => {
     if (currentTime && !userManuallySetNewTaskTime) {
-      // Only update if it's different, to avoid potential re-renders
       if (newTaskTime !== currentTime) {
         setNewTaskTime(currentTime);
       }
     }
   }, [currentTime, userManuallySetNewTaskTime, newTaskTime]);
+
+  useEffect(() => {
+    if (editingDetailsForTaskId && editInputRef.current) {
+      editInputRef.current.focus();
+      editInputRef.current.select();
+    }
+  }, [editingDetailsForTaskId]);
+
+  const handleStartEditDetails = useCallback((task) => {
+    setEditingDetailsForTaskId(task.id);
+    setCurrentEditText(task.text);
+    setCurrentEditTime(task.time || ""); // Ensure time is a string
+  }, []);
+
+  const handleCurrentEditTextChange = useCallback((e) => {
+    setCurrentEditText(e.target.value);
+  }, []);
+
+  const handleCurrentEditTimeChange = useCallback((e) => {
+    setCurrentEditTime(e.target.value);
+  }, []);
+
+  const handleSaveEditDetails = useCallback(
+    (taskId) => {
+      const trimmedText = currentEditText.trim();
+      const task = tasks.find((t) => t.id === taskId);
+
+      if (task && trimmedText) {
+        if (task.text !== trimmedText) {
+          onUpdateTaskText(taskId, trimmedText);
+        }
+        // Normalize currentEditTime to null if empty string for comparison and saving
+        const timeToSave = currentEditTime || null;
+        if (task.time !== timeToSave) {
+          onUpdateTime(taskId, timeToSave);
+        }
+      }
+      resetEditDetailsState();
+    },
+    [
+      currentEditText,
+      currentEditTime,
+      onUpdateTaskText,
+      onUpdateTime,
+      tasks,
+      resetEditDetailsState,
+    ]
+  );
+
+  const handleCancelEditDetails = useCallback(() => {
+    resetEditDetailsState();
+  }, [resetEditDetailsState]);
+
+  const isEditingThisTask = (taskId) => editingDetailsForTaskId === taskId;
+
+  const handleEditFormKeyDown = useCallback(
+    (event) => {
+      if (!editingDetailsForTaskId) {
+        return;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleSaveEditDetails(editingDetailsForTaskId);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        handleCancelEditDetails();
+      }
+    },
+    [editingDetailsForTaskId, handleSaveEditDetails, handleCancelEditDetails]
+  );
+
+  // Effect to add/remove global keydown listener for Enter/Escape during edit
+  useEffect(() => {
+    if (editingDetailsForTaskId) {
+      document.addEventListener("keydown", handleEditFormKeyDown);
+    } else {
+      document.removeEventListener("keydown", handleEditFormKeyDown);
+    }
+    // Cleanup listener on component unmount or when editingDetailsForTaskId changes
+    return () => document.removeEventListener("keydown", handleEditFormKeyDown);
+  }, [editingDetailsForTaskId, handleEditFormKeyDown]);
 
   return (
     <section className="improved-task-list card" aria-label="Today's Tasks">
@@ -104,12 +182,11 @@ const TaskList = ({
             autoFocus
           />
           <input
-            type="time" // Changed back to input type="time"
+            type="time"
             value={newTaskTime}
             onChange={handleTimeChange}
             className="task-time-input"
             aria-label="Set time for new task"
-            style={{ minWidth: 90, marginLeft: 8 }}
           />
         </div>
         <button
@@ -143,82 +220,126 @@ const TaskList = ({
               key={task.id}
               className={`improved-task-list-li${
                 task.completed ? " completed" : ""
-              }`}
+              }${isEditingThisTask(task.id) ? " editing" : ""}`} // Add editing class for potential styling
             >
-              <label className="check-container">
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  onChange={() => onToggleTask(task.id)}
-                  aria-label={
-                    task.completed
-                      ? `Mark "${task.text}" as incomplete`
-                      : `Mark "${task.text}" as complete`
-                  }
-                />
-                <span className="custom-checkbox" aria-hidden="true"></span>
-              </label>
-              <div className="task-clickable-area">
-                <span className="task-text">{task.text}</span>
-                {editingTimeTaskId === task.id ? (
-                  <select
-                    value={task.time || ""}
-                    onChange={e => {
-                      onUpdateTime(task.id, e.target.value);
-                      setEditingTimeTaskId(null);
+              {!isEditingThisTask(task.id) && (
+                <label className="check-container">
+                  <input
+                    className="task-checkbox-input"
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onToggleTask(task.id);
                     }}
-                    onBlur={() => setEditingTimeTaskId(null)}
-                    className="task-time-select-inline"
-                    aria-label={`Set time for "${task.text}"`}
-                    style={{ marginTop: 2, marginLeft: 8, minWidth: 90 }}
-                    autoFocus
+                    aria-label={
+                      task.completed
+                        ? `Mark task "${task.text}" as incomplete`
+                        : `Mark "${task.text}" as complete`
+                    }
+                  />
+                  <span className="custom-checkbox" aria-hidden="true"></span>
+                </label>
+              )}
+
+              <div className="task-content-area">
+                {isEditingThisTask(task.id) ? (
+                  <div
+                    className="task-edit-form"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <option value="" disabled>
-                      --:--
-                    </option>
-                    {TIME_OPTIONS.map((t) => (
-                      <option key={t} value={t}>
-                        {formatTime12Hour(t)}
-                      </option>
-                    ))}
-                  </select>
+                    <input
+                      ref={editInputRef}
+                      type="text"
+                      value={currentEditText}
+                      onChange={handleCurrentEditTextChange}
+                      className="task-edit-input"
+                      aria-label={`Editing task text: ${task.text}`}
+                      maxLength={100}
+                    />
+                    <input
+                      type="time"
+                      value={currentEditTime}
+                      onChange={handleCurrentEditTimeChange}
+                      className="task-time-select-inline task-edit-time-select" // You might want to rename this class or adjust its styles
+                      aria-label={`Editing time for task: ${task.text}`}
+                    />
+
+                    <div className="task-edit-actions">
+                      <button
+                        onClick={() => handleSaveEditDetails(task.id)}
+                        className="task-edit-save-btn"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelEditDetails}
+                        className="task-edit-cancel-btn"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <span
-                    className="task-time-display"
-                    tabIndex={0}
-                    style={{
-                      marginTop: 2,
-                      marginLeft: 8,
-                      minWidth: 90,
-                      cursor: "pointer",
-                      display: "inline-block",
-                    }}
-                    onClick={() => setEditingTimeTaskId(task.id)}
-                    onKeyDown={e => {
-                      if (e.key === "Enter" || e.key === " ")
-                        setEditingTimeTaskId(task.id);
-                    }}
-                    aria-label={`Edit time for "${task.text}", current time ${formatTime12Hour(task.time)}`}
+                  <div
+                    className="task-view-content"
+                    onClick={() => onToggleTask(task.id)}
+                    title="Click to toggle complete/incomplete"
                     role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onToggleTask(task.id);
+                      }
+                    }}
                   >
-                    {formatTime12Hour(task.time)}
-                  </span>
+                    <span className="task-text">{task.text}</span>
+                    <span
+                      className="task-time-display"
+                      aria-label={`Scheduled time: ${formatTime12Hour(
+                        task.time
+                      )}`}
+                    >
+                      {formatTime12Hour(task.time)}
+                    </span>
+                  </div>
                 )}
               </div>
-              <button
-                onClick={() => onDeleteTask(task.id)}
-                className="delete-task-btn"
-                aria-label={`Delete "${task.text}"`}
-                title="Delete task"
-                tabIndex={0}
-                onKeyDown={e => {
-                  if (e.key === "Enter" || e.key === " ") {
+
+              {!isEditingThisTask(task.id) && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStartEditDetails(task);
+                  }}
+                  className="edit-pencil-btn"
+                  aria-label={`Edit task "${task.text}"`}
+                  title="Edit task"
+                >
+                  ✏️
+                </button>
+              )}
+
+              {!isEditingThisTask(task.id) && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onDeleteTask(task.id);
-                  }
-                }}
-              >
-                ×
-              </button>
+                  }}
+                  className="delete-task-btn"
+                  aria-label={`Delete "${task.text}"`}
+                  title="Delete task"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      onDeleteTask(task.id);
+                    }
+                  }}
+                >
+                  ×
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -246,6 +367,7 @@ TaskList.propTypes = {
   onToggleTask: PropTypes.func.isRequired,
   onDeleteTask: PropTypes.func.isRequired,
   onUpdateTime: PropTypes.func.isRequired,
+  onUpdateTaskText: PropTypes.func.isRequired,
   currentTime: PropTypes.string,
 };
 

@@ -34,7 +34,28 @@ const ProblemCard = ({
       : problem.pattern;
 
   return (
-    <div className={cardClasses}>
+    <div
+      className={cardClasses}
+      onClick={() => {
+        // Mouse click on card opens the problem link
+        if (problem.problemLink) {
+          window.open(problem.problemLink, "_blank", "noopener,noreferrer");
+        }
+      }}
+      role="button" // Indicate it's interactive
+      tabIndex={0} // Make it focusable
+      onKeyDown={(e) => {
+        // "Enter" or "Space" key press on card toggles completion
+        if (e.key === "Enter" || e.key === " ") {
+          if (e.target === e.currentTarget) {
+            // Ensure event is directly on this div
+            e.preventDefault();
+            // Main card keydown now opens the problem link
+            onToggleComplete(problem.id); // Toggle completion on Enter/Space
+          }
+        }
+      }}
+    >
       <div className="problem-main-content">
         <h3 className="problem-title">
           {problem.problemLink ? (
@@ -43,6 +64,10 @@ const ProblemCard = ({
               target="_blank"
               rel="noopener noreferrer"
               className="problem-title-link"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent card's main navigation onClick
+                // Link will navigate on its own
+              }}
             >
               {problem.title}
             </a>
@@ -51,9 +76,7 @@ const ProblemCard = ({
           )}
         </h3>
         <div className="problem-meta-tags">
-          <span
-            className={`problem-difficulty difficulty-${normalizedDifficulty.toLowerCase()}`}
-          >
+          <span className={`problem-difficulty ${difficultyClass}`}>
             {normalizedDifficulty}
           </span>
           {displayedPattern && (
@@ -64,20 +87,22 @@ const ProblemCard = ({
           <p className="problem-subtopic">SubTopic: {problem.subTopic}</p>
         )}
       </div>
-      <div className="problem-meta">
+      <div className="problem-meta" onClick={(e) => e.stopPropagation()}>
         <label
           htmlFor={`complete-${problem.id}`}
           className={`problem-complete-toggle ${
             problem.isCompleted ? "completed" : "" // Use isCompleted
           }`}
+          onClick={(e) => e.stopPropagation()} // Prevent card's main navigation onClick
         >
           <input
             type="checkbox"
             id={`complete-${problem.id}`}
             checked={!!problem.isCompleted} // Use isCompleted
-            onChange={() => onToggleComplete(problem.id)}
+            onChange={() => onToggleComplete(problem.id)} // Checkbox change directly toggles
           />
-          {problem.isCompleted ? "✓ Completed" : "Mark as Complete"} {/* Use isCompleted */}
+          {problem.isCompleted ? "✓ Completed" : "Mark as Complete"}{" "}
+          {/* Use isCompleted */}
         </label>
         {problem.explanationLink && (
           <a
@@ -85,6 +110,7 @@ const ProblemCard = ({
             target="_blank"
             rel="noopener noreferrer"
             className="btn-secondary-outline" // Ensure 'btn-secondary-outline' class is styled
+            onClick={(e) => e.stopPropagation()} // Prevent card's main navigation onClick
           >
             Explanation
           </a>
