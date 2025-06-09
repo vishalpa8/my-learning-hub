@@ -8,8 +8,7 @@ import {
   DSA_COMPLETED_PROBLEMS_KEY,
   DSA_LAST_ACTIVE_VIEW_KEY,
   DSA_STREAK_KEY,
-  DSA_LAST_VISITED_VIEW_DATES_KEY, // New key for last visited dates
-  // CHESS_LEARNING_PROGRESS_KEY, // No longer needed here
+  DSA_LAST_VISITED_VIEW_DATES_KEY, 
 } from "../constants/localStorageKeys";
 import {
   groupAndSortProblemsByTopic, // Use this for the primary view
@@ -22,6 +21,7 @@ import {
 import "../styles/DsaStyles.css";
 import ProblemListView from "../components/dsa/ProblemListView";
 
+// Define viewOptions outside the component as it's constant
 const viewOptions = [
   { key: "dashboard", label: "Dashboard", icon: "📊" },
   { key: "all", label: "All Problems", icon: "📚" },

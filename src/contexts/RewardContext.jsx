@@ -16,9 +16,9 @@ const REWARDS = [
   "Go and drink or eat anything of your like",
 ];
 /** The number of newly completed DSA questions required to contribute to a reward. */
-const DSA_QUESTIONS_THRESHOLD = 5; // Example: 3 DSA problems
+const DSA_QUESTIONS_THRESHOLD = 5; // Example: 5 DSA problems
 /** The number of newly completed Chess videos required to contribute to a reward. */
-const CHESS_VIDEOS_THRESHOLD = 6; // Example: 2 Chess videos
+const CHESS_VIDEOS_THRESHOLD = 6; // Example: 6 Chess videos
 
 /**
  * @typedef {object} RewardTracker
@@ -31,8 +31,7 @@ const CHESS_VIDEOS_THRESHOLD = 6; // Example: 2 Chess videos
  * @property {boolean} rewardPending - Flag indicating if a reward has been determined and is waiting to be shown.
  * @property {string} pendingMessage - The message for the pending reward.
  */
-// The RewardContext object is now imported from './useReward.js'.
-// Consumers will import the useReward hook directly from './useReward.js'.
+
 /**
  * Provides reward-related state and functions to its children.
  * Manages modal visibility, reward messages, and the logic for triggering rewards
@@ -59,11 +58,12 @@ export const RewardProvider = ({ children }) => {
   );
 
   /**
-   * Helper function to handle the logic for triggering a reward.
+   * Handles the logic for triggering a reward: selects a message, updates available rewards,
+   * and sets the reward as pending.
    * @param {RewardTracker} tracker - The current reward tracker state.
    * @returns {RewardTracker} The updated reward tracker state after triggering a reward.
    */
-  const triggerRewardLogic = (tracker) => {
+  const triggerRewardLogic = useCallback((tracker) => {
     let rewardsPool = [...tracker.availableRewards];
     if (rewardsPool.length === 0) {
       rewardsPool = [...REWARDS]; // Replenish if empty
@@ -82,7 +82,24 @@ export const RewardProvider = ({ children }) => {
       rewardPending: true,
       pendingMessage: selectedMessage,
     };
-  };
+  }, []); // REWARDS is a module-level constant, so no dependencies needed.
+
+  /**
+   * Checks if the combined reward threshold is met and triggers the reward logic if so.
+   * @param {RewardTracker} tracker - The current reward tracker state.
+   * @param {string} source - The source of the progress update (e.g., "DSA", "Chess").
+   * @returns {RewardTracker} The potentially updated reward tracker state.
+   */
+  const checkAndTriggerCombinedReward = useCallback((tracker, source) => {
+      if (
+        tracker.completedSinceLastRewardDSA >= DSA_QUESTIONS_THRESHOLD &&
+        tracker.completedSinceLastRewardChess >= CHESS_VIDEOS_THRESHOLD
+      ) {
+        console.log(`[RewardContext] ${source} Update: THRESHOLD MET! Triggering reward.`);
+        return triggerRewardLogic(tracker);
+      }
+      return tracker;
+    }, [triggerRewardLogic]);
 
   /**
    * Records the progress of completed DSA problems and checks if a combined reward should be triggered.
@@ -113,23 +130,10 @@ export const RewardProvider = ({ children }) => {
             };
           }
         }
-
-        // Check for combined reward
-        if (
-          updatedTracker.completedSinceLastRewardDSA >=
-            DSA_QUESTIONS_THRESHOLD &&
-          updatedTracker.completedSinceLastRewardChess >= CHESS_VIDEOS_THRESHOLD
-        ) {
-          console.log(
-            "[RewardContext] DSA Update: THRESHOLD MET! Triggering reward."
-          );
-          return triggerRewardLogic(updatedTracker);
-        }
-        // console.log("[RewardContext] DSA Update: Threshold NOT met. DSA Progress:", updatedTracker.completedSinceLastRewardDSA, "Chess Progress:", updatedTracker.completedSinceLastRewardChess);
-        return updatedTracker;
+        return checkAndTriggerCombinedReward(updatedTracker, "DSA");
       });
     },
-    [setRewardTracker]
+    [setRewardTracker, checkAndTriggerCombinedReward]
   );
 
   /**
@@ -164,23 +168,10 @@ export const RewardProvider = ({ children }) => {
             };
           }
         }
-
-        // Check for combined reward
-        if (
-          updatedTracker.completedSinceLastRewardDSA >=
-            DSA_QUESTIONS_THRESHOLD &&
-          updatedTracker.completedSinceLastRewardChess >= CHESS_VIDEOS_THRESHOLD
-        ) {
-          console.log(
-            "[RewardContext] Chess Update: THRESHOLD MET! Triggering reward."
-          );
-          return triggerRewardLogic(updatedTracker);
-        }
-        // console.log("[RewardContext] Chess Update: Threshold NOT met. DSA Progress:", updatedTracker.completedSinceLastRewardDSA, "Chess Progress:", updatedTracker.completedSinceLastRewardChess);
-        return updatedTracker;
+        return checkAndTriggerCombinedReward(updatedTracker, "Chess");
       });
     },
-    [setRewardTracker]
+    [setRewardTracker, checkAndTriggerCombinedReward]
   );
 
   // Effect to display the modal when a reward is pending.
@@ -207,8 +198,8 @@ export const RewardProvider = ({ children }) => {
     isModalVisible,
     modalMessage,
     closeRewardModal,
-    recordDsaProgress, // Expose new function
-    recordChessProgress, // Expose new function
+    recordDsaProgress,
+    recordChessProgress,
   };
 
   return (

@@ -1,8 +1,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import ProgressBarDisplay from "../components/shared/ProgressBarDisplay";
-// VVVV 1. CORRECT THE IMPORT HERE VVVV
-import { useIndexedDb, db } from "../hooks/useIndexedDb";
+import { useIndexedDb, clearEntireDatabase } from "../hooks/useIndexedDb"; // Assumes clearEntireDatabase is exported from your hook module
 import {
   DSA_COMPLETED_PROBLEMS_KEY,
   CHESS_LEARNING_PROGRESS_KEY,
@@ -24,14 +23,10 @@ const HomePage = () => {
 
   const chessProgress = useMemo(() => {
     const completed = Object.keys(completedChessVideos || {}).length;
-    let total = 0;
-    if (playlistVideoData) {
-      Object.values(playlistVideoData).forEach((playlist) => {
-        if (playlist && Array.isArray(playlist.videos)) {
-          total += playlist.videos.length;
-        }
-      });
-    }
+    const total = Object.values(playlistVideoData || {}).reduce(
+      (acc, playlist) => acc + (playlist?.videos?.length || 0),
+      0
+    );
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { completed, total, percent };
   }, [completedChessVideos]);
@@ -44,9 +39,8 @@ const HomePage = () => {
     ) {
       try {
         console.log("[Reset] Attempting to delete the IndexedDB database...");
-        
-        // VVVV 2. CORRECT THE FUNCTION CALL HERE VVVV
-        await db.delete();
+
+        await clearEntireDatabase();
 
         console.log(
           "[Reset] IndexedDB database deleted successfully. Reloading page..."
@@ -189,7 +183,6 @@ const HomePage = () => {
   );
 };
 
-
 const ProgressCard = ({ icon, title, completed, total, percent, link }) => (
   <div className="progress-card">
     <div className="progress-card-header">
@@ -207,7 +200,6 @@ const ProgressCard = ({ icon, title, completed, total, percent, link }) => (
     </Link>
   </div>
 );
-
 
 const QuickLinkCard = ({ title, description, href, cta, icon }) => (
   <div className="quick-link-card">

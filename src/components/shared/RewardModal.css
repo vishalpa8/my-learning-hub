@@ -107,7 +107,7 @@
   background-color: var(--primary-color-dark);
   border-color: var(--primary-color-dark);
   outline: 2px solid var(--primary-color-light); /* Example focus style */
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 /* Responsive: modal fits smaller screens */

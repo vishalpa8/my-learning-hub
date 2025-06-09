@@ -1,15 +1,36 @@
 import { useState, useEffect, useCallback, useDebugValue, useRef } from "react";
-import Dexie from 'dexie';
+import Dexie from "dexie";
 
 // --- Dexie Database Setup ---
-// This db instance is exported so it can be used for global operations, like a full reset.
-export const db = new Dexie('keyval-db');
+// Keep db instance module-local. Export functions for specific global operations.
+const db = new Dexie("keyval-db");
 db.version(1).stores({
   // We will store items as {id: key, value: data}.
   // The 'id' field is our primary key (the string key we pass to the hook).
-  'keyval-store': 'id'
+  "keyval-store": "id",
 });
 
+/**
+ * Clears the entire IndexedDB database used by this hook.
+ * @async
+ */
+export async function clearEntireDatabase() {
+  if (typeof window === "undefined") {
+    console.warn(
+      "[useIndexedDb] clearEntireDatabase called in a non-browser environment."
+    );
+    return;
+  }
+  try {
+    await db.delete();
+    console.log(
+      "[useIndexedDb] Database cleared successfully. You may need to reload the page for changes to fully apply if the DB was in use."
+    );
+  } catch (error) {
+    console.error("[useIndexedDb] Error clearing database:", error);
+    throw error; // Re-throw to allow callers to handle if needed
+  }
+}
 
 // --- The Final, Stable useIndexedDb Hook ---
 
@@ -37,7 +58,7 @@ export function useIndexedDb(key, defaultValue) {
     const fetchValue = async () => {
       try {
         // Dexie automatically handles opening the database.
-        const storedRecord = await db['keyval-store'].get(key);
+        const storedRecord = await db["keyval-store"].get(key);
         if (storedRecord) {
           // If we find data, we update our state with it.
           setValue(storedRecord.value);
@@ -49,7 +70,6 @@ export function useIndexedDb(key, defaultValue) {
 
     fetchValue();
   }, [key]);
-
 
   // --- EFFECT 2: Write state changes to IndexedDB ---
   // This effect runs whenever `value` changes.
@@ -63,7 +83,7 @@ export function useIndexedDb(key, defaultValue) {
 
     const saveValue = async () => {
       try {
-        await db['keyval-store'].put({ id: key, value });
+        await db["keyval-store"].put({ id: key, value });
       } catch (error) {
         console.error(`[useIndexedDb] Error saving for key "${key}":`, error);
       }
@@ -71,7 +91,6 @@ export function useIndexedDb(key, defaultValue) {
 
     saveValue();
   }, [key, value]);
-
 
   /**
    * Provides a STABLE setter function that updates the component's state.

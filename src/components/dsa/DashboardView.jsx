@@ -16,7 +16,8 @@ import ProgressBarDisplay from "../shared/ProgressBarDisplay"; // Import the reu
 const DashboardView = ({ overallProgress, totalProblems, streakData }) => {
   const { completed: completedProblems } = overallProgress;
 
-  const { currentStreak } = streakData || { currentStreak: 0 }; // Default to 0 if streakData is not available
+  // Destructure with defaults to handle cases where streakData might be null or undefined
+  const { currentStreak = 0, lastCompletionDate = null } = streakData || {};
 
   return (
     // Added className="dashboard-view" to apply the main flex layout from DsaStyles.css
@@ -43,8 +44,24 @@ const DashboardView = ({ overallProgress, totalProblems, streakData }) => {
       {/* New section for Streak Data */}
       <section id="dashboard-streak" className="dashboard-card">
         <h3>Current Streak 🔥</h3>
-        <p>{currentStreak} Day{currentStreak !== 1 ? 's' : ''}</p>
-        {/* You could add lastCompletionDate here if desired */}
+        {currentStreak > 0 ? (
+          <p>
+            {currentStreak} Day{currentStreak !== 1 ? "s" : ""}
+          </p>
+        ) : (
+          <p>No current streak. Solve a problem today to start one!</p>
+        )}
+        {lastCompletionDate && currentStreak > 0 && (
+          <p
+            style={{
+              fontSize: "0.85em",
+              color: "var(--text-muted-color)",
+              marginTop: "var(--spacing-xs)",
+            }}
+          >
+            Last completion: {lastCompletionDate}
+          </p>
+        )}
       </section>
 
       {/* Placeholder for other dashboard elements */}

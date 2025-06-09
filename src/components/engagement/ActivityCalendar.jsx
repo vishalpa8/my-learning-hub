@@ -49,7 +49,11 @@ function getDayProps(day, selectedDay, onDayClick, year, month, activity) {
     }
     // Robust today check (local)
     const today = new Date();
-    const todayStr = getDateStr(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayStr = getDateStr(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
     if (dateStr === todayStr) className += " today";
   }
 
@@ -164,11 +168,11 @@ const ActivityCalendar = ({
         </div>
         <div className="activity-legend">
           <div className="activity-legend-title">Legend:</div>
-          <LegendItem colorClass="high" label="3+ tasks completed" />
-          <LegendItem colorClass="medium" label="2 tasks completed" />
-          <LegendItem colorClass="low" label="1 task completed" />
-          <LegendItem colorClass="worked" label="Activity (worked)" />
-          <LegendItem colorClass="none" label="No activity" />
+          <LegendItem colorClass="activity-high" label="3+ tasks completed" />
+          <LegendItem colorClass="activity-medium" label="2 tasks completed" />
+          <LegendItem colorClass="activity-low" label="1 task completed" />
+          <LegendItem colorClass="activity-worked" label="Activity (worked)" />
+          <LegendItem colorClass="no-activity" label="No activity" />
           <LegendItem colorClass="today-indicator" label="Today" />
         </div>
       </div>

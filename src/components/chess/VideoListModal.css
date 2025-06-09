@@ -51,6 +51,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: inline-block; /* Ensures it doesn't take full width if link is shorter */
+  max-width: 100%; /* Prevents overflow if link itself is too long */
+}
+
+.video-list-modal-content .modal-header .modal-playlist-title-link {
+  text-decoration: none; /* Remove default underline */
+  color: inherit; /* Inherit color from h2 */
+}
+.video-list-modal-content .modal-header .modal-playlist-title-link:hover h2,
+.video-list-modal-content .modal-header .modal-playlist-title-link:focus-visible h2 {
+  text-decoration: underline; /* Underline on hover/focus for the h2 text */
+  color: var(--primary-color-dark, var(--primary-color)); /* Darken on hover/focus */
 }
 
 .video-list-modal-content .close-button {
@@ -59,6 +71,15 @@
   font-size: var(--font-size-icon); /* Use theme variable */
   cursor: pointer;
   color: var(--text-muted-color);
+}
+.video-list-modal-content .close-button:hover,
+.video-list-modal-content .close-button:focus-visible {
+  color: var(--primary-color); /* Or var(--danger-color) */
+  outline: none; /* Remove default if adding custom */
+}
+.video-list-modal-content .close-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary-color-xlight, #e0e0e0); /* Example focus ring */
+  border-radius: var(--border-radius-sm); /* Optional: if you want rounded focus */
 }
 
 .video-list-modal-content .modal-body {
@@ -87,6 +108,9 @@
 .chess-video-item-modal:hover,
 .chess-video-item-modal:focus-visible {
   background-color: var(--light-bg-color); /* Use theme variable, matches fallback */
+}
+.chess-video-item-modal.completed {
+  background-color: var(--background-color-subtle, #f8fafd); /* Subtle background for completed items */
 }
 .chess-video-item-modal.completed .video-title-modal {
   text-decoration: line-through;

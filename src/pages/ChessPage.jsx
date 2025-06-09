@@ -29,16 +29,6 @@ const ChessPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
-  useEffect(() => {
-    // When chess videos change, record chess progress for rewards.
-    // The RewardContext will handle the combined logic.
-    const totalChessCompleted =
-      Object.values(completedVideos).filter(Boolean).length;
-    if (recordChessProgress) {
-      recordChessProgress(totalChessCompleted);
-    }
-  }, [completedVideos, recordChessProgress]);
-
   const allVideos = useMemo(
     () =>
       structuredChessData.flatMap((stage) =>
@@ -52,6 +42,14 @@ const ChessPage = () => {
       calculateProgress(allVideos, completedVideos, (video) => video.globalId),
     [allVideos, completedVideos]
   );
+
+  useEffect(() => {
+    // When overall chess progress (specifically completed count) changes, record it for rewards.
+    // The RewardContext will handle the combined logic.
+    if (recordChessProgress && overallProgress) {
+      recordChessProgress(overallProgress.completed);
+    }
+  }, [overallProgress, recordChessProgress]); // Depends on overallProgress which in turn depends on completedVideos
 
   const nextPlaylist = useMemo(
     () =>

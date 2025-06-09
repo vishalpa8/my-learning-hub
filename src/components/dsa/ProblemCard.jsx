@@ -93,7 +93,6 @@ const ProblemCard = ({
           className={`problem-complete-toggle ${
             problem.isCompleted ? "completed" : "" // Use isCompleted
           }`}
-          onClick={(e) => e.stopPropagation()} // Prevent card's main navigation onClick
         >
           <input
             type="checkbox"

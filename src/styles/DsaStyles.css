@@ -1,6 +1,5 @@
 /* --- DSA PAGE MODERN REDESIGN --- */
 
-
 /* Layout */
 .dsa-page-outer {
   max-width: var(--container-max-width);
@@ -101,7 +100,7 @@
   background: linear-gradient(90deg, #90c2ff 0%, #43e97b 100%);
   /* #90c2ff is light blue, #43e97b is green */
   border-radius: 7px;
-  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.10) inset;
+  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.1) inset;
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -109,7 +108,7 @@
 .dsa-progress-bar::-moz-progress-bar {
   background: linear-gradient(90deg, #90c2ff 0%, #43e97b 100%);
   border-radius: 7px;
-  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.10) inset;
+  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.1) inset;
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -117,7 +116,7 @@
 .dsa-progress-bar::-ms-fill {
   background: linear-gradient(90deg, #90c2ff 0%, #43e97b 100%);
   border-radius: 7px;
-  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.10) inset;
+  box-shadow: 0 1px 4px 0 rgba(40, 60, 90, 0.1) inset;
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -125,10 +124,17 @@
 .dsa-progress-bar::after {
   content: "";
   position: absolute;
-  left: 0; top: 0; right: 0; bottom: 0;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
   border-radius: 7px;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.03) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.13) 0%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
 }
 
 .dsa-nav-tabs {
@@ -164,11 +170,6 @@
     0 0 0 2px var(--primary-color-light, #b3d8ff); /* Added focus ring */
 }
 
-/* Main Content */
-.dsa-main-content-wrapper {
-  /* Added wrapper for potential outer spacing/styling */
-  /* Example: margin-top: var(--spacing-lg); */
-}
 .dsa-main-section {
   margin-top: 0; /* Assuming .dsa-hero provides top margin */
   padding: 2.2rem 1.5rem;
@@ -342,7 +343,8 @@
   margin-bottom: var(--spacing-md);
 }
 
-.stats-subheader { /* New class for subheaders within the stats tile */
+.stats-subheader {
+  /* New class for subheaders within the stats tile */
   font-size: var(--font-size-md); /* Slightly smaller than the main h4 */
   color: var(--text-color-strong);
   margin-top: var(--spacing-md); /* Add some space above subheaders */
@@ -366,7 +368,6 @@
   max-width: 380px; /* Max width for the pie chart area */
   width: 100%;
 }
-
 
 /* Problem Card - Mark as Complete Toggle Enhancement */
 .problem-complete-toggle {
@@ -494,9 +495,9 @@
 /* In DsaStyles.css */
 .chart-wrapper {
   position: relative; /* Keep position relative for potential absolute positioned elements inside */
-  height: var(--chart-height); 
+  height: var(--chart-height);
   width: 100%;
-  max-width: var(--chart-max-width); 
+  max-width: var(--chart-max-width);
   margin: var(--spacing-sm) auto 0; /* Use existing spacing variable for top margin */
 }
 
@@ -547,7 +548,8 @@
   right: 0;
   height: 5px; /* Thickness of the accent */
   background-color: var(
-    --primary-color, #007bff
+    --primary-color,
+    #007bff
   ); /* Or a specific accent color per card type */
   opacity: 0.8;
 }

@@ -6,7 +6,6 @@ import {
   ENGAGEMENT_TASKS_KEY,
   ENGAGEMENT_ACTIVITY_KEY,
 } from "../constants/localStorageKeys";
-// VVVV 1. CORRECT THE IMPORT HERE VVVV
 import { useIndexedDb } from "../hooks/useIndexedDb";
 import "../components/engagement/EngagementPage.css";
 
@@ -47,7 +46,7 @@ const EngagementPage = () => {
 
   // Derive activity data if it's not present in the DB
   useEffect(() => {
-    if (tasks.length > 0 && Object.keys(activityData).length === 0) {
+    if (tasks && tasks.length > 0 && Object.keys(activityData).length === 0) {
       setActivityData(deriveActivityDataFromTasks(tasks));
     }
   }, [tasks, activityData, setActivityData]);
