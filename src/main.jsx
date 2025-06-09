@@ -7,8 +7,6 @@ import './index.css'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {/* 2. Wrap App and add the basename */}
-    <BrowserRouter basename="/my-learning-hub/">
       <App />
-    </BrowserRouter>
   </React.StrictMode>,
 )
