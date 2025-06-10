@@ -104,7 +104,9 @@
     --spacing-xl,
     /* Use larger spacing if defined, fallback to lg */ var(--spacing-lg)
   );
-  background: var(--background-color); /* Changed from --glass-bg for a solid look */
+  background: var(
+    --background-color
+  ); /* Changed from --glass-bg for a solid look */
   box-shadow: var(--shadow-elevate); /* Using global shadow from index.css. */
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--border-color-soft, #e3eaf5); /* Added border for solid look */
@@ -243,7 +245,6 @@
   gap: var(--spacing-sm); /* Space between items in the footer */
 }
 
-
 .elo-stage-header {
   /* Header for an ELO stage section. */
   display: flex;
@@ -296,8 +297,10 @@
      It should use class="card playlist-card" in HTML to inherit base .card styles. */
   background: var(--background-color); /* Solid background */
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--box-shadow); /* Using standard card shadow for consistency */
-  border: 1px solid var(--border-color-soft,#e3eaf5);
+  box-shadow: var(
+    --box-shadow
+  ); /* Using standard card shadow for consistency */
+  border: 1px solid var(--border-color-soft, #e3eaf5);
   padding: var(--spacing-lg);
   display: flex;
   flex-direction: column; /* Stacks card content vertically. */
@@ -313,7 +316,9 @@
 }
 .playlist-card:hover {
   background: var(--light-bg-color, #f9f9f9);
-  box-shadow: var(--box-shadow-lg); /* Enhanced shadow on hover, consistent with global .card:hover */
+  box-shadow: var(
+    --box-shadow-lg
+  ); /* Enhanced shadow on hover, consistent with global .card:hover */
   border-color: var(--primary-color);
   transform: translateY(-2px); /* Subtle lift effect */
 }
@@ -329,7 +334,9 @@
 .playlist-card h3 {
   /* Assumes h3 base styles from index.css. */
   margin: 0 0 var(--spacing-xs) 0; /* Margin below the title. */
-  color: var(--primary-color-dark); /* Darker primary for better contrast on light card */
+  color: var(
+    --primary-color-dark
+  ); /* Darker primary for better contrast on light card */
   white-space: normal; /* Ensure text wraps. */
   overflow-wrap: break-word; /* Allow long words to break and wrap. */
 }
@@ -343,7 +350,10 @@
   border-radius: var(--border-radius); /* Global radius from index.css. */
   padding: 0.6em 1.3em; /* Custom padding for this button type. */
   background: var(--primary-color);
-  color: var(--light-color, #fff); /* Standard white text for primary buttons. */
+  color: var(
+    --light-color,
+    #fff
+  ); /* Standard white text for primary buttons. */
   border: none; /* These buttons were borderless in the original chess CSS. */
   box-shadow: var(--box-shadow-sm); /* Global small shadow from index.css. */
   text-align: center;
@@ -368,7 +378,10 @@
 }
 .playlist-card .btn-view-videos:disabled {
   background-color: var(--text-muted-color);
-  color: rgba(var(--light-color-rgb, 255, 255, 255), 0.7); /* Use RGB var if available */
+  color: rgba(
+    var(--light-color-rgb, 255, 255, 255),
+    0.7
+  ); /* Use RGB var if available */
   cursor: not-allowed;
   transform: none;
   box-shadow: var(--box-shadow-sm);
@@ -415,7 +428,6 @@
   transform: translateY(-2px);
 }
 
-
 .video-list-modal .video-list-item {
   /* An item in a list of videos, typically within a modal. */
   display: flex;
@@ -461,7 +473,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--border-radius-sm);
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .video-list-modal .video-toggle:hover,
@@ -475,7 +488,10 @@
   white-space: normal;
   padding: var(--spacing-md);
   margin-block: var(var(--spacing-md));
-  background-color: var(--background-color-subtle, #eaf1fb); /* More subtle background */
+  background-color: var(
+    --background-color-subtle,
+    #eaf1fb
+  ); /* More subtle background */
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color-light);
 }
@@ -589,7 +605,8 @@
   padding: var(--spacing-md);
   transition: background var(--transition-fast);
   /* Ensure overlay fades in smoothly */
-  opacity: 0; animation: modalOverlayFadeIn 0.3s var(--easing-cubic) forwards;
+  opacity: 0;
+  animation: modalOverlayFadeIn 0.3s var(--easing-cubic) forwards;
 }
 
 .video-list-modal {
@@ -602,14 +619,21 @@
   width: 100%;
   max-width: 700px;
   /* Ensure modal content animates in smoothly */
-  opacity: 0; transform: translateY(20px); animation: modalContentFadeIn 0.4s 0.1s var(--easing-cubic) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: modalContentFadeIn 0.4s 0.1s var(--easing-cubic) forwards;
 }
 
 @keyframes modalOverlayFadeIn {
-  to { opacity: 1; }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes modalContentFadeIn {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .video-list-modal h2 {
@@ -636,7 +660,10 @@
 .video-list-modal .btn-close-modal:hover,
 .video-list-modal .btn-close-modal:focus-visible {
   color: var(--primary-color);
-  background-color: var(--primary-color-xlight, #e7f3ff); /* Subtle background on hover */
+  background-color: var(
+    --primary-color-xlight,
+    #e7f3ff
+  ); /* Subtle background on hover */
 }
 
 /* =========================
@@ -648,7 +675,8 @@
     padding: var(--spacing-md);
   }
   .elo-stage-section, /* Assuming .card is applied in HTML */
-  .progress-section-tile { /* Assuming .card is applied in HTML */
+  .progress-section-tile {
+    /* Assuming .card is applied in HTML */
     padding: var(--spacing-md); /* Override global .card padding if needed */
   }
   .elo-stage-section .playlists-grid {
@@ -685,7 +713,8 @@
     gap: var(--spacing-sm);
     align-items: stretch;
   }
-  .chess-hero-actions .btn-action { /* Assuming .btn-primary is applied in HTML */
+  .chess-hero-actions .btn-action {
+    /* Assuming .btn-primary is applied in HTML */
     width: 100%;
   }
 }
@@ -697,7 +726,9 @@
   .elo-stage-section, /* Assuming .card is applied in HTML */
   .progress-section-tile, /* Assuming .card is applied in HTML */
   .playlist-card {
-    padding: var(--spacing-md); /* Consistent reduced padding for these card-like elements. */
+    padding: var(
+      --spacing-md
+    ); /* Consistent reduced padding for these card-like elements. */
   }
 }
 
