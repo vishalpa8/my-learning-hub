@@ -1,5 +1,7 @@
 // TaskList.jsx
+// TaskList.jsx
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import Modal from "../shared/Modal"; // Import the generic Modal
 import PropTypes from "prop-types";
 import "./EngagementPage.css";
 
@@ -19,20 +21,32 @@ const TaskList = ({
   onDeleteTask,
   onUpdateTime,
   onUpdateTaskText,
+  onViewTaskDetails,
   currentTime,
 }) => {
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskTime, setNewTaskTime] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
   const [userManuallySetNewTaskTime, setUserManuallySetNewTaskTime] =
     useState(false);
+  const [showNewTaskDescriptionInput, setShowNewTaskDescriptionInput] =
+    useState(false);
 
-  // State for combined text and time editing
+  // State for adding subtasks to a new task
+  const [showNewTaskSubtasksArea, setShowNewTaskSubtasksArea] = useState(false);
+  const [currentNewSubtaskText, setCurrentNewSubtaskText] = useState("");
+  const [newTasksSubtasks, setNewTasksSubtasks] = useState([]); // Holds subtasks for the task being created
+
   const [editingDetailsForTaskId, setEditingDetailsForTaskId] = useState(null);
   const [currentEditText, setCurrentEditText] = useState("");
   const [currentEditTime, setCurrentEditTime] = useState("");
 
+  // State for main task deletion confirmation
+  const [isConfirmDeleteTaskOpen, setIsConfirmDeleteTaskOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+
   const inputRef = useRef(null);
-  const editInputRef = useRef(null); // For the task text edit input
+  const editInputRef = useRef(null);
 
   const handleInputChange = useCallback(
     (e) => setNewTaskText(e.target.value),
@@ -42,25 +56,77 @@ const TaskList = ({
     setNewTaskTime(e.target.value);
     setUserManuallySetNewTaskTime(true);
   }, []);
+  const handleDescriptionChange = useCallback((e) => {
+    setNewTaskDescription(e.target.value);
+  }, []);
 
-  // Helper to reset combined editing state
   const resetEditDetailsState = useCallback(() => {
     setEditingDetailsForTaskId(null);
     setCurrentEditText("");
     setCurrentEditTime("");
   }, []);
 
+  const handleAddNewTaskSubtask = useCallback(() => {
+    const trimmedText = currentNewSubtaskText.trim();
+    if (trimmedText) {
+      setNewTasksSubtasks((prev) => [
+        ...prev,
+        { id: Date.now() + Math.random(), text: trimmedText, completed: false },
+      ]);
+      setCurrentNewSubtaskText("");
+    }
+  }, [currentNewSubtaskText]);
+
+  const clearNewTaskForm = useCallback(() => {
+    setNewTaskText("");
+    setNewTaskTime("");
+    setNewTaskDescription("");
+    setShowNewTaskDescriptionInput(false);
+    setShowNewTaskSubtasksArea(false);
+    setNewTasksSubtasks([]);
+    setUserManuallySetNewTaskTime(false);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  const handleNewSubtaskInputKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAddNewTaskSubtask();
+      }
+    },
+    [handleAddNewTaskSubtask]
+  );
+
+  const handleRemoveNewTaskSubtask = useCallback((subtaskId) => {
+    setNewTasksSubtasks((prev) => prev.filter((st) => st.id !== subtaskId));
+  }, []);
+
   const handleAddTaskSubmit = useCallback(
     (e) => {
       e.preventDefault();
       if (!newTaskText.trim()) return;
-      onAddTask({ text: newTaskText.trim(), time: newTaskTime });
-      setNewTaskText("");
-      setNewTaskTime("");
-      setUserManuallySetNewTaskTime(false);
-      inputRef.current?.focus();
+      onAddTask({
+        text: newTaskText.trim(),
+        time: newTaskTime,
+        description: showNewTaskDescriptionInput
+          ? newTaskDescription.trim()
+          : "",
+        subtasks: newTasksSubtasks,
+      });
+      clearNewTaskForm();
     },
-    [newTaskText, newTaskTime, onAddTask]
+    [
+      newTaskText,
+      newTaskTime,
+      newTaskDescription,
+      onAddTask,
+      showNewTaskDescriptionInput,
+      newTasksSubtasks,
+      clearNewTaskForm,
+    ]
   );
 
   useEffect(() => {
@@ -78,10 +144,27 @@ const TaskList = ({
     }
   }, [editingDetailsForTaskId]);
 
+  // Handle Escape key for the main new task input
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (
+        event.key === "Escape" &&
+        document.activeElement === inputRef.current
+      ) {
+        clearNewTaskForm();
+      }
+    };
+    const inputElement = inputRef.current; // Capture the current ref value
+    inputElement?.addEventListener("keydown", handleKeyDown);
+    return () => {
+      inputElement?.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [clearNewTaskForm]);
+
   const handleStartEditDetails = useCallback((task) => {
     setEditingDetailsForTaskId(task.id);
     setCurrentEditText(task.text);
-    setCurrentEditTime(task.time || ""); // Ensure time is a string
+    setCurrentEditTime(task.time || "");
   }, []);
 
   const handleCurrentEditTextChange = useCallback((e) => {
@@ -101,7 +184,6 @@ const TaskList = ({
         if (task.text !== trimmedText) {
           onUpdateTaskText(taskId, trimmedText);
         }
-        // Normalize currentEditTime to null if empty string for comparison and saving
         const timeToSave = currentEditTime || null;
         if (task.time !== timeToSave) {
           onUpdateTime(taskId, timeToSave);
@@ -141,16 +223,32 @@ const TaskList = ({
     [editingDetailsForTaskId, handleSaveEditDetails, handleCancelEditDetails]
   );
 
-  // Effect to add/remove global keydown listener for Enter/Escape during edit
   useEffect(() => {
     if (editingDetailsForTaskId) {
       document.addEventListener("keydown", handleEditFormKeyDown);
     } else {
       document.removeEventListener("keydown", handleEditFormKeyDown);
     }
-    // Cleanup listener on component unmount or when editingDetailsForTaskId changes
     return () => document.removeEventListener("keydown", handleEditFormKeyDown);
   }, [editingDetailsForTaskId, handleEditFormKeyDown]);
+
+  const requestDeleteTask = useCallback((task) => {
+    setTaskToDelete(task);
+    setIsConfirmDeleteTaskOpen(true);
+  }, []);
+
+  const confirmDeleteTask = useCallback(() => {
+    if (taskToDelete) {
+      onDeleteTask(taskToDelete.id);
+    }
+    setIsConfirmDeleteTaskOpen(false);
+    setTaskToDelete(null);
+  }, [taskToDelete, onDeleteTask]);
+
+  const cancelDeleteTask = useCallback(() => {
+    setIsConfirmDeleteTaskOpen(false);
+    setTaskToDelete(null);
+  }, []);
 
   return (
     <section className="improved-task-list card" aria-label="Today's Tasks">
@@ -189,6 +287,86 @@ const TaskList = ({
             aria-label="Set time for new task"
           />
         </div>
+
+        {/* Optional Fields Toggles - only show if there's main task text */}
+        {newTaskText.trim() &&
+          (!showNewTaskDescriptionInput || !showNewTaskSubtasksArea) && (
+            <div className="new-task-optional-actions">
+              {!showNewTaskDescriptionInput && (
+                <button
+                  type="button"
+                  onClick={() => setShowNewTaskDescriptionInput(true)}
+                  className="btn-outline btn-small add-optional-field-btn"
+                >
+                  + Description
+                </button>
+              )}
+              {!showNewTaskSubtasksArea && (
+                <button
+                  type="button"
+                  onClick={() => setShowNewTaskSubtasksArea(true)}
+                  className="btn-outline btn-small add-optional-field-btn"
+                >
+                  + Subtasks
+                </button>
+              )}
+            </div>
+          )}
+
+        {/* Description Input Area - appears when toggled */}
+        {showNewTaskDescriptionInput && newTaskText.trim() && (
+          <textarea
+            value={newTaskDescription}
+            onChange={handleDescriptionChange}
+            placeholder="Optional: Add a description..."
+            aria-label="Add a description for the new task"
+            className="task-description-input"
+            rows="3"
+          />
+        )}
+
+        {/* Subtask Input Area - appears when toggled */}
+        {showNewTaskSubtasksArea && newTaskText.trim() && (
+          <div className="new-task-subtasks-section">
+            <div className="new-task-subtask-input-group">
+              <input
+                type="text"
+                value={currentNewSubtaskText}
+                onChange={(e) => setCurrentNewSubtaskText(e.target.value)}
+                onKeyDown={handleNewSubtaskInputKeyDown}
+                placeholder="Enter subtask text and press Enter or click Add"
+                className="new-task-subtask-input"
+              />
+              <button
+                type="button"
+                onClick={handleAddNewTaskSubtask}
+                className="btn-secondary btn-small add-new-subtask-btn"
+                disabled={!currentNewSubtaskText.trim()}
+              >
+                Add
+              </button>
+            </div>
+            {newTasksSubtasks.length > 0 && (
+              <div className="new-task-subtasks-list-container">
+                <ul className="new-task-subtasks-list">
+                  {newTasksSubtasks.map((st) => (
+                    <li key={st.id}>
+                      <span>{st.text}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveNewTaskSubtask(st.id)}
+                        className="remove-new-subtask-btn"
+                        aria-label="Remove subtask"
+                      >
+                        &times;
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
         <button
           type="submit"
           disabled={!newTaskText.trim()}
@@ -220,7 +398,7 @@ const TaskList = ({
               key={task.id}
               className={`improved-task-list-li${
                 task.completed ? " completed" : ""
-              }${isEditingThisTask(task.id) ? " editing" : ""}`} // Add editing class for potential styling
+              }${isEditingThisTask(task.id) ? " editing" : ""}`}
             >
               {!isEditingThisTask(task.id) && (
                 <label className="check-container">
@@ -261,10 +439,9 @@ const TaskList = ({
                       type="time"
                       value={currentEditTime}
                       onChange={handleCurrentEditTimeChange}
-                      className="task-time-select-inline task-edit-time-select" // You might want to rename this class or adjust its styles
+                      className="task-time-select-inline task-edit-time-select"
                       aria-label={`Editing time for task: ${task.text}`}
                     />
-
                     <div className="task-edit-actions">
                       <button
                         onClick={() => handleSaveEditDetails(task.id)}
@@ -295,6 +472,31 @@ const TaskList = ({
                     }}
                   >
                     <span className="task-text">{task.text}</span>
+                    <div className="task-indicators">
+                      {task.description && (
+                        <span
+                          className="task-indicator-icon"
+                          title="Has description"
+                        >
+                          📝
+                        </span>
+                      )}
+                      {task.subtasks && task.subtasks.length > 0 && (
+                        <span
+                          className="task-indicator-icon"
+                          title={`${
+                            task.subtasks.filter((st) => st.completed).length
+                          }/${task.subtasks.length} subtasks completed`}
+                        >
+                          📋
+                          <span className="subtask-progress-indicator">
+                            {`${
+                              task.subtasks.filter((st) => st.completed).length
+                            }/${task.subtasks.length}`}
+                          </span>
+                        </span>
+                      )}
+                    </div>
                     <span
                       className="task-time-display"
                       aria-label={`Scheduled time: ${formatTime12Hour(
@@ -303,6 +505,7 @@ const TaskList = ({
                     >
                       {formatTime12Hour(task.time)}
                     </span>
+                    {/* Description and subtasks will be shown in a details modal */}
                   </div>
                 )}
               </div>
@@ -320,12 +523,24 @@ const TaskList = ({
                   ✏️
                 </button>
               )}
-
               {!isEditingThisTask(task.id) && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onDeleteTask(task.id);
+                    onViewTaskDetails(task.id);
+                  }}
+                  className="view-details-btn"
+                  aria-label={`View details for task "${task.text}"`}
+                  title="View task details"
+                >
+                  ℹ️
+                </button>
+              )}
+              {!isEditingThisTask(task.id) && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    requestDeleteTask(task); // Changed to request confirmation
                   }}
                   className="delete-task-btn"
                   aria-label={`Delete "${task.text}"`}
@@ -333,7 +548,7 @@ const TaskList = ({
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
-                      onDeleteTask(task.id);
+                      requestDeleteTask(task); // Changed to request confirmation
                     }
                   }}
                 >
@@ -350,6 +565,17 @@ const TaskList = ({
         </span>{" "}
         Click the checkbox to mark tasks as complete!
       </footer>
+
+      {/* Confirmation Modal for Deleting a Main Task */}
+      <Modal
+        isOpen={isConfirmDeleteTaskOpen}
+        onClose={cancelDeleteTask}
+        title="Delete Task"
+        isConfirmation={true}
+        confirmationMessage={`Are you sure you want to delete the task "${taskToDelete?.text}"? This action cannot be undone.`}
+        onConfirm={confirmDeleteTask}
+        confirmText="Delete"
+      />
     </section>
   );
 };
@@ -361,6 +587,8 @@ TaskList.propTypes = {
       text: PropTypes.string.isRequired,
       completed: PropTypes.bool.isRequired,
       time: PropTypes.string,
+      description: PropTypes.string,
+      subtasks: PropTypes.array,
     })
   ).isRequired,
   onAddTask: PropTypes.func.isRequired,
@@ -368,6 +596,7 @@ TaskList.propTypes = {
   onDeleteTask: PropTypes.func.isRequired,
   onUpdateTime: PropTypes.func.isRequired,
   onUpdateTaskText: PropTypes.func.isRequired,
+  onViewTaskDetails: PropTypes.func.isRequired,
   currentTime: PropTypes.string,
 };
 

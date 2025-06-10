@@ -1,0 +1,261 @@
+/* TaskDetailsModal.css */
+.task-details-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg); /* Good gap between major sections */
+  padding: var(--spacing-sm) var(--spacing-xs); /* Overall content padding */
+}
+
+.task-details-meta {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted-color);
+  margin-bottom: var(--spacing-lg); /* More space below meta */
+  padding-bottom: var(--spacing-md); /* More padding for the bottom border */
+  border-bottom: 1px solid var(--border-color-light);
+  word-break: break-word;
+}
+.task-details-meta strong {
+  color: var(--text-color);
+}
+
+.task-details-completed-status {
+  font-weight: var(--font-weight-bold);
+  color: var(--success-color);
+  margin-left: var(--spacing-xs);
+}
+
+.task-details-section h4 {
+  font-size: var(--font-size-h4, 1.1rem);
+  color: var(--primary-color-dark);
+  margin-top: var(--spacing-sm); /* Consistent top margin for sections */
+  margin-bottom: var(--spacing-md); /* More space below section headers */
+  border-bottom: 1px solid var(--border-color-light);
+  padding-bottom: var(--spacing-sm); /* More padding below header text */
+  letter-spacing: 0.01em;
+}
+
+/* Description Area */
+.description-display-area .description-text {
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm); /* More space below description text */
+  line-height: var(--line-height-base);
+  white-space: pre-wrap;
+  word-break: break-word;
+  background-color: var(--background-color-subtle);
+  padding: var(--spacing-md); /* Increased padding */
+  border-radius: var(--border-radius-sm);
+  min-height: 50px; /* Slightly increased min-height */
+}
+.description-display-area .text-muted {
+  font-style: italic;
+  padding: var(--spacing-sm); /* Add padding if "No description" */
+}
+.edit-description-btn {
+  margin-top: var(--spacing-xxs);
+  font-size: var(--font-size-sm);
+  /* Relies on global .btn-link styles from Modal.css */
+}
+
+.description-edit-area .task-details-textarea {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-base);
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: var(--spacing-sm);
+  min-height: 80px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+.description-edit-area .task-details-textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-ring);
+}
+
+.description-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.description-actions button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  min-width: 80px;
+  line-height: 1.3;
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Clear button (using .btn-warning as an example) */
+.description-actions .btn-warning {
+  background-color: transparent;
+  border: 1px solid var(--warning-color, #ffc107);
+  color: var(--warning-color-dark, #b37700);
+}
+.description-actions .btn-warning:hover {
+  background-color: var(--warning-color-xlight, #fff8e1);
+  border-color: var(--warning-color-dark, #b37700);
+  color: var(--warning-color-darker, #8c5e00);
+  box-shadow: var(--box-shadow-sm);
+}
+
+/* Cancel button (using .btn-secondary) */
+.description-actions .btn-secondary {
+  background-color: var(--background-color-muted, #f0f0f0);
+  border: 1px solid var(--border-color-light, #e0e0e0);
+  color: var(--text-color);
+}
+.description-actions .btn-secondary:hover {
+  background-color: var(--border-color-light, #e9e9e9);
+  border-color: var(--border-color-muted, #d0d0d0);
+  box-shadow: var(--box-shadow-sm);
+}
+
+/* Subtask Area */
+.subtask-add-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  align-items: center;
+}
+
+.subtask-add-form .subtask-input {
+  flex-grow: 1;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-base);
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+.subtask-add-form .subtask-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-ring);
+}
+.subtask-add-form .add-subtask-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  min-width: 80px;
+  line-height: 1.3;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  /* Assumes .btn-primary .btn-small are applied in JSX for base colors */
+}
+
+.subtask-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm);
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+  border-bottom: 1px dashed var(--border-color-extralight, #f0f0f0);
+}
+
+.subtask-item:last-child {
+  border-bottom: none;
+}
+
+.subtask-checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-grow: 1;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.subtask-checkbox-label input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.subtask-checkbox-label .custom-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--border-radius-sm);
+  border: 2px solid var(--border-color-light);
+  background: var(--background-color-subtle);
+  transition: border-color 0.18s, background 0.18s;
+  position: relative;
+  flex-shrink: 0;
+}
+.subtask-checkbox-label input[type="checkbox"]:focus + .custom-checkbox {
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-ring);
+}
+.subtask-checkbox-label input[type="checkbox"]:checked + .custom-checkbox {
+  border-color: var(--success-color);
+  background: var(--success-color-background);
+}
+.subtask-checkbox-label
+  input[type="checkbox"]:checked
+  + .custom-checkbox:after {
+  content: "";
+  display: block;
+  width: 7px;
+  height: 12px;
+  border: solid var(--success-color);
+  border-width: 0 2.5px 2.5px 0;
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.subtask-text {
+  flex-grow: 1;
+  line-height: var(--line-height-base);
+  word-break: break-word;
+  color: var(--text-color);
+}
+
+.subtask-item.completed .subtask-text {
+  text-decoration: line-through;
+  color: var(--text-muted-color);
+  opacity: 0.8;
+}
+
+.delete-subtask-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted-color);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+  padding: var(--spacing-xxs);
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.5;
+  border-radius: var(--border-radius-sm);
+  width: 28px; /* Consistent icon button size */
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-subtask-btn:hover {
+  color: var(--danger-color);
+  background-color: var(--danger-color-xxlight, #fff1f2);
+  opacity: 1;
+}
+
+.text-muted {
+  color: var(--text-muted-color);
+  font-style: italic;
+}

@@ -1,3 +1,4 @@
+// ActivityCalendar.jsx
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import "./EngagementPage.css";
@@ -27,9 +28,18 @@ function getDateStr(year, month, day) {
 }
 
 // Helper to get props for each day cell
-function getDayProps(day, selectedDay, onDayClick, year, month, activity) {
+function getDayProps(
+  day,
+  selectedDay,
+  onDayClick,
+  year,
+  month,
+  activity,
+  isCopyModeActive
+) {
   let className = "calendar-day";
   if (!day) className += " empty";
+  let cellStyle = !day ? { pointerEvents: "none" } : {};
   const dateStr = getDateStr(year, month, day);
 
   // Highlight selected day
@@ -37,7 +47,7 @@ function getDayProps(day, selectedDay, onDayClick, year, month, activity) {
 
   // Add activity coloring
   if (day) {
-    const act = activity?.[dateStr];
+    const act = activity && activity[dateStr]; // Ensure activity itself is not null/undefined
     if (act) {
       if (act.tasksCompleted >= 3) className += " activity-high";
       else if (act.tasksCompleted === 2) className += " activity-medium";
@@ -57,15 +67,20 @@ function getDayProps(day, selectedDay, onDayClick, year, month, activity) {
     if (dateStr === todayStr) className += " today";
   }
 
+  if (day && isCopyModeActive) {
+    cellStyle.cursor = "copy"; // Change cursor in copy mode
+  }
+
   return {
     className,
     onClick: day ? () => onDayClick && onDayClick(dateStr) : undefined,
     tabIndex: day ? 0 : -1,
     role: day ? "button" : undefined,
-    "aria-selected": day ? selectedDay === dateStr : undefined,
+    "aria-selected":
+      day && !isCopyModeActive ? selectedDay === dateStr : undefined,
     "aria-label": day ? dateStr : undefined,
     title: day ? dateStr : undefined,
-    style: !day ? { pointerEvents: "none" } : undefined,
+    style: cellStyle,
   };
 }
 
@@ -88,6 +103,9 @@ const ActivityCalendar = ({
   onToday,
   onDayClick,
   selectedDay,
+  isCopyModeActive = false,
+  showLegend = true,
+  showFooter = true,
 }) => {
   const monthLabel = useMemo(
     () =>
@@ -130,7 +148,8 @@ const ActivityCalendar = ({
                 onDayClick,
                 year,
                 month,
-                activity
+                activity,
+                isCopyModeActive // Pass it down
               );
               return (
                 <div key={i + daysOfWeek.length} {...cellProps}>
@@ -166,24 +185,34 @@ const ActivityCalendar = ({
             </button>
           </nav>
         </div>
-        <div className="activity-legend">
-          <div className="activity-legend-title">Legend:</div>
-          <LegendItem colorClass="activity-high" label="3+ tasks completed" />
-          <LegendItem colorClass="activity-medium" label="2 tasks completed" />
-          <LegendItem colorClass="activity-low" label="1 task completed" />
-          <LegendItem colorClass="activity-worked" label="Activity (worked)" />
-          <LegendItem colorClass="no-activity" label="No activity" />
-          <LegendItem colorClass="today-indicator" label="Today" />
-        </div>
+        {showLegend && (
+          <div className="activity-legend">
+            <div className="activity-legend-title">Legend:</div>
+            <LegendItem colorClass="activity-high" label="3+ tasks completed" />
+            <LegendItem
+              colorClass="activity-medium"
+              label="2 tasks completed"
+            />
+            <LegendItem colorClass="activity-low" label="1 task completed" />
+            <LegendItem
+              colorClass="activity-worked"
+              label="Activity (worked)"
+            />
+            <LegendItem colorClass="no-activity" label="No activity" />
+            <LegendItem colorClass="today-indicator" label="Today" />
+          </div>
+        )}
       </div>
-      <footer>
-        <p className="calendar-note">
-          View shows tasks or activity for this month.
-          <br />
-          <strong>Tip:</strong> Click or focus days for details. Complete more
-          to boost your streak and calendar colors!
-        </p>
-      </footer>
+      {showFooter && (
+        <footer>
+          <p className="calendar-note">
+            View shows tasks or activity for this month.
+            <br />
+            <strong>Tip:</strong> Click or focus days for details. Complete more
+            to boost your streak and calendar colors!
+          </p>
+        </footer>
+      )}
     </section>
   );
 };
@@ -201,7 +230,10 @@ ActivityCalendar.propTypes = {
   onNextMonth: PropTypes.func,
   onToday: PropTypes.func,
   onDayClick: PropTypes.func.isRequired,
-  selectedDay: PropTypes.string.isRequired,
+  selectedDay: PropTypes.string,
+  isCopyModeActive: PropTypes.bool,
+  showLegend: PropTypes.bool,
+  showFooter: PropTypes.bool,
 };
 
 export default React.memo(ActivityCalendar);
