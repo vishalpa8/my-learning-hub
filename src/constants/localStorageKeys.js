@@ -39,5 +39,10 @@ export const DSA_LAST_VISITED_VIEW_DATES_KEY = "dsaLastVisitedViewDates";
 
 /** Key for storing the user's daily tasks. Expected value: An array of task objects. */
 export const ENGAGEMENT_TASKS_KEY = "engagementTasks";
-/** Key for storing the user's daily activity data (tasks completed, worked days). Expected value: An object mapping dates (YYYY-MM-DD) to activity details. */
+/**
+ * Key for storing aggregated daily activity data.
+ * Useful for calendar views to quickly display daily engagement summaries.
+ * Expected value: An object mapping dates (string "YYYY-MM-DD") to activity summary objects.
+ * Example: `{"2023-10-27": { completedTasks: 3, totalTasks: 5, activityLevel: "medium" }}`
+ */
 export const ENGAGEMENT_ACTIVITY_KEY = "engagementActivity";

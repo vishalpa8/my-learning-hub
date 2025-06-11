@@ -7,50 +7,51 @@ import React, {
   useRef,
 } from "react";
 import PropTypes from "prop-types";
-import Modal from "../shared/Modal"; // Assuming you have a shared Modal component
+import Modal from "../shared/Modal";
 import ActivityCalendar from "./ActivityCalendar";
 
-// Returns YYYY-MM-DD for internal use
-const getTodayStrInternal = () => new Date().toISOString().split("T")[0];
-
-// Formats YYYY-MM-DD to DD-MM-YYYY for display
-const formatDateForDisplay = (dateStr_YYYY_MM_DD) => {
-  if (!dateStr_YYYY_MM_DD || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr_YYYY_MM_DD)) {
-    return dateStr_YYYY_MM_DD;
-  }
-  const [year, month, day] = dateStr_YYYY_MM_DD.split("-");
+// Returns DD-MM-YYYY for internal use
+const getTodayStrInternal = () => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, "0");
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const year = today.getFullYear();
   return `${day}-${month}-${year}`;
 };
 
 const CopyTaskModal = ({
   isOpen,
   onClose,
-  tasks,
-  targetDate,
+  allTasksByDate, // Renamed from 'tasks' to reflect new structure, keys are DD-MM-YYYY
+  targetDate, // DD-MM-YYYY
   onCopyTasks,
-  activityData,
+  activityData, // Keys are DD-MM-YYYY
 }) => {
-  const [sourceDate, setSourceDate] = useState(getTodayStrInternal());
+  const [sourceDate, setSourceDate] = useState(getTodayStrInternal()); // DD-MM-YYYY
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
   const [displayDate, setDisplayDate] = useState(() => new Date()); // For the modal's calendar
   const modalContentRef = useRef(null);
 
   // Filter tasks from the source date that are NOT already on the target date
   const selectableTasks = useMemo(() => {
-    if (!sourceDate || !targetDate || !tasks) return [];
+    if (!sourceDate || !targetDate || !allTasksByDate) return [];
 
-    const tasksOnSourceDate = tasks.filter((task) => task.date === sourceDate);
-    const existingTaskTextsOnTargetDate = new Set(
-      tasks
-        .filter((task) => task.date === targetDate)
-        .map((task) => task.text.trim().toLowerCase())
+    const tasksOnSourceDate = allTasksByDate[sourceDate] || []; // sourceDate is DD-MM-YYYY
+    const existingTaskTextsOnTargetDate = new Set( // Ensure task.text is a string before processing
+      (allTasksByDate[targetDate] || []) // targetDate is DD-MM-YYYY
+        .map((task) =>
+          typeof task.text === "string" ? task.text.trim().toLowerCase() : ""
+        )
     );
 
     return tasksOnSourceDate.filter(
-      (task) =>
+      (
+        task // Ensure task.text is a string before processing
+      ) =>
+        typeof task.text === "string" &&
         !existingTaskTextsOnTargetDate.has(task.text.trim().toLowerCase())
     );
-  }, [tasks, sourceDate, targetDate]);
+  }, [allTasksByDate, sourceDate, targetDate]);
 
   const handleToggleTaskSelection = useCallback((taskId) => {
     setSelectedTaskIds((prevSelected) => {
@@ -85,14 +86,16 @@ const CopyTaskModal = ({
   const handleCopyButtonClick = useCallback(() => {
     if (selectedTaskIds.size > 0) {
       const tasksToCopyDetails = Array.from(selectedTaskIds)
-        .map((id) => tasks.find((task) => task.id === id))
+        .map((id) =>
+          (allTasksByDate[sourceDate] || []).find((task) => task.id === id)
+        ) // Get from sourceDate's tasks
         .filter(Boolean);
 
       onCopyTasks(tasksToCopyDetails); // targetDate is already known by EngagementPage
       setSelectedTaskIds(new Set());
       onClose();
     }
-  }, [selectedTaskIds, tasks, onCopyTasks, onClose]);
+  }, [selectedTaskIds, allTasksByDate, sourceDate, onCopyTasks, onClose]);
 
   const handleCancel = useCallback(() => {
     setSelectedTaskIds(new Set());
@@ -101,19 +104,11 @@ const CopyTaskModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      const today = getTodayStrInternal();
-      setSourceDate(today);
-      setDisplayDate(
-        new Date(
-          today.split("-")[0],
-          today.split("-")[1] - 1,
-          today.split("-")[2]
-        )
-      );
+      const todayDateObj = new Date();
+      setDisplayDate(todayDateObj); // Set calendar view to current month/year
+      setSourceDate(getTodayStrInternal()); // Set selected source day to today (DD-MM-YYYY)
+
       setSelectedTaskIds(new Set());
-      // Focus the modal content for keyboard events after it's rendered.
-      // Using setTimeout ensures the focus call happens after the current rendering cycle.
-      // This is often necessary when an element's availability or focusability changes due to state updates.
       setTimeout(() => modalContentRef.current?.focus(), 0);
     }
   }, [isOpen]);
@@ -137,13 +132,16 @@ const CopyTaskModal = ({
   const handleGoToToday = useCallback(() => {
     const today = new Date();
     setDisplayDate(today);
-    setSourceDate(getTodayStrInternal());
+    setSourceDate(getTodayStrInternal()); // DD-MM-YYYY
   }, []);
 
-  const handleModalCalendarDayClick = useCallback((dateStr) => {
-    setSourceDate(dateStr);
+  const handleModalCalendarDayClick = useCallback((dateStr_DD_MM_YYYY) => {
+    setSourceDate(dateStr_DD_MM_YYYY);
+    // Update displayDate to reflect the month/year of the clicked date
+    const [day, month, year] = dateStr_DD_MM_YYYY.split("-").map(Number);
+    setDisplayDate(new Date(year, month - 1, day));
     setSelectedTaskIds(new Set());
-  }, []);
+  }, []); // State setters from useState are stable
 
   // Handle Enter key to copy if tasks are selected
   useEffect(() => {
@@ -153,7 +151,6 @@ const CopyTaskModal = ({
         handleCopyButtonClick();
       }
     };
-    // Listen on the document when the modal is open
     if (isOpen) {
       document.addEventListener("keydown", handleKeyDown);
     }
@@ -176,14 +173,14 @@ const CopyTaskModal = ({
         <div className="copy-task-modal-calendar">
           <h4>Select Source Date</h4>
           <ActivityCalendar
-            activity={activityData}
+            activity={activityData} // Keys are DD-MM-YYYY
             year={displayDate.getFullYear()}
             month={displayDate.getMonth()}
             onPrevMonth={handlePreviousMonth}
             onNextMonth={handleNextMonth}
             onToday={handleGoToToday}
-            selectedDay={sourceDate}
-            onDayClick={handleModalCalendarDayClick}
+            selectedDay={sourceDate} // DD-MM-YYYY
+            onDayClick={handleModalCalendarDayClick} // Expects DD-MM-YYYY
             showLegend={false}
             showFooter={false}
             isCopyModeActive={true} // Indicate that clicks are for selecting source
@@ -192,8 +189,7 @@ const CopyTaskModal = ({
 
         <div className="copy-task-modal-list">
           <h4>
-            Tasks on {formatDateForDisplay(sourceDate)} (Select to Copy to{" "}
-            {formatDateForDisplay(targetDate)})
+            Tasks on {sourceDate} (Select to Copy to {targetDate})
           </h4>
           {selectableTasks.length > 0 && (
             <div className="copy-task-select-all-action">
@@ -205,8 +201,7 @@ const CopyTaskModal = ({
           )}
           {selectableTasks.length === 0 ? (
             <p>
-              No tasks available on {formatDateForDisplay(sourceDate)} to copy
-              to {formatDateForDisplay(targetDate)}.
+              No tasks available on {sourceDate} to copy to {targetDate}.
             </p>
           ) : (
             <ul>
@@ -252,7 +247,7 @@ const CopyTaskModal = ({
 CopyTaskModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  tasks: PropTypes.array.isRequired,
+  allTasksByDate: PropTypes.object.isRequired, // Changed from tasks: PropTypes.array
   targetDate: PropTypes.string.isRequired,
   onCopyTasks: PropTypes.func.isRequired,
   activityData: PropTypes.object.isRequired,

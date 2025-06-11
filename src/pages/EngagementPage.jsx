@@ -1,6 +1,5 @@
 // EngagementPage.jsx
-// EngagementPage.jsx
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo} from "react";
 import TaskList from "../components/engagement/TaskList";
 import ActivityCalendar from "../components/engagement/ActivityCalendar";
 import {
@@ -11,43 +10,44 @@ import { useIndexedDb } from "../hooks/useIndexedDb";
 import "../components/engagement/EngagementPage.css";
 import CopyTaskModal from "../components/engagement/CopyTaskModal";
 import TaskDetailsModal from "../components/engagement/TaskDetailsModal";
+import { useLocation } from "react-router-dom"; // Import useLocation
 import Modal from "../components/shared/Modal"; // Import the generic Modal for confirmation
-
-// Returns YYYY-MM-DD for internal use
-const getTodayStrInternal = () => new Date().toISOString().split("T")[0];
-
-// Formats YYYY-MM-DD to DD-MM-YYYY for display
-const formatDateForDisplay = (dateStr_YYYY_MM_DD) => {
-  if (!dateStr_YYYY_MM_DD || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr_YYYY_MM_DD)) {
-    return dateStr_YYYY_MM_DD;
+// Helper to format a Date object to "DD-MM-YYYY" string
+const dateToDDMMYYYY = (dateObj) => {
+  if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
+    dateObj = new Date(); // Default to today if invalid date is passed
   }
-  const [year, month, day] = dateStr_YYYY_MM_DD.split("-");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
+  const year = dateObj.getFullYear();
   return `${day}-${month}-${year}`;
 };
 
-const deriveActivityDataFromTasks = (tasksArray) => {
-  const activity = {};
-  tasksArray.forEach((task) => {
-    if (task.date) {
-      if (!activity[task.date]) {
-        activity[task.date] = { tasksCompleted: 0, worked: false };
-      }
-      activity[task.date].worked = true;
-      if (task.completed) {
-        activity[task.date].tasksCompleted += 1;
-      }
-    }
-  });
-  return activity;
+/* formatDateForDisplay can be removed if selectedDay is always in the desired DD-MM-YYYY format for display
+const formatDateForDisplay = (dateStr_DD_MM_YYYY) => dateStr_DD_MM_YYYY;
+*/
+
+// Helper to get activity level based on completion percentage - keep this if you use it
+const getActivityLevel = (completed, total) => {
+  if (total === 0) return "none";
+  const percentage = (completed / total) * 100;
+  if (percentage === 100) return "high";
+  if (percentage >= 50) return "medium";
+  if (percentage > 0) return "low";
+  return "none";
 };
 
-const calculateActivityForDate = (dateStr_YYYY_MM_DD, allTasks) => {
-  const tasksOnDate = allTasks.filter(
-    (task) => task.date === dateStr_YYYY_MM_DD
-  );
-  const completedOnDate = tasksOnDate.filter((task) => task.completed).length;
-  const workedOnDate = tasksOnDate.length > 0;
-  return { tasksCompleted: completedOnDate, worked: workedOnDate };
+const calculateActivityForDate = (tasksForDateArray) => {
+  const validTasksArray = Array.isArray(tasksForDateArray) ? tasksForDateArray : [];
+  const totalOnDate = validTasksArray.length;
+  const completedOnDate = validTasksArray.filter((task) => task.completed).length;
+
+  return {
+    tasksCompleted: completedOnDate,
+    worked: totalOnDate > 0, // Worked if there are any tasks for the day
+    totalTasks: totalOnDate,
+    activityLevel: getActivityLevel(completedOnDate, totalOnDate), // Use the consistent helper
+  };
 };
 
 const EngagementPage = () => {
@@ -56,28 +56,61 @@ const EngagementPage = () => {
   const [taskToViewDetails, setTaskToViewDetails] = useState(null);
   const [isConfirmDeleteAllOpen, setIsConfirmDeleteAllOpen] = useState(false);
 
-  const [tasks, setTasks] = useIndexedDb(ENGAGEMENT_TASKS_KEY, []);
+  // ENGAGEMENT_TASKS_KEY now stores an object: { "DD-MM-YYYY": [tasks], ... }
+  const [tasksByDate, setTasksByDate] = useIndexedDb(ENGAGEMENT_TASKS_KEY, {}); // Keys will be DD-MM-YYYY
   const [activityData, setActivityData] = useIndexedDb(
     ENGAGEMENT_ACTIVITY_KEY,
-    {}
+    {} // Keys will be DD-MM-YYYY
+  );
+
+  const location = useLocation(); // Get location object
+  const initialDate = location.state?.date || dateToDDMMYYYY(new Date()); // Check for date in state, default to today
+
+  // Helper to parse DD-MM-YYYY string into a Date object
+  const parseDDMMYYYY = (dateStr) => {
+    if (!dateStr || !/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+      return new Date(); // Return today if format is wrong or string is empty
+    }
+    const [day, month, year] = dateStr.split('-').map(Number);
+    // Note: Month is 0-indexed in Date constructor
+    return new Date(year, month - 1, day);
+  };
+
+  // Initialize displayDate and selectedDay based on navigation state or today
+  const [displayDate, setDisplayDate] = useState(() => parseDDMMYYYY(initialDate));
+  const [selectedDay, setSelectedDay] = useState(initialDate); // DD-MM-YYYY
+
+  const [currentTime, setCurrentTime] = useState(() =>
+    new Date().toTimeString().slice(0, 5)
   );
 
   useEffect(() => {
-    if (tasks && tasks.length > 0 && Object.keys(activityData).length === 0) {
-      setActivityData(deriveActivityDataFromTasks(tasks));
+    // Derive activityData from tasksByDate whenever tasksByDate changes
+    const newActivityData = {};
+    Object.entries(tasksByDate).forEach(([date, tasksOnDate]) => {
+      // Defensive check: ensure tasksOnDate is an array before processing
+      if (Array.isArray(tasksOnDate)) {
+        newActivityData[date] = calculateActivityForDate(tasksOnDate);
+      }
+    });
+    // Only set if it's different to avoid loops, or use a more sophisticated comparison
+    if (JSON.stringify(newActivityData) !== JSON.stringify(activityData)) {
+      setActivityData(newActivityData);
     }
-  }, [tasks, activityData, setActivityData]);
+  }, [tasksByDate, activityData, setActivityData]);
 
   // Define modal handlers before effects that might use them
   const handleViewTaskDetails = useCallback(
     (taskId) => {
-      const task = tasks.find((t) => t.id === taskId);
+      const task = (tasksByDate[selectedDay] || []).find(
+        (t) => t.id === taskId
+      );
       if (task) {
         setTaskToViewDetails(task);
         setIsTaskDetailsModalOpen(true);
       }
     },
-    [tasks] // tasks is a dependency
+    [tasksByDate, selectedDay]
   );
 
   const handleCloseTaskDetailsModal = useCallback(() => {
@@ -87,8 +120,10 @@ const EngagementPage = () => {
 
   useEffect(() => {
     if (isTaskDetailsModalOpen && taskToViewDetails) {
-      const updatedTaskInList = tasks.find(
-        (t) => t.id === taskToViewDetails.id
+      const updatedTaskInList = (
+        tasksByDate[taskToViewDetails.date] || []
+      ).find(
+        (t) => t.id === taskToViewDetails.id // Assuming taskToViewDetails has a .date property
       );
       if (!updatedTaskInList) {
         // Task was deleted
@@ -99,18 +134,11 @@ const EngagementPage = () => {
       }
     }
   }, [
-    tasks,
+    tasksByDate,
     isTaskDetailsModalOpen,
     taskToViewDetails,
     handleCloseTaskDetailsModal,
   ]);
-
-  const [displayDate, setDisplayDate] = useState(() => new Date());
-  const todayStrInternal = getTodayStrInternal();
-  const [selectedDay, setSelectedDay] = useState(todayStrInternal);
-  const [currentTime, setCurrentTime] = useState(() =>
-    new Date().toTimeString().slice(0, 5)
-  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -125,29 +153,31 @@ const EngagementPage = () => {
         id: Date.now(),
         text,
         completed: false,
-        date: selectedDay,
+        date: selectedDay, // This is correct, task object itself stores its date (DD-MM-YYYY)
         time: time || null,
         description: description || null,
         subtasks: subtasks || [],
         completedAt: null,
       };
-      setTasks((prev) => [...prev, newTask]);
-      setActivityData((prev) => ({
-        ...prev,
-        [selectedDay]: {
-          tasksCompleted: prev[selectedDay]?.tasksCompleted || 0,
-          worked: true,
-        },
-      }));
+      setTasksByDate((prevTasksByDate) => {
+        const currentTasksForDay = prevTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = [...currentTasksForDay, newTask];
+        return {
+          ...prevTasksByDate,
+          [selectedDay]: updatedTasksForDay,
+        };
+      });
+      // Activity data will be updated by the useEffect watching tasksByDate
     },
-    [selectedDay, setTasks, setActivityData]
+    [selectedDay, setTasksByDate]
   );
 
   const toggleTask = useCallback(
     (id) => {
-      setTasks((prevTasks) => {
-        const taskToToggle = prevTasks.find((task) => task.id === id);
-        if (!taskToToggle) return prevTasks;
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || []; // selectedDay is DD-MM-YYYY
+        const taskToToggle = tasksForCurrentDay.find((task) => task.id === id);
+        if (!taskToToggle) return prevTasksByDate;
 
         const newCompletedStatus = !taskToToggle.completed;
         let updatedSubtasks = taskToToggle.subtasks || [];
@@ -160,29 +190,23 @@ const EngagementPage = () => {
           }));
         }
 
-        const updatedTasks = prevTasks.map((task) =>
+        const updatedTasksForDay = tasksForCurrentDay.map((task) =>
           task.id === id
             ? {
                 ...task,
                 completed: newCompletedStatus,
-                completedAt: newCompletedStatus ? getTodayStrInternal() : null,
+                completedAt: newCompletedStatus ? dateToDDMMYYYY(new Date()) : null,
                 subtasks: updatedSubtasks, // Update subtasks
               }
             : task
         );
-        const taskDate = taskToToggle.date || getTodayStrInternal();
-        const newActivityForDate = calculateActivityForDate(
-          taskDate,
-          updatedTasks
-        );
-        setActivityData((prevActivityData) => ({
-          ...prevActivityData,
-          [taskDate]: newActivityForDate,
-        }));
-        return updatedTasks;
+        return {
+          ...prevTasksByDate,
+          [selectedDay]: updatedTasksForDay,
+        };
       });
     },
-    [setTasks, setActivityData]
+    [selectedDay, setTasksByDate]
   );
 
   const handleOpenCopyModal = useCallback(() => {
@@ -194,29 +218,29 @@ const EngagementPage = () => {
   }, []);
 
   const handleCalendarDayClick = useCallback(
-    (dateStr_YYYY_MM_DD) => {
-      setSelectedDay(dateStr_YYYY_MM_DD);
+    (dateStr_DD_MM_YYYY) => {
+      // ActivityCalendar now passes DD-MM-YYYY
+      setSelectedDay(dateStr_DD_MM_YYYY);
     },
     [setSelectedDay]
   );
 
   const handleCopyTasksToCurrentDay = useCallback(
     (tasksToCopyDetails) => {
-      const targetDate_YYYY_MM_DD = selectedDay;
+      const targetDate_DD_MM_YYYY = selectedDay; // selectedDay is DD-MM-YYYY
 
       if (
         !tasksToCopyDetails ||
         tasksToCopyDetails.length === 0 ||
-        !targetDate_YYYY_MM_DD
+        !targetDate_DD_MM_YYYY
       ) {
         return;
       }
 
-      let newTasksToAdd = [];
-      newTasksToAdd = tasksToCopyDetails.map((task, index) => ({
+      const newTasksToAdd = tasksToCopyDetails.map((task, index) => ({
         ...task,
         id: Date.now() + Math.random() + index,
-        date: targetDate_YYYY_MM_DD,
+        date: targetDate_DD_MM_YYYY, // Assign to target date (DD-MM-YYYY)
         completed: false,
         completedAt: null,
         description: task.description || null,
@@ -231,109 +255,96 @@ const EngagementPage = () => {
       }));
 
       if (newTasksToAdd.length > 0) {
-        const allTasksAfterCopy = [...tasks, ...newTasksToAdd];
-        setTasks((prevTasks) => [...prevTasks, ...newTasksToAdd]);
-        setActivityData((prevActivity) => {
-          const newActivityForDate = calculateActivityForDate(
-            targetDate_YYYY_MM_DD,
-            allTasksAfterCopy
-          );
+        setTasksByDate((prevTasksByDate) => {
+          const currentTasksForTargetDay =
+            prevTasksByDate[targetDate_DD_MM_YYYY] || [];
+          const updatedTasksForTargetDay = [
+            ...currentTasksForTargetDay,
+            ...newTasksToAdd,
+          ];
           return {
-            ...prevActivity,
-            [targetDate_YYYY_MM_DD]: newActivityForDate,
+            ...prevTasksByDate,
+            [targetDate_DD_MM_YYYY]: updatedTasksForTargetDay,
           };
         });
       }
     },
-    [tasks, setTasks, setActivityData, selectedDay]
+    [setTasksByDate, selectedDay]
   );
 
   const handleDeleteAllTasksForDay = useCallback(() => {
     if (!selectedDay) return;
-    const tasksOnSelectedDay = tasks.filter(
-      (task) => task.date === selectedDay
-    );
+    const tasksOnSelectedDay = tasksByDate[selectedDay] || [];
     if (tasksOnSelectedDay.length === 0) {
       return;
     }
     setIsConfirmDeleteAllOpen(true);
-  }, [selectedDay, tasks]);
+  }, [selectedDay, tasksByDate]);
 
   const confirmDeleteAllTasks = useCallback(() => {
     if (selectedDay) {
-      setTasks((prevTasks) =>
-        prevTasks.filter((task) => task.date !== selectedDay)
-      );
-      setActivityData((prevActivity) => {
-        const newActivity = { ...prevActivity };
-        delete newActivity[selectedDay];
-        return newActivity;
+      setTasksByDate((prevTasksByDate) => {
+        const newTasksByDate = { ...prevTasksByDate };
+        delete newTasksByDate[selectedDay]; // Remove all tasks for that day
+        return newTasksByDate;
       });
     }
     setIsConfirmDeleteAllOpen(false);
-  }, [selectedDay, setTasks, setActivityData]);
+  }, [selectedDay, setTasksByDate]);
 
   const handleUpdateTaskDescription = useCallback(
     (taskId, newDescription) => {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = tasksForCurrentDay.map((task) =>
           task.id === taskId
             ? { ...task, description: newDescription.trim() || null }
             : task
-        )
-      );
+        );
+        return { ...prevTasksByDate, [selectedDay]: updatedTasksForDay };
+      });
     },
-    [setTasks]
+    [selectedDay, setTasksByDate]
   );
 
   const handleAddSubtask = useCallback(
     (taskId, subtaskText) => {
-      setTasks((prevTasks) => {
-        let taskDateForActivityUpdate;
-        const updatedTasks = prevTasks.map((task) => {
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        // let mainTaskWasModifiedForCompletion = false; // Not strictly needed if activityData updates via useEffect
+
+        const updatedTasksForDay = tasksForCurrentDay.map((task) => {
           if (task.id === taskId) {
             const newSubtask = {
               id: Date.now() + Math.random(),
               text: subtaskText,
               completed: false, // New subtasks are initially incomplete
             };
-            let modifiedTask = {
+            const modifiedTask = {
               ...task,
               subtasks: [...(task.subtasks || []), newSubtask],
             };
-
             // If the parent task was completed, mark it as incomplete
             // because a new subtask (work item) has been added.
             if (modifiedTask.completed) {
-              modifiedTask = {
-                ...modifiedTask,
-                completed: false,
-                completedAt: null,
-              };
-              taskDateForActivityUpdate = modifiedTask.date || getTodayStrInternal();
+              // mainTaskWasModifiedForCompletion = true;
+              return { ...modifiedTask, completed: false, completedAt: null };
             }
             return modifiedTask;
           }
           return task;
         });
-
-        if (taskDateForActivityUpdate) {
-          const newActivityForDate = calculateActivityForDate(taskDateForActivityUpdate, updatedTasks);
-          setActivityData((prevActivityData) => ({
-            ...prevActivityData,
-            [taskDateForActivityUpdate]: newActivityForDate,
-          }));
-        }
-        return updatedTasks;
+        return { ...prevTasksByDate, [selectedDay]: updatedTasksForDay };
       });
     },
-    [setTasks, setActivityData]
+    [selectedDay, setTasksByDate]
   );
 
   const handleUpdateSubtask = useCallback(
     (taskId, subtaskId, updates) => {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => {
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = tasksForCurrentDay.map((task) => {
           if (task.id === taskId) {
             const updatedSubtasks = (task.subtasks || []).map((st) =>
               st.id === subtaskId ? { ...st, ...updates } : st
@@ -341,16 +352,18 @@ const EngagementPage = () => {
             return { ...task, subtasks: updatedSubtasks };
           }
           return task;
-        })
-      );
+        });
+        return { ...prevTasksByDate, [selectedDay]: updatedTasksForDay };
+      });
     },
-    [setTasks]
+    [selectedDay, setTasksByDate]
   );
 
   const handleDeleteSubtask = useCallback(
     (taskId, subtaskId) => {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => {
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = tasksForCurrentDay.map((task) => {
           if (task.id === taskId) {
             return {
               ...task,
@@ -360,77 +373,77 @@ const EngagementPage = () => {
             };
           }
           return task;
-        })
-      );
+        });
+        return { ...prevTasksByDate, [selectedDay]: updatedTasksForDay };
+      });
     },
-    [setTasks]
+    [selectedDay, setTasksByDate]
   );
 
   const updateTaskTime = useCallback(
     (id, time) => {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = tasksForCurrentDay.map((task) =>
           task.id === id ? { ...task, time: time || null } : task
-        )
-      );
+        );
+        return { ...prevTasksByDate, [selectedDay]: updatedTasksForDay };
+      });
     },
-    [setTasks]
+    [selectedDay, setTasksByDate]
   );
 
   const updateTaskText = useCallback(
     (id, newText) => {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = tasksForCurrentDay.map((task) =>
           task.id === id ? { ...task, text: newText.trim() } : task
-        )
-      );
+        );
+        return { ...prevTasksByDate, [selectedDay]: updatedTasksForDay };
+      });
     },
-    [setTasks]
+    [selectedDay, setTasksByDate]
   );
 
   const deleteTask = useCallback(
     (id) => {
-      setTasks((prevTasks) => {
-        const taskToDelete = prevTasks.find((task) => task.id === id);
-        if (!taskToDelete) return prevTasks;
-        const updatedTasks = prevTasks.filter((task) => task.id !== id);
-        const taskDate = taskToDelete.date || getTodayStrInternal();
-        const newActivityForDate = calculateActivityForDate(
-          taskDate,
-          updatedTasks
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        const taskToDelete = tasksForCurrentDay.find((task) => task.id === id);
+        if (!taskToDelete) return prevTasksByDate;
+
+        const updatedTasksForDay = tasksForCurrentDay.filter(
+          (task) => task.id !== id
         );
-        setActivityData((prevActivityData) => ({
-          ...prevActivityData,
-          [taskDate]: newActivityForDate,
-        }));
-        return updatedTasks;
+        return {
+          ...prevTasksByDate,
+          [selectedDay]: updatedTasksForDay,
+        };
       });
     },
-    [setTasks, setActivityData]
+    [selectedDay, setTasksByDate]
   );
 
   const handlePreviousMonth = () =>
     setDisplayDate((date) => {
       const d = new Date(date);
       d.setMonth(d.getMonth() - 1);
-      const currentSelectedDateObj = new Date(selectedDay);
-      const newPotentialSelectedDate = new Date(
+      // Adjust selectedDay if it falls out of the new month's range
+      const [sDay, sMonth, sYear] = selectedDay.split("-").map(Number);
+      const currentSelectedDateObj = new Date(sYear, sMonth - 1, sDay);
+
+      let newSelectedDateObj = new Date(
         d.getFullYear(),
         d.getMonth(),
         currentSelectedDateObj.getDate()
       );
-      if (newPotentialSelectedDate.getMonth() !== d.getMonth()) {
-        const lastDayOfNewMonth = new Date(
-          d.getFullYear(),
-          d.getMonth() + 1,
-          0
-        ).getDate();
-        setSelectedDay(
-          new Date(d.getFullYear(), d.getMonth(), lastDayOfNewMonth).toISOString().split('T')[0]
-        );
-      } else {
-        setSelectedDay(newPotentialSelectedDate.toISOString().split('T')[0]);
+      // If the day rolled over to the next month (e.g., trying to set Feb 31st),
+      // clamp to the last day of the target month.
+      if (newSelectedDateObj.getMonth() !== d.getMonth()) {
+        newSelectedDateObj = new Date(d.getFullYear(), d.getMonth() + 1, 0);
       }
+      setSelectedDay(dateToDDMMYYYY(newSelectedDateObj));
       return d;
     });
 
@@ -438,36 +451,30 @@ const EngagementPage = () => {
     setDisplayDate((date) => {
       const d = new Date(date);
       d.setMonth(d.getMonth() + 1);
-      const currentSelectedDateObj = new Date(selectedDay);
-      const newPotentialSelectedDate = new Date(
+      // Logic to adjust selectedDay to be within the new month
+      const [sDay, sMonth, sYear] = selectedDay.split("-").map(Number);
+      const currentSelectedDateObj = new Date(sYear, sMonth - 1, sDay);
+      let newSelectedDateObj = new Date(
         d.getFullYear(),
         d.getMonth(),
         currentSelectedDateObj.getDate()
       );
-      if (newPotentialSelectedDate.getMonth() !== d.getMonth()) {
-        const lastDayOfNewMonth = new Date(
-          d.getFullYear(),
-          d.getMonth() + 1,
-          0
-        ).getDate();
-        setSelectedDay(
-          new Date(d.getFullYear(), d.getMonth(), lastDayOfNewMonth).toISOString().split('T')[0]
-        );
-      } else {
-        setSelectedDay(newPotentialSelectedDate.toISOString().split('T')[0]);
+      if (newSelectedDateObj.getMonth() !== d.getMonth()) {
+        newSelectedDateObj = new Date(d.getFullYear(), d.getMonth() + 1, 0);
       }
+      setSelectedDay(dateToDDMMYYYY(newSelectedDateObj));
       return d;
     });
 
   const handleGoToToday = () => {
     const today = new Date();
     setDisplayDate(today);
-    setSelectedDay(getTodayStrInternal());
+    setSelectedDay(dateToDDMMYYYY(today));
   };
 
   const tasksForSelectedDay = useMemo(
-    () => tasks.filter((t) => t.date === selectedDay),
-    [tasks, selectedDay]
+    () => tasksByDate[selectedDay] || [], // selectedDay is DD-MM-YYYY
+    [tasksByDate, selectedDay]
   );
 
   return (
@@ -496,8 +503,8 @@ const EngagementPage = () => {
               onPrevMonth={handlePreviousMonth}
               onNextMonth={handleNextMonth}
               onToday={handleGoToToday}
-              selectedDay={selectedDay}
-              onDayClick={handleCalendarDayClick}
+              selectedDay={selectedDay} // selectedDay is DD-MM-YYYY
+              onDayClick={handleCalendarDayClick} // Expects DD-MM-YYYY
             />
           </div>
           <div className="improved-task-list">
@@ -510,6 +517,7 @@ const EngagementPage = () => {
               onUpdateTaskText={updateTaskText}
               onViewTaskDetails={handleViewTaskDetails}
               currentTime={currentTime}
+              selectedDateForDisplay={selectedDay} // selectedDay is already DD-MM-YYYY
             />
             <div className="task-list-actions">
               <button onClick={handleOpenCopyModal} className="btn-secondary">
@@ -521,7 +529,7 @@ const EngagementPage = () => {
                   className="btn-danger"
                   style={{ marginLeft: "var(--spacing-sm)" }}
                 >
-                  Delete All Tasks for {formatDateForDisplay(selectedDay)}
+                  Delete All Tasks for {selectedDay}
                 </button>
               )}
             </div>
@@ -531,10 +539,10 @@ const EngagementPage = () => {
       <CopyTaskModal
         isOpen={isCopyModalOpen}
         onClose={handleCloseCopyModal}
-        tasks={tasks}
-        targetDate={selectedDay}
+        allTasksByDate={tasksByDate} // Keys are DD-MM-YYYY
+        targetDate={selectedDay} // DD-MM-YYYY
         onCopyTasks={handleCopyTasksToCurrentDay}
-        activityData={activityData}
+        activityData={activityData} // Keys are DD-MM-YYYY
       />
       <Modal /* Used as Confirmation Modal for Delete All */
         isOpen={isConfirmDeleteAllOpen}
@@ -543,9 +551,7 @@ const EngagementPage = () => {
         isConfirmation={true}
         confirmationMessage={`Are you sure you want to delete all ${
           tasksForSelectedDay.length
-        } tasks for ${formatDateForDisplay(
-          selectedDay
-        )}? This action cannot be undone.`}
+        } tasks for ${selectedDay}? This action cannot be undone.`}
         onConfirm={confirmDeleteAllTasks}
         confirmText="Delete All"
         cancelText="Cancel"
@@ -560,7 +566,7 @@ const EngagementPage = () => {
           onAddSubtask={handleAddSubtask}
           onUpdateSubtask={handleUpdateSubtask}
           onDeleteSubtask={handleDeleteSubtask}
-          formatDateForDisplay={formatDateForDisplay}
+          // formatDateForDisplay prop removed, assuming TaskDetailsModal uses task.date directly
         />
       )}
     </main>

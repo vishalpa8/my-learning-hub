@@ -1,6 +1,6 @@
 // Modal.jsx
-// Modal.jsx
-import React, { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
+import ReactDOM from "react-dom"; // Import ReactDOM for createPortal
 import PropTypes from "prop-types";
 import "./Modal.css";
 
@@ -15,6 +15,7 @@ const Modal = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
   confirmButtonClass = "btn-danger", // Default to danger for confirm, can be overridden
+  focusRef, // Optional ref to focus on open
 }) => {
   // Add Escape key listener
   const handleKeyDown = useCallback(
@@ -26,18 +27,25 @@ const Modal = ({
     [onClose]
   );
 
+  const internalModalRef = useRef(null);
+
   useEffect(() => {
     if (isOpen) {
       document.addEventListener("keydown", handleKeyDown);
+      // Focus management
+      const elementToFocus = focusRef?.current || internalModalRef.current;
+      // Use setTimeout to ensure the element is focusable after render.
+      const timerId = setTimeout(() => elementToFocus?.focus(), 0);
+      return () => clearTimeout(timerId); // Cleanup timer on unmount or re-run
     }
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, handleKeyDown]);
+  }, [isOpen, handleKeyDown, focusRef]);
 
   if (!isOpen) return null;
 
-  const handleOverlayClick = (e) => {
+  const handleOverlayClick = (e) => { // Renamed for clarity
     // Only close if the overlay itself is clicked, not content within it
     if (e.target === e.currentTarget) {
       onClose();
@@ -45,13 +53,15 @@ const Modal = ({
   };
 
   return (
-    <div
+    // Use ReactDOM.createPortal to render the modal into document.body
+    ReactDOM.createPortal(<div
       className="modal-overlay"
       onClick={handleOverlayClick}
       role="presentation"
     >
       <div
         className="modal-content"
+        ref={internalModalRef} // Ref for focusing the modal itself
         onClick={(e) => e.stopPropagation()} // Prevent click from bubbling to overlay
         role="dialog"
         aria-modal="true"
@@ -59,6 +69,7 @@ const Modal = ({
         aria-describedby={
           isConfirmation ? "confirmation-message-id" : undefined
         }
+        tabIndex="-1" // Make the modal content div focusable
       >
         <div className="modal-header">
           {title && <h3 id="modal-title">{title}</h3>}
@@ -101,8 +112,8 @@ const Modal = ({
             you might want a generic close button here.
             For now, TaskDetailsModal adds its own "Close" button.
         */}
-      </div>
-    </div>
+      </div> {/* End of modal-content */}
+    </div>, document.body) // End of modal-overlay, and specify portal target
   );
 };
 
@@ -110,13 +121,14 @@ Modal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   title: PropTypes.string,
-  children: PropTypes.node, // Children are not strictly required if isConfirmation is true
+  children: PropTypes.node,
   isConfirmation: PropTypes.bool,
   confirmationMessage: PropTypes.string,
   onConfirm: PropTypes.func,
   confirmText: PropTypes.string,
   cancelText: PropTypes.string,
   confirmButtonClass: PropTypes.string,
+  focusRef: PropTypes.object,
 };
 
 export default Modal;

@@ -70,6 +70,8 @@ const TaskDetailsModal = ({
     if (task) {
       onUpdateDescription(task.id, "");
     }
+    // If in editing mode, stay in editing mode but with cleared text
+    // If not in editing mode, this button might not be visible or might have different behavior
   }, [task, onUpdateDescription]);
 
   const handleAddSubtaskClick = useCallback(() => {
@@ -197,14 +199,6 @@ const TaskDetailsModal = ({
                   >
                     Save
                   </button>
-                  {currentDescription && ( // Only show Clear if there's text
-                    <button
-                      onClick={handleClearDescription}
-                      className="btn-outline btn-small btn-warning task-details-btn" // Use btn-warning or similar
-                    >
-                      Clear
-                    </button>
-                  )}
                   <button
                     onClick={handleCancelDescriptionEdit}
                     className="btn-secondary btn-small task-details-btn"
@@ -215,19 +209,35 @@ const TaskDetailsModal = ({
               </div>
             ) : (
               <div className="description-display-area">
-                {currentDescription ? ( // Display currentDescription to reflect unsaved changes if any
-                  <p className="description-text">{currentDescription}</p>
+                {task?.description ? ( // Check actual persisted task description
+                  <>
+                    <p className="description-text">{currentDescription}</p> {/* Display current state, which mirrors task.description initially */}
+                    <div className="description-view-actions">
+                      <button
+                        onClick={() => setEditingDescription(true)}
+                        className="btn-link edit-description-btn"
+                      >
+                        Edit Description
+                      </button>
+                      <button
+                        onClick={handleClearDescription} // This will clear and save immediately
+                        className="btn-link clear-description-btn" 
+                      >
+                        Clear Description
+                      </button>
+                    </div>
+                  </>
                 ) : (
-                  <p className="text-muted">No description added yet.</p>
+                  <>
+                    <p className="text-muted">No description added yet.</p>
+                    <button
+                      onClick={() => setEditingDescription(true)}
+                      className="btn-link edit-description-btn"
+                    >
+                      + Add Description
+                    </button>
+                  </>
                 )}
-                <button
-                  onClick={() => setEditingDescription(true)}
-                  className="btn-link edit-description-btn"
-                >
-                  {currentDescription
-                    ? "Edit Description"
-                    : "+ Add Description"}
-                </button>
               </div>
             )}
           </div>

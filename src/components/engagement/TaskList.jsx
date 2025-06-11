@@ -1,5 +1,4 @@
 // TaskList.jsx
-// TaskList.jsx
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import Modal from "../shared/Modal"; // Import the generic Modal
 import PropTypes from "prop-types";
@@ -14,6 +13,35 @@ function formatTime12Hour(timeStr) {
   return `${hour}:${m} ${ampm}`;
 }
 
+const initialNewTaskFormState = {
+  text: "",
+  time: "",
+  description: "",
+  showDescriptionInput: false,
+  showSubtasksArea: false,
+  currentSubtaskText: "",
+  subtasks: [], // Holds subtasks for the task being created
+};
+
+const initialEditState = {
+  id: null,
+  text: "",
+  time: "",
+};
+
+// Helper to generate a simple unique ID for client-side temporary items
+const generateTempId = () => Date.now() + Math.random();
+
+// Helper to get today's date in DD-MM-YYYY format
+const getTodayDateString = () => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, "0");
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
+  const year = today.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+
 const TaskList = ({
   tasks,
   onAddTask,
@@ -23,23 +51,13 @@ const TaskList = ({
   onUpdateTaskText,
   onViewTaskDetails,
   currentTime,
+  selectedDateForDisplay, // Added this prop for dynamic header
 }) => {
-  const [newTaskText, setNewTaskText] = useState("");
-  const [newTaskTime, setNewTaskTime] = useState("");
-  const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [newTaskForm, setNewTaskForm] = useState(initialNewTaskFormState);
   const [userManuallySetNewTaskTime, setUserManuallySetNewTaskTime] =
     useState(false);
-  const [showNewTaskDescriptionInput, setShowNewTaskDescriptionInput] =
-    useState(false);
 
-  // State for adding subtasks to a new task
-  const [showNewTaskSubtasksArea, setShowNewTaskSubtasksArea] = useState(false);
-  const [currentNewSubtaskText, setCurrentNewSubtaskText] = useState("");
-  const [newTasksSubtasks, setNewTasksSubtasks] = useState([]); // Holds subtasks for the task being created
-
-  const [editingDetailsForTaskId, setEditingDetailsForTaskId] = useState(null);
-  const [currentEditText, setCurrentEditText] = useState("");
-  const [currentEditTime, setCurrentEditTime] = useState("");
+  const [editState, setEditState] = useState(initialEditState);
 
   // State for main task deletion confirmation
   const [isConfirmDeleteTaskOpen, setIsConfirmDeleteTaskOpen] = useState(false);
@@ -48,46 +66,44 @@ const TaskList = ({
   const inputRef = useRef(null);
   const editInputRef = useRef(null);
 
-  const handleInputChange = useCallback(
-    (e) => setNewTaskText(e.target.value),
-    []
-  );
-  const handleTimeChange = useCallback((e) => {
-    setNewTaskTime(e.target.value);
-    setUserManuallySetNewTaskTime(true);
+  const handleNewTaskFormChange = useCallback((field, value) => {
+    setNewTaskForm((prev) => ({ ...prev, [field]: value }));
   }, []);
-  const handleDescriptionChange = useCallback((e) => {
-    setNewTaskDescription(e.target.value);
+
+  const handleTimeChange = useCallback((e) => {
+    setNewTaskForm((prev) => ({ ...prev, time: e.target.value }));
+    setUserManuallySetNewTaskTime(true);
   }, []);
 
   const resetEditDetailsState = useCallback(() => {
-    setEditingDetailsForTaskId(null);
-    setCurrentEditText("");
-    setCurrentEditTime("");
+    setEditState(initialEditState);
   }, []);
 
   const handleAddNewTaskSubtask = useCallback(() => {
-    const trimmedText = currentNewSubtaskText.trim();
-    if (trimmedText) {
-      setNewTasksSubtasks((prev) => [
-        ...prev,
-        { id: Date.now() + Math.random(), text: trimmedText, completed: false },
-      ]);
-      setCurrentNewSubtaskText("");
-    }
-  }, [currentNewSubtaskText]);
+    setNewTaskForm((prevForm) => {
+      const trimmedText = prevForm.currentSubtaskText.trim();
+      if (trimmedText) {
+        return {
+          ...prevForm,
+          subtasks: [
+            ...prevForm.subtasks,
+            { id: generateTempId(), text: trimmedText, completed: false },
+          ],
+          currentSubtaskText: "",
+        };
+      }
+      return prevForm;
+    });
+  }, []);
 
   const clearNewTaskForm = useCallback(() => {
-    setNewTaskText("");
-    setNewTaskTime("");
-    setNewTaskDescription("");
-    setShowNewTaskDescriptionInput(false);
-    setShowNewTaskSubtasksArea(false);
-    setNewTasksSubtasks([]);
+    setNewTaskForm(initialNewTaskFormState);
     setUserManuallySetNewTaskTime(false);
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    inputRef.current?.focus();
+  }, []);
+
+  const handleToggleNewTaskOptionalField = useCallback((field) => {
+    setNewTaskForm(prev => ({ ...prev, [field]: !prev[field] }));
   }, []);
 
   const handleNewSubtaskInputKeyDown = useCallback(
@@ -101,48 +117,47 @@ const TaskList = ({
   );
 
   const handleRemoveNewTaskSubtask = useCallback((subtaskId) => {
-    setNewTasksSubtasks((prev) => prev.filter((st) => st.id !== subtaskId));
+    setNewTaskForm(prev => ({
+      ...prev,
+      subtasks: prev.subtasks.filter((st) => st.id !== subtaskId)
+    }));
   }, []);
 
   const handleAddTaskSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      if (!newTaskText.trim()) return;
+      if (!newTaskForm.text.trim()) return;
       onAddTask({
-        text: newTaskText.trim(),
-        time: newTaskTime,
-        description: showNewTaskDescriptionInput
-          ? newTaskDescription.trim()
+        text: newTaskForm.text.trim(),
+        time: newTaskForm.time,
+        description: newTaskForm.showDescriptionInput
+          ? newTaskForm.description.trim()
           : "",
-        subtasks: newTasksSubtasks,
+        subtasks: newTaskForm.subtasks,
       });
       clearNewTaskForm();
     },
-    [
-      newTaskText,
-      newTaskTime,
-      newTaskDescription,
-      onAddTask,
-      showNewTaskDescriptionInput,
-      newTasksSubtasks,
-      clearNewTaskForm,
-    ]
+    [newTaskForm, onAddTask, clearNewTaskForm]
   );
 
-  useEffect(() => {
-    if (currentTime && !userManuallySetNewTaskTime) {
-      if (newTaskTime !== currentTime) {
-        setNewTaskTime(currentTime);
-      }
-    }
-  }, [currentTime, userManuallySetNewTaskTime, newTaskTime]);
 
   useEffect(() => {
-    if (editingDetailsForTaskId && editInputRef.current) {
+    // Repopulate if:
+    // 1. We have a currentTime.
+    // 2. The user hasn't manually set a time OR the task text is now empty (meaning form was just cleared).
+    if (currentTime && (!userManuallySetNewTaskTime || newTaskForm.text === "")) {
+      // If not manually set, always try to update to the current live time.
+      // After clearNewTaskForm, prev.time is "", so this will set it to currentTime.
+      setNewTaskForm(prev => ({ ...prev, time: currentTime }));
+    }
+  }, [currentTime, userManuallySetNewTaskTime, newTaskForm.text]); // Added newTaskForm.text
+
+  useEffect(() => {
+    if (editState.id && editInputRef.current) {
       editInputRef.current.focus();
       editInputRef.current.select();
     }
-  }, [editingDetailsForTaskId]);
+  }, [editState.id]);
 
   // Handle Escape key for the main new task input
   useEffect(() => {
@@ -162,75 +177,77 @@ const TaskList = ({
   }, [clearNewTaskForm]);
 
   const handleStartEditDetails = useCallback((task) => {
-    setEditingDetailsForTaskId(task.id);
-    setCurrentEditText(task.text);
-    setCurrentEditTime(task.time || "");
+    setEditState({
+      id: task.id,
+      text: task.text,
+      time: task.time || "",
+    });
   }, []);
 
   const handleCurrentEditTextChange = useCallback((e) => {
-    setCurrentEditText(e.target.value);
+    setEditState(prev => ({ ...prev, text: e.target.value }));
   }, []);
 
   const handleCurrentEditTimeChange = useCallback((e) => {
-    setCurrentEditTime(e.target.value);
+    setEditState(prev => ({ ...prev, time: e.target.value }));
   }, []);
 
   const handleSaveEditDetails = useCallback(
-    (taskId) => {
-      const trimmedText = currentEditText.trim();
-      const task = tasks.find((t) => t.id === taskId);
+    () => {
+      const { id, text, time } = editState;
+      if (!id) return;
 
-      if (task && trimmedText) {
-        if (task.text !== trimmedText) {
-          onUpdateTaskText(taskId, trimmedText);
+      const trimmedText = text.trim();
+      const taskToUpdate = tasks.find((t) => t.id === id);
+
+      if (taskToUpdate && trimmedText) {
+        if (taskToUpdate.text !== trimmedText) {
+          onUpdateTaskText(id, trimmedText);
         }
-        const timeToSave = currentEditTime || null;
-        if (task.time !== timeToSave) {
-          onUpdateTime(taskId, timeToSave);
+        const timeToSave = time || null;
+        if (taskToUpdate.time !== timeToSave) {
+          onUpdateTime(id, timeToSave);
         }
       }
       resetEditDetailsState();
     },
-    [
-      currentEditText,
-      currentEditTime,
-      onUpdateTaskText,
-      onUpdateTime,
-      tasks,
-      resetEditDetailsState,
-    ]
+    [editState, tasks, onUpdateTaskText, onUpdateTime, resetEditDetailsState]
   );
 
   const handleCancelEditDetails = useCallback(() => {
     resetEditDetailsState();
   }, [resetEditDetailsState]);
 
-  const isEditingThisTask = (taskId) => editingDetailsForTaskId === taskId;
+  const isEditingThisTask = (taskId) => editState.id === taskId;
 
   const handleEditFormKeyDown = useCallback(
     (event) => {
-      if (!editingDetailsForTaskId) {
+      if (!editState.id) {
         return;
       }
       if (event.key === "Enter") {
         event.preventDefault();
-        handleSaveEditDetails(editingDetailsForTaskId);
+        handleSaveEditDetails();
       } else if (event.key === "Escape") {
         event.preventDefault();
         handleCancelEditDetails();
       }
     },
-    [editingDetailsForTaskId, handleSaveEditDetails, handleCancelEditDetails]
+    [
+      editState.id,
+      handleSaveEditDetails,
+      handleCancelEditDetails,
+    ]
   );
 
   useEffect(() => {
-    if (editingDetailsForTaskId) {
+    if (editState.id) {
       document.addEventListener("keydown", handleEditFormKeyDown);
     } else {
       document.removeEventListener("keydown", handleEditFormKeyDown);
     }
     return () => document.removeEventListener("keydown", handleEditFormKeyDown);
-  }, [editingDetailsForTaskId, handleEditFormKeyDown]);
+  }, [editState.id, handleEditFormKeyDown]);
 
   const requestDeleteTask = useCallback((task) => {
     setTaskToDelete(task);
@@ -250,6 +267,11 @@ const TaskList = ({
     setTaskToDelete(null);
   }, []);
 
+  const todayDateStr = getTodayDateString();
+  const headerText =
+    selectedDateForDisplay === todayDateStr
+      ? "Today's Tasks"
+      : `Tasks for ${selectedDateForDisplay}`;
   return (
     <section className="improved-task-list card" aria-label="Today's Tasks">
       <header className="task-list-header">
@@ -260,7 +282,7 @@ const TaskList = ({
         >
           📋
         </span>
-        <h3>Today's Tasks</h3>
+        <h3>{headerText}</h3>
       </header>
       <form
         onSubmit={handleAddTaskSubmit}
@@ -271,8 +293,8 @@ const TaskList = ({
           <input
             ref={inputRef}
             type="text"
-            value={newTaskText}
-            onChange={handleInputChange}
+            value={newTaskForm.text}
+            onChange={(e) => handleNewTaskFormChange("text", e.target.value)}
             placeholder="Add a new task for today"
             aria-label="Add a new task"
             className="task-input"
@@ -281,7 +303,7 @@ const TaskList = ({
           />
           <input
             type="time"
-            value={newTaskTime}
+            value={newTaskForm.time}
             onChange={handleTimeChange}
             className="task-time-input"
             aria-label="Set time for new task"
@@ -289,22 +311,22 @@ const TaskList = ({
         </div>
 
         {/* Optional Fields Toggles - only show if there's main task text */}
-        {newTaskText.trim() &&
-          (!showNewTaskDescriptionInput || !showNewTaskSubtasksArea) && (
+        {newTaskForm.text.trim() &&
+          (!newTaskForm.showDescriptionInput || !newTaskForm.showSubtasksArea) && (
             <div className="new-task-optional-actions">
-              {!showNewTaskDescriptionInput && (
+              {!newTaskForm.showDescriptionInput && (
                 <button
                   type="button"
-                  onClick={() => setShowNewTaskDescriptionInput(true)}
+                  onClick={() => handleToggleNewTaskOptionalField("showDescriptionInput")}
                   className="btn-outline btn-small add-optional-field-btn"
                 >
                   + Description
                 </button>
               )}
-              {!showNewTaskSubtasksArea && (
+              {!newTaskForm.showSubtasksArea && (
                 <button
                   type="button"
-                  onClick={() => setShowNewTaskSubtasksArea(true)}
+                  onClick={() => handleToggleNewTaskOptionalField("showSubtasksArea")}
                   className="btn-outline btn-small add-optional-field-btn"
                 >
                   + Subtasks
@@ -314,10 +336,10 @@ const TaskList = ({
           )}
 
         {/* Description Input Area - appears when toggled */}
-        {showNewTaskDescriptionInput && newTaskText.trim() && (
+        {newTaskForm.showDescriptionInput && newTaskForm.text.trim() && (
           <textarea
-            value={newTaskDescription}
-            onChange={handleDescriptionChange}
+            value={newTaskForm.description}
+            onChange={(e) => handleNewTaskFormChange("description", e.target.value)}
             placeholder="Optional: Add a description..."
             aria-label="Add a description for the new task"
             className="task-description-input"
@@ -326,13 +348,13 @@ const TaskList = ({
         )}
 
         {/* Subtask Input Area - appears when toggled */}
-        {showNewTaskSubtasksArea && newTaskText.trim() && (
+        {newTaskForm.showSubtasksArea && newTaskForm.text.trim() && (
           <div className="new-task-subtasks-section">
             <div className="new-task-subtask-input-group">
               <input
                 type="text"
-                value={currentNewSubtaskText}
-                onChange={(e) => setCurrentNewSubtaskText(e.target.value)}
+                value={newTaskForm.currentSubtaskText}
+                onChange={(e) => handleNewTaskFormChange("currentSubtaskText", e.target.value)}
                 onKeyDown={handleNewSubtaskInputKeyDown}
                 placeholder="Enter subtask text and press Enter or click Add"
                 className="new-task-subtask-input"
@@ -341,15 +363,15 @@ const TaskList = ({
                 type="button"
                 onClick={handleAddNewTaskSubtask}
                 className="btn-secondary btn-small add-new-subtask-btn"
-                disabled={!currentNewSubtaskText.trim()}
+                disabled={!newTaskForm.currentSubtaskText.trim()}
               >
                 Add
               </button>
             </div>
-            {newTasksSubtasks.length > 0 && (
+            {newTaskForm.subtasks.length > 0 && (
               <div className="new-task-subtasks-list-container">
                 <ul className="new-task-subtasks-list">
-                  {newTasksSubtasks.map((st) => (
+                  {newTaskForm.subtasks.map((st) => (
                     <li key={st.id}>
                       <span>{st.text}</span>
                       <button
@@ -367,18 +389,20 @@ const TaskList = ({
             )}
           </div>
         )}
-        <button
-          type="submit"
-          disabled={!newTaskText.trim()}
-          className="add-task-btn"
-          aria-label="Add Task"
-          title="Add Task"
-        >
-          <span className="add-btn-icon" aria-hidden="true">
-            ＋
-          </span>
-          <span>Add</span>
-        </button>
+        {/* Conditionally render Add Task button only if there's text */}
+        {newTaskForm.text.trim() && (
+          <button
+            type="submit"
+            className="add-task-btn"
+            aria-label="Add Task"
+            title="Add Task"
+          >
+            <span className="add-btn-icon" aria-hidden="true">
+              ＋
+            </span>
+            <span>Add Task</span>
+          </button>
+        )}
       </form>
       {tasks.length === 0 ? (
         <div className="task-list-empty">
@@ -429,7 +453,7 @@ const TaskList = ({
                     <input
                       ref={editInputRef}
                       type="text"
-                      value={currentEditText}
+                      value={editState.text}
                       onChange={handleCurrentEditTextChange}
                       className="task-edit-input"
                       aria-label={`Editing task text: ${task.text}`}
@@ -437,14 +461,14 @@ const TaskList = ({
                     />
                     <input
                       type="time"
-                      value={currentEditTime}
+                      value={editState.time}
                       onChange={handleCurrentEditTimeChange}
                       className="task-time-select-inline task-edit-time-select"
                       aria-label={`Editing time for task: ${task.text}`}
                     />
                     <div className="task-edit-actions">
                       <button
-                        onClick={() => handleSaveEditDetails(task.id)}
+                        onClick={handleSaveEditDetails} // No longer needs task.id
                         className="task-edit-save-btn"
                       >
                         Save
@@ -598,6 +622,7 @@ TaskList.propTypes = {
   onUpdateTaskText: PropTypes.func.isRequired,
   onViewTaskDetails: PropTypes.func.isRequired,
   currentTime: PropTypes.string,
+  selectedDateForDisplay: PropTypes.string.isRequired, // Added prop type
 };
 
 export default React.memo(TaskList);

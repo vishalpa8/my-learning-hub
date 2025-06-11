@@ -28,8 +28,14 @@
   --warning-color-border: #ffe082; /* Added for DSA difficulty */
   --danger-color: #dc3545;
   --danger-color-dark: #bd2130;
+  --danger-color-rgb: 220, 53, 69; /* Added for rgba usage */
   --danger-color-background: #fdecea; /* Added for DSA difficulty */
   --danger-color-border: #f5c6cb; /* Added for DSA difficulty */
+  --danger-color-xlight: rgba(
+    var(--danger-color-rgb),
+    0.1
+  ); /* Added for Modal close hover */
+
   --light-color: #f8f9fa;
   --light-bg-color: #f9f9f9;
   --dark-color: #343a40;
@@ -41,13 +47,21 @@
   --page-background-color: #eef2f7;
   --border-color: #e9ecef;
   --border-color-light: #f1f3f5;
+  --border-color-extralight: #f7f9fc; /* Added for Modal separators */
+
   --border-color-soft: #e3eaf5; /* Added for DSA card */
   --border-color-muted: #e0e0e0; /* Added for DSA N/A difficulty */
   --background-color-offset: #e6f7ff;
+  --primary-color-xxlight: rgba(
+    var(--primary-color-rgb),
+    0.075
+  ); /* Added for Modal item hover */
+
   --background-color-subtle: #eaf1fb; /* Added for DSA progress/tags */
   --background-color-muted: #f0f0f0; /* Added for DSA N/A difficulty */
   --glass-border-color: rgba(180, 200, 255, 0.13);
   --scrollbar-thumb-color: rgba(var(--dark-color-rgb), 0.1);
+  --shadow-base-color-rgb: 40, 60, 90; /* New variable for common shadow color */
 
   /* Chart Specific Dimensions */
   --chart-height: 250px;
@@ -68,6 +82,7 @@
   --font-size-icon: 1.8rem;
   --font-size-icon-lg: 2rem;
   --line-height-base: 1.6;
+  --line-height-lg: 1.8; /* Added for Modal confirmation message */
   --font-weight-normal: 400;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
@@ -89,7 +104,7 @@
   --border-radius-sm: 0.2rem;
   --border-radius: 8px;
   --border-radius-lg: 16px;
-  --border-radius-xl: 12px; /* Added for DSA dashboard card */
+  --dsa-card-border-radius: 12px; /* Specific radius for DSA dashboard card, formerly --border-radius-xl */
   --border-radius-pill: 999px;
   --border-width-thin: 1px;
   --border-width-medium: 2px;
@@ -99,15 +114,15 @@
   /* Glassmorphism & Shadows */
   --glass-bg: rgba(255, 255, 255, 0.82);
   --glass-blur: blur(4px) saturate(1.18);
-  --shadow-elevate: 0 8px 32px 0 rgba(40, 60, 90, 0.16),
-    0 2px 8px 0 rgba(40, 60, 90, 0.1);
-  --box-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  --box-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07); /* Added for DSA dashboard card */
-  --box-shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.1);
-  --box-shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.12); /* Added for DSA dashboard card hover */
-  --box-shadow-small: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --box-shadow-large: 0 4px 15px rgba(0, 0, 0, 0.08);
+  --shadow-elevate: 0 8px 32px 0 rgba(var(--shadow-base-color-rgb), 0.16),
+    0 2px 8px 0 rgba(var(--shadow-base-color-rgb), 0.1);
+  --box-shadow-sm: 0 1px 3px rgba(var(--shadow-base-color-rgb), 0.05);
+  --box-shadow: 0 3px 8px rgba(var(--shadow-base-color-rgb), 0.08);
+  --box-shadow-md: 0 4px 12px rgba(var(--shadow-base-color-rgb), 0.07); /* Added for DSA dashboard card */
+  --box-shadow-lg: 0 6px 16px rgba(var(--shadow-base-color-rgb), 0.1);
+  --box-shadow-xl: 0 8px 24px rgba(var(--shadow-base-color-rgb), 0.12); /* Added for DSA dashboard card hover */
+  --box-shadow-small: 0 2px 8px rgba(var(--shadow-base-color-rgb), 0.04);
+  --box-shadow-large: 0 4px 15px rgba(var(--shadow-base-color-rgb), 0.08);
 
   /* Transitions & Focus */
   --transition-fast: all 0.15s var(--easing-cubic);
@@ -141,16 +156,16 @@ h1,
 h2,
 h3,
 h4 {
-  text-shadow: 0 1px 2px rgba(40, 60, 90, 0.07);
+  text-shadow: 0 1px 2px rgba(var(--shadow-base-color-rgb), 0.07);
   letter-spacing: 0.02em;
   margin-top: 0;
 }
 h1 {
-  font-size: var(--font-size-h1); /* Use specific h1 font size variable */
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
 }
 h2 {
-  font-size: var(--font-size-h2); /* Use specific h2 font size variable */
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
 }
 h3 {
@@ -203,7 +218,7 @@ button {
   font-size: var(--font-size-base);
   line-height: 1.5;
   font-weight: var(--font-weight-semibold);
-  box-shadow: 0 1px 2px rgba(40, 60, 90, 0.05);
+  box-shadow: 0 1px 2px rgba(var(--shadow-base-color-rgb), 0.05);
   outline: none;
 }
 button:hover,
@@ -237,6 +252,19 @@ button.btn-secondary:focus-visible {
   color: var(--background-color);
 }
 
+button.btn-danger {
+  background-color: var(--danger-color);
+  color: var(--background-color); /* Or --light-color if more appropriate */
+  border-color: var(--danger-color);
+  box-shadow: 0 2px 8px rgba(var(--danger-color-rgb), 0.08);
+}
+button.btn-danger:hover,
+button.btn-danger:focus-visible {
+  background-color: var(--danger-color-dark);
+  border-color: var(--danger-color-dark);
+  color: var(--background-color); /* Or --light-color */
+}
+
 /* Card Styles */
 .card {
   background: var(--glass-bg);
@@ -260,8 +288,8 @@ button.btn-secondary:focus-visible {
   }
 }
 .card:hover {
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 12px 40px 0 rgba(40, 60, 90, 0.18);
+  background: var(--glass-bg-hover);
+  box-shadow: 0 12px 40px 0 rgba(var(--shadow-base-color-rgb), 0.18);
   border-color: var(--primary-color);
 }
 .card-title {

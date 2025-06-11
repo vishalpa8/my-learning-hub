@@ -56,6 +56,13 @@
   /* Relies on global .btn-link styles from Modal.css */
 }
 
+.description-view-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs); /* Add some space above these action buttons */
+  /* Relies on global .btn-link styles from Modal.css */
+}
+
 .description-edit-area .task-details-textarea {
   width: 100%;
   padding: var(--spacing-sm);

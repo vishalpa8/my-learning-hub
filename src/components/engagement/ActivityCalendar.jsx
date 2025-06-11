@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import "./EngagementPage.css";
 
-const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 // Helper to generate the days grid for the current month
 function getGridDays(year, month) {
@@ -16,15 +16,15 @@ function getGridDays(year, month) {
   return days;
 }
 
-// Robust local date string (YYYY-MM-DD)
+// Robust local date string (DD-MM-YYYY)
 function getDateStr(year, month, day) {
   if (!day) return "";
   const d = new Date(year, month, day);
   return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, "0"),
     String(d.getDate()).padStart(2, "0"),
-  ].join("-");
+    String(d.getMonth() + 1).padStart(2, "0"), // Month
+    d.getFullYear(),
+  ].join("-"); // Output: DD-MM-YYYY
 }
 
 // Helper to get props for each day cell
@@ -35,7 +35,8 @@ function getDayProps(
   year,
   month,
   activity,
-  isCopyModeActive
+  isCopyModeActive,
+  currentTodayStr // Added parameter for today's date string
 ) {
   let className = "calendar-day";
   if (!day) className += " empty";
@@ -57,14 +58,8 @@ function getDayProps(
     } else {
       className += " no-activity";
     }
-    // Robust today check (local)
-    const today = new Date();
-    const todayStr = getDateStr(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
-    if (dateStr === todayStr) className += " today";
+    // Use passed-in today string
+    if (dateStr === currentTodayStr) className += " today";
   }
 
   if (day && isCopyModeActive) {
@@ -118,6 +113,13 @@ const ActivityCalendar = ({
 
   const gridDays = useMemo(() => getGridDays(year, month), [year, month]);
 
+  // Calculate today's date string once per render of ActivityCalendar
+  const todayDate = new Date();
+  const todayStr = getDateStr(
+    todayDate.getFullYear(),
+    todayDate.getMonth(),
+    todayDate.getDate()
+  );
   return (
     <section
       className="activity-calendar calendar-widget-container"
@@ -136,7 +138,7 @@ const ActivityCalendar = ({
             tabIndex={0}
             aria-label={`Monthly activity, ${monthLabel}`}
           >
-            {daysOfWeek.map((d, i) => (
+            {DAYS_OF_WEEK.map((d, i) => (
               <div key={i} className="calendar-header-day">
                 {d}
               </div>
@@ -149,10 +151,11 @@ const ActivityCalendar = ({
                 year,
                 month,
                 activity,
-                isCopyModeActive // Pass it down
+                isCopyModeActive,
+                todayStr // Pass down the calculated today string
               );
               return (
-                <div key={i + daysOfWeek.length} {...cellProps}>
+                <div key={i + DAYS_OF_WEEK.length} {...cellProps}>
                   {day || ""}
                 </div>
               );
@@ -199,7 +202,7 @@ const ActivityCalendar = ({
               label="Activity (worked)"
             />
             <LegendItem colorClass="no-activity" label="No activity" />
-            <LegendItem colorClass="today-indicator" label="Today" />
+            <LegendItem colorClass="today" label="Today" />
           </div>
         )}
       </div>
