@@ -36,13 +36,6 @@ const ProblemCard = ({
   return (
     <div
       className={cardClasses}
-      onClick={() => {
-        // Mouse click on card opens the problem link
-        if (problem.problemLink) {
-          window.open(problem.problemLink, "_blank", "noopener,noreferrer");
-        }
-      }}
-      role="button" // Indicate it's interactive
       tabIndex={0} // Make it focusable
       onKeyDown={(e) => {
         // "Enter" or "Space" key press on card toggles completion
@@ -50,7 +43,6 @@ const ProblemCard = ({
           if (e.target === e.currentTarget) {
             // Ensure event is directly on this div
             e.preventDefault();
-            // Main card keydown now opens the problem link
             onToggleComplete(problem.id); // Toggle completion on Enter/Space
           }
         }
