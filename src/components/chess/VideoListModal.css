@@ -75,7 +75,6 @@
 .video-list-modal-content .close-button:hover,
 .video-list-modal-content .close-button:focus-visible {
   color: var(--primary-color); /* Or var(--danger-color) */
-  outline: none; /* Remove default if adding custom */
 }
 .video-list-modal-content .close-button:focus-visible {
   box-shadow: 0 0 0 2px var(--primary-color-xlight, #e0e0e0); /* Example focus ring */

@@ -1,5 +1,6 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+// HomePage.jsx
+import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Modal from "../components/shared/Modal"; // Import the Modal component
 import ProgressBarDisplay from "../components/shared/ProgressBarDisplay";
 import { useIndexedDb, clearEntireDatabase } from "../hooks/useIndexedDb"; // Assumes clearEntireDatabase is exported
@@ -21,13 +22,9 @@ const getDateString = (date) => {
 };
 
 const HomePage = () => {
-  const navigate = useNavigate(); // Initialize navigate
   const [completedDsaProblems] = useIndexedDb(DSA_COMPLETED_PROBLEMS_KEY, {});
   const [completedChessVideos] = useIndexedDb(CHESS_LEARNING_PROGRESS_KEY, {});
-
-  // Fetch engagement tasks data - initial value is an empty object
   const [engagementTasksData] = useIndexedDb(ENGAGEMENT_TASKS_KEY, {});
-
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
 
   const dsaProgress = useMemo(() => {
@@ -49,21 +46,44 @@ const HomePage = () => {
 
   const engagementProgress = useMemo(() => {
     const todayStr = getDateString(new Date());
-
     const allTasksData = engagementTasksData || {};
-
-    const todaysTasks = allTasksData[todayStr] || []; // todayStr is DD-MM-YYYY
+    const todaysTasks = allTasksData[todayStr] || [];
     const todaysCompleted = todaysTasks.filter((task) => task.completed).length;
     const todaysTotal = todaysTasks.length;
     const todaysPercent =
       todaysTotal > 0 ? Math.round((todaysCompleted / todaysTotal) * 100) : 0;
-
     return {
       todaysCompleted,
       todaysTotal,
       todaysPercent,
     };
   }, [engagementTasksData]);
+
+  // Prepare data for ProgressCards to make the ProgressCard component more generic
+  const dsaCardData = useMemo(() => ({
+    completed: dsaProgress.completed,
+    total: dsaProgress.total,
+    percent: dsaProgress.percent,
+    label: `${dsaProgress.completed} / ${dsaProgress.total} (${dsaProgress.percent}%)`,
+    linkText: "View Details"
+  }), [dsaProgress]);
+
+  const chessCardData = useMemo(() => ({
+    completed: chessProgress.completed,
+    total: chessProgress.total,
+    percent: chessProgress.percent,
+    label: `${chessProgress.completed} / ${chessProgress.total} (${chessProgress.percent}%)`,
+    linkText: "View Details"
+  }), [chessProgress]);
+
+  const engagementCardData = useMemo(() => ({
+    completed: engagementProgress.todaysCompleted,
+    total: engagementProgress.todaysTotal,
+    percent: engagementProgress.todaysPercent,
+    label: `Today: ${engagementProgress.todaysCompleted} / ${engagementProgress.todaysTotal}`,
+    linkText: "Manage Tasks"
+  }), [engagementProgress]);
+
 
   const handleResetAllProgress = async () => {
     setShowResetConfirmModal(true);
@@ -77,7 +97,6 @@ const HomePage = () => {
     } catch (error) {
       console.error("Failed to delete IndexedDB:", error);
       setShowResetConfirmModal(false);
-      // Optionally, show an error modal here instead of alert
       alert(
         "Could not clear the database. Please check the console for the specific error."
       );
@@ -115,8 +134,6 @@ const HomePage = () => {
               Explore Chess
             </Link>
             <Link to="/Progress" className="home-btn-secondary">
-              {" "}
-              {/* Link to Engagement/Progress Page */}
               Daily Routine
             </Link>
           </div>
@@ -136,27 +153,28 @@ const HomePage = () => {
           <ProgressCard
             icon="🧩"
             title="DSA & CP"
-            completed={dsaProgress.completed}
-            total={dsaProgress.total}
-            percent={dsaProgress.percent}
+            completed={dsaCardData.completed}
+            total={dsaCardData.total}
+            percent={dsaCardData.percent}
+            label={dsaCardData.label}
             link="/dsa"
+            linkText={dsaCardData.linkText}
           />
           <ProgressCard
             icon="♟️"
             title="Chess"
-            completed={chessProgress.completed}
-            total={chessProgress.total}
-            percent={chessProgress.percent}
+            completed={chessCardData.completed}
+            total={chessCardData.total}
+            percent={chessCardData.percent}
+            label={chessCardData.label}
             link="/chess"
+            linkText={chessCardData.linkText}
           />
           <ProgressCard
             icon="📅"
             title="Daily Routine"
-            todaysCompleted={engagementProgress.todaysCompleted}
-            todaysTotal={engagementProgress.todaysTotal}
-            todaysPercent={engagementProgress.todaysPercent}
-            link="/Progress" // Link to Engagement/Progress Page
-            // yesterdaysPending prop is no longer needed here
+            {...engagementCardData} // Spread the prepared data
+            link="/Progress"
           />
         </div>
       </section>
@@ -180,7 +198,7 @@ const HomePage = () => {
         <QuickLinkCard
           title="Daily Learning Routine"
           description="Manage daily tasks, track your activity on the calendar, and build consistent learning habits."
-          href="/Progress" // Link to Engagement/Progress Page
+          href="/Progress"
           icon="📅"
           cta="View Routine"
         />
@@ -256,42 +274,29 @@ const ProgressCard = ({
   total,
   percent,
   link,
-  todaysCompleted,
-  todaysTotal,
-  todaysPercent,
+  label, // New prop for the progress bar label
+  linkText // New prop for the button text
 }) => (
   <div className="progress-card">
     <div className="progress-card-header">
       <span className="progress-card-icon">{icon}</span>
       <h3>{title}</h3>
-      {/* Display specific to Daily Routine or generic */}
-      {title === "Daily Routine" ? (
-        <span className="progress-card-info daily-routine-info">
-          <span className="progress-card-percent">{todaysPercent}%</span>
-        </span>
-      ) : (
-        <span className="progress-card-percent">{percent}%</span>
-      )}
+      <span className="progress-card-percent">{percent}%</span> {/* Always display percent */}
     </div>
-    {/* Show progress bar if total is greater than 0 */}
-    {total > 0 &&
-      title !== "Daily Routine" && ( // DSA & Chess
-        <ProgressBarDisplay
-          completed={completed}
-          total={total}
-          label={`${completed} / ${total} (${percent}%)`}
-        />
-      )}
-    {todaysTotal > 0 &&
-      title === "Daily Routine" && ( // Daily Routine
-        <ProgressBarDisplay
-          completed={todaysCompleted}
-          total={todaysTotal}
-          label={`Today: ${todaysCompleted} / ${todaysTotal}`}
-        />
-      )}
+    {total > 0 || (title === "Daily Routine" && completed >= 0) ? ( // Show progress bar if there's a total, or for daily routine even if total is 0 but completed is known
+      <ProgressBarDisplay
+        completed={completed}
+        total={total}
+        label={label} // Use the passed label
+      />
+    ) : (
+      // Optional: Show a message if there's no data to display for progress
+      // <p className="no-progress-data">No activity yet.</p> 
+      // Or render nothing if total is 0 and it's not daily routine
+      null
+    )}
     <Link to={link} className="home-btn-primary">
-      {title === "Daily Routine" ? "Manage Tasks" : "View Details"}
+      {linkText} {/* Use the passed button text */}
     </Link>
   </div>
 );

@@ -18,7 +18,7 @@ const REWARDS = [
 /** The number of newly completed DSA questions required to contribute to a reward. */
 const DSA_QUESTIONS_THRESHOLD = 5; // Example: 5 DSA problems
 /** The number of newly completed Chess videos required to contribute to a reward. */
-const CHESS_VIDEOS_THRESHOLD = 6; // Example: 6 Chess videos
+const CHESS_VIDEOS_THRESHOLD = 5; // Example: 5 Chess videos
 
 /**
  * @typedef {object} RewardTracker
@@ -87,7 +87,7 @@ export const RewardProvider = ({ children }) => {
   /**
    * Checks if the combined reward threshold is met and triggers the reward logic if so.
    * @param {RewardTracker} tracker - The current reward tracker state.
-   * @param {string} source - The source of the progress update (e.g., "DSA", "Chess").
+   * @param {string} source - The source of the progress update (e.g., "DSA_INCREASE", "CHESS_DECREASE").
    * @returns {RewardTracker} The potentially updated reward tracker state.
    */
   const checkAndTriggerCombinedReward = useCallback((tracker, source) => {
@@ -95,7 +95,6 @@ export const RewardProvider = ({ children }) => {
         tracker.completedSinceLastRewardDSA >= DSA_QUESTIONS_THRESHOLD &&
         tracker.completedSinceLastRewardChess >= CHESS_VIDEOS_THRESHOLD
       ) {
-        console.log(`[RewardContext] ${source} Update: THRESHOLD MET! Triggering reward.`);
         return triggerRewardLogic(tracker);
       }
       return tracker;
@@ -105,32 +104,25 @@ export const RewardProvider = ({ children }) => {
    * Records the progress of completed DSA problems and checks if a combined reward should be triggered.
    * @param {number} currentTotalCompletedDSA - The current total number of DSA problems completed.
    */
-  const recordDsaProgress = useCallback(
+ const recordDsaProgress = useCallback(
     (currentTotalCompletedDSA) => {
       setRewardTracker((prevTracker) => {
-        let updatedTracker = { ...prevTracker };
 
-        // Handle decrease in DSA problems
+        // If current total is less, it means items were un-completed.
+        // Reset the specific counter for this source.
         if (currentTotalCompletedDSA < prevTracker.lastKnownTotalCompletedDSA) {
-          updatedTracker = {
+          return checkAndTriggerCombinedReward({ // Check if reward still met with other source
             ...prevTracker,
             lastKnownTotalCompletedDSA: currentTotalCompletedDSA,
-            completedSinceLastRewardDSA: 0, // Reset only DSA reward counter
-          };
-        } else {
-          const newlyCompletedDSA =
-            currentTotalCompletedDSA - prevTracker.lastKnownTotalCompletedDSA;
-
-          if (newlyCompletedDSA > 0) {
-            updatedTracker = {
-              ...prevTracker,
-              lastKnownTotalCompletedDSA: currentTotalCompletedDSA,
-              completedSinceLastRewardDSA:
-                prevTracker.completedSinceLastRewardDSA + newlyCompletedDSA,
-            };
-          }
+            completedSinceLastRewardDSA: 0,
+          }, "DSA_DECREASE");
         }
-        return checkAndTriggerCombinedReward(updatedTracker, "DSA");
+
+        const newlyCompletedDSA = currentTotalCompletedDSA - prevTracker.lastKnownTotalCompletedDSA;
+        const updatedCompletedSinceLastRewardDSA = prevTracker.completedSinceLastRewardDSA + Math.max(0, newlyCompletedDSA);
+
+        const updatedTracker = { ...prevTracker, lastKnownTotalCompletedDSA: currentTotalCompletedDSA, completedSinceLastRewardDSA: updatedCompletedSinceLastRewardDSA };
+        return checkAndTriggerCombinedReward(updatedTracker, "DSA_INCREASE");
       });
     },
     [setRewardTracker, checkAndTriggerCombinedReward]
@@ -143,32 +135,21 @@ export const RewardProvider = ({ children }) => {
   const recordChessProgress = useCallback(
     (currentTotalCompletedChess) => {
       setRewardTracker((prevTracker) => {
-        let updatedTracker = { ...prevTracker };
-
-        // Handle decrease in Chess videos
-        if (
-          currentTotalCompletedChess < prevTracker.lastKnownTotalCompletedChess
-        ) {
-          updatedTracker = {
+        // If current total is less, it means items were un-completed.
+        // Reset the specific counter for this source.
+        if (currentTotalCompletedChess < prevTracker.lastKnownTotalCompletedChess) {
+          return checkAndTriggerCombinedReward({ // Check if reward still met with other source
             ...prevTracker,
             lastKnownTotalCompletedChess: currentTotalCompletedChess,
-            completedSinceLastRewardChess: 0, // Reset only Chess reward counter
-          };
-        } else {
-          const newlyCompletedChess =
-            currentTotalCompletedChess -
-            prevTracker.lastKnownTotalCompletedChess;
-
-          if (newlyCompletedChess > 0) {
-            updatedTracker = {
-              ...prevTracker,
-              lastKnownTotalCompletedChess: currentTotalCompletedChess,
-              completedSinceLastRewardChess:
-                prevTracker.completedSinceLastRewardChess + newlyCompletedChess,
-            };
-          }
+            completedSinceLastRewardChess: 0,
+          }, "CHESS_DECREASE");
         }
-        return checkAndTriggerCombinedReward(updatedTracker, "Chess");
+
+        const newlyCompletedChess = currentTotalCompletedChess - prevTracker.lastKnownTotalCompletedChess;
+        const updatedCompletedSinceLastRewardChess = prevTracker.completedSinceLastRewardChess + Math.max(0, newlyCompletedChess);
+
+        const updatedTracker = { ...prevTracker, lastKnownTotalCompletedChess: currentTotalCompletedChess, completedSinceLastRewardChess: updatedCompletedSinceLastRewardChess };
+        return checkAndTriggerCombinedReward(updatedTracker, "CHESS_INCREASE");
       });
     },
     [setRewardTracker, checkAndTriggerCombinedReward]

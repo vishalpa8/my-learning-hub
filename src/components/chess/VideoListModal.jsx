@@ -80,7 +80,7 @@ const VideoListModal = ({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      tabIndex={-1}
+      tabIndex={isVisible ? -1 : undefined} // Consistent with RewardModal, though current is fine as it's not rendered when !isVisible
       aria-labelledby={modalTitleId}
     >
       <div

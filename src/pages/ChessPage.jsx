@@ -46,10 +46,12 @@ const ChessPage = () => {
   useEffect(() => {
     // When overall chess progress (specifically completed count) changes, record it for rewards.
     // The RewardContext will handle the combined logic.
-    if (recordChessProgress && overallProgress) {
+    if (overallProgress) {
       recordChessProgress(overallProgress.completed);
     }
-  }, [overallProgress, recordChessProgress]); // Depends on overallProgress which in turn depends on completedVideos
+    // recordChessProgress from context is typically stable (memoized in its provider).
+    // Including it in dependencies is correct and ensures effect runs if it were to change.
+  }, [overallProgress, recordChessProgress]);
 
   const nextPlaylist = useMemo(
     () =>

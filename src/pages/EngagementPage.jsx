@@ -84,21 +84,18 @@ const EngagementPage = () => {
     new Date().toTimeString().slice(0, 5)
   );
 
-  useEffect(() => {
+ useEffect(() => {
     // Derive activityData from tasksByDate whenever tasksByDate changes
     const newActivityData = {};
-    Object.entries(tasksByDate).forEach(([date, tasksOnDate]) => {
-      // Defensive check: ensure tasksOnDate is an array before processing
+    for (const [date, tasksOnDate] of Object.entries(tasksByDate)) {
       if (Array.isArray(tasksOnDate)) {
         newActivityData[date] = calculateActivityForDate(tasksOnDate);
       }
-    });
-    // Only set if it's different to avoid loops, or use a more sophisticated comparison
-    if (JSON.stringify(newActivityData) !== JSON.stringify(activityData)) {
-      setActivityData(newActivityData);
     }
-  }, [tasksByDate, activityData, setActivityData]);
-
+    // handle if an update to the DB is needed based on value changes.
+    setActivityData(newActivityData);
+  }, [tasksByDate, setActivityData]); // setActivityData is stable from useIndexedDb
+ 
   // Define modal handlers before effects that might use them
   const handleViewTaskDetails = useCallback(
     (taskId) => {

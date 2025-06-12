@@ -13,7 +13,6 @@ import DsaPage from "./pages/DsaPage";
 import ChessPage from "./pages/ChessPage";
 import { RewardProvider } from "./contexts/RewardContext";
 import EngagementPage from "./pages/EngagementPage"; // Import the new EngagementPage
-import "./App.css"; // Global styles
 
 /**
  * Component to handle scrolling to the top of the page on route changes.

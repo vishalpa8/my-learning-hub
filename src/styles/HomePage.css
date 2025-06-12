@@ -83,11 +83,15 @@
   background: #d1e3ff; /* Custom slightly darker light blue for hover */
 }
 
-.home-btn.btn-danger {
+.home-btn.btn-danger .home-btn.btn-danger,
+.btn-danger {
+  /* Applied if only .btn-danger is used (more global) */
   background-color: #e74c3c; /* Red */
   color: var(--background-color, #fff); /* White text */
 }
 
+.home-btn.btn-danger:hover,
+.home-btn.btn-danger:focus-visible,
 .btn-danger:hover,
 .btn-danger:focus-visible {
   background-color: #c0392b; /* Darker red */

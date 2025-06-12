@@ -52,13 +52,7 @@ const DashboardView = ({ overallProgress, totalProblems, streakData }) => {
           <p>No current streak. Solve a problem today to start one!</p>
         )}
         {lastCompletionDate && currentStreak > 0 && (
-          <p
-            style={{
-              fontSize: "0.85em",
-              color: "var(--text-muted-color)",
-              marginTop: "var(--spacing-xs)",
-            }}
-          >
+          <p className="streak-last-completion">
             Last completion: {lastCompletionDate}
           </p>
         )}

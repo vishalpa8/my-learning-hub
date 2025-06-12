@@ -43,41 +43,60 @@ export async function clearEntireDatabase() {
  */
 export function useIndexedDb(key, defaultValue) {
   // The core state for our value.
-  const [value, setValue] = useState(defaultValue);
+  const [value, setValueState] = useState(defaultValue);
+  const [hasLoaded, setHasLoaded] = useState(false); // Tracks if initial load is complete
 
-  // This ref helps us prevent saving to the DB during the initial render,
-  // before we've had a chance to load existing data.
-  const isInitialMount = useRef(true);
+  // Tracks if the user has explicitly called setStoredValue,
+  // to prevent overwriting user's intent during initial load.
+  const userHasSetValue = useRef(false);
 
   // --- EFFECT 1: Load initial value from IndexedDB ---
-  // This effect runs once when the component mounts.
+  // This effect runs once when the component mounts or when the key changes.
   useEffect(() => {
     // Don't run on the server.
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") {
+      setHasLoaded(true); // Mark as "loaded" for SSR to prevent save attempts
+      return;
+    }
+
+    let didUnmount = false;
+    userHasSetValue.current = false; // Reset on key change or mount
+    setHasLoaded(false); // Signal that we are about to load for this key
 
     const fetchValue = async () => {
       try {
         // Dexie automatically handles opening the database.
         const storedRecord = await db["keyval-store"].get(key);
-        if (storedRecord) {
-          // If we find data, we update our state with it.
-          setValue(storedRecord.value);
+        if (!didUnmount) {
+          if (storedRecord) {
+            // Only set from DB if user hasn't already set a value.
+            if (!userHasSetValue.current) {
+              setValueState(storedRecord.value);
+            }
+          }
+          // else, defaultValue is already in state via useState.
+          // If nothing in DB, defaultValue will be saved by the save effect once hasLoaded is true.
         }
       } catch (error) {
         console.error(`[useIndexedDb] Error fetching for key "${key}":`, error);
+      } finally {
+        if (!didUnmount) {
+          setHasLoaded(true); // Mark load attempt as complete
+        }
       }
     };
 
     fetchValue();
-  }, [key]);
+    return () => {
+      didUnmount = true;
+    };
+  }, [key]); // Only re-run if key changes
 
   // --- EFFECT 2: Write state changes to IndexedDB ---
-  // This effect runs whenever `value` changes.
+  // This effect runs whenever `value` changes or `hasLoaded` becomes true.
   useEffect(() => {
-    // On the very first render, we don't want to save anything.
-    // We set the ref to false and exit, so this only runs on subsequent updates.
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
+    // Don't save if initial load hasn't completed or if on server.
+    if (!hasLoaded || typeof window === "undefined") {
       return;
     }
 
@@ -88,9 +107,8 @@ export function useIndexedDb(key, defaultValue) {
         console.error(`[useIndexedDb] Error saving for key "${key}":`, error);
       }
     };
-
     saveValue();
-  }, [key, value]);
+  }, [key, value, hasLoaded]); // Run if key, value, or hasLoaded changes
 
   /**
    * Provides a STABLE setter function that updates the component's state.
@@ -98,9 +116,10 @@ export function useIndexedDb(key, defaultValue) {
    */
   const setStoredValue = useCallback(
     (valOrFn) => {
-      setValue(valOrFn);
+      userHasSetValue.current = true; // Mark that user has intervened
+      setValueState(valOrFn);
     },
-    [] // This setter function is stable and will not cause re-renders.
+    [] // setValueState from useState is stable
   );
 
   // Provides a helpful label in React DevTools.

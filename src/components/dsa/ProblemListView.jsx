@@ -92,16 +92,25 @@ const ProblemListView = ({
 
   // Define standard and faded colors for chart segments
   // Corresponds to CSS variables like --chart-color-easy, --chart-color-easy-faded, etc.
-  const easyColor = "rgba(75, 192, 192, 0.7)"; // --chart-color-easy
-  const easyFadedColor = "rgba(75, 192, 192, 0.2)"; // --chart-color-easy-faded
-  const mediumColor = "rgba(255, 206, 86, 0.7)"; // --chart-color-medium
-  const mediumFadedColor = "rgba(255, 206, 86, 0.2)"; // --chart-color-medium-faded
-  const hardColor = "rgba(255, 99, 132, 0.7)"; // --chart-color-hard
-  const hardFadedColor = "rgba(255, 99, 132, 0.2)"; // --chart-color-hard-faded
-
-  const easyBorderColor = "rgba(75, 192, 192, 1)"; // --chart-color-easy-border
-  const mediumBorderColor = "rgba(255, 206, 86, 1)"; // --chart-color-medium-border
-  const hardBorderColor = "rgba(255, 99, 132, 1)"; // --chart-color-hard-border
+  // Consider centralizing these if used across multiple chart components,
+  // or eventually deriving from CSS variables if feasible.
+  const chartColors = {
+    easy: {
+      main: "rgba(75, 192, 192, 0.7)",
+      faded: "rgba(75, 192, 192, 0.2)",
+      border: "rgba(75, 192, 192, 1)",
+    },
+    medium: {
+      main: "rgba(255, 206, 86, 0.7)",
+      faded: "rgba(255, 206, 86, 0.2)",
+      border: "rgba(255, 206, 86, 1)",
+    },
+    hard: {
+      main: "rgba(255, 99, 132, 0.7)",
+      faded: "rgba(255, 99, 132, 0.2)",
+      border: "rgba(255, 99, 132, 1)",
+    },
+  };
 
   // Use a font family consistent with the application's theme.
   // This should ideally match the font specified by `var(--font-family-sans-serif)` in your CSS.
@@ -121,16 +130,20 @@ const ProblemListView = ({
             ],
             backgroundColor: [
               filteredDifficultyStats.easy.completed > 0
-                ? easyColor
-                : easyFadedColor,
+                ? chartColors.easy.main
+                : chartColors.easy.faded,
               filteredDifficultyStats.medium.completed > 0
-                ? mediumColor
-                : mediumFadedColor,
+                ? chartColors.medium.main
+                : chartColors.medium.faded,
               filteredDifficultyStats.hard.completed > 0
-                ? hardColor
-                : hardFadedColor,
+                ? chartColors.hard.main
+                : chartColors.hard.faded,
             ],
-            borderColor: [easyBorderColor, mediumBorderColor, hardBorderColor],
+            borderColor: [
+              chartColors.easy.border,
+              chartColors.medium.border,
+              chartColors.hard.border,
+            ],
             borderWidth: 1, // Ensures segment outline is visible even if faded
           },
         ],

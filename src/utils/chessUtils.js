@@ -207,17 +207,11 @@ export const checkAndAwardChessBadges = (
     }
   });
 
-  // Check if the set of earned badges has actually changed
-  // by comparing keys and earnedAt dates (if necessary, for simplicity just comparing keys might be enough
-  // if earnedAt doesn't change for an existing badge)
+  // Check if the set of earned badges has actually changed.
+  // Given current logic (only adding/keeping badges), a change in length is sufficient.
   if (
     Object.keys(newEarnedBadges).length !==
-      Object.keys(originalEarnedBadges).length ||
-    Object.keys(newEarnedBadges).some(
-      (key) =>
-        !originalEarnedBadges[key] ||
-        newEarnedBadges[key].earnedAt !== originalEarnedBadges[key].earnedAt
-    )
+    Object.keys(originalEarnedBadges).length
   ) {
     badgesChanged = true;
   }

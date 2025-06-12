@@ -22,7 +22,7 @@ const Navbar = () => (
           <NavLink
             to="/"
             className={({ isActive }) =>
-              isActive ? "nav-links active" : "nav-links"
+              "nav-links" + (isActive ? " active" : "")
             }
             end
             aria-current={({ isActive }) => (isActive ? "page" : undefined)}
@@ -34,7 +34,7 @@ const Navbar = () => (
           <NavLink
             to="/dsa"
             className={({ isActive }) =>
-              isActive ? "nav-links active" : "nav-links"
+              "nav-links" + (isActive ? " active" : "")
             }
             aria-current={({ isActive }) => (isActive ? "page" : undefined)}
           >
@@ -45,7 +45,7 @@ const Navbar = () => (
           <NavLink
             to="/chess"
             className={({ isActive }) =>
-              isActive ? "nav-links active" : "nav-links"
+              "nav-links" + (isActive ? " active" : "")
             }
             aria-current={({ isActive }) => (isActive ? "page" : undefined)}
           >
@@ -56,10 +56,10 @@ const Navbar = () => (
           <NavLink
             to="/progress"
             className={({ isActive }) =>
-              isActive ? "nav-links active" : "nav-links"
+              "nav-links" + (isActive ? " active" : "")
             }
             aria-current={({ isActive }) => (isActive ? "page" : undefined)}
-            >
+          >
             Progress
           </NavLink>
         </li>

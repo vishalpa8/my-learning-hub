@@ -48,7 +48,7 @@ const RewardModal = ({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      tabIndex={-1}
+      tabIndex={isVisible ? -1 : undefined} // Only make it focusable (for programmatic focus) when visible
       aria-labelledby="reward-modal-title"
     >
       {/* Prevent clicks inside the modal content from closing the modal */}

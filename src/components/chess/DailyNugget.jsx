@@ -32,8 +32,8 @@ const DailyNugget = () => {
       const nuggetIndex = (dayOfYear - 1 + nuggets.length) % nuggets.length;
       setCurrentNugget(nuggets[nuggetIndex]);
     }
-    // This effect should run once on mount to determine the nugget for the current day.
-    // No dependencies are needed as 'nuggets' is a static import and 'Date' reflects mount time.
+    // This effect runs once on mount. 'nuggets' is a static import,
+    // so it doesn't strictly need to be a dependency, but adding it is harmless.
   }, []); // Empty dependency array ensures this runs only once on component mount.
 
   if (!currentNugget) {
