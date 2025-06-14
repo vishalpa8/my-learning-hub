@@ -62,7 +62,7 @@
   background: var(--background-color-subtle, #f8fafd);
   box-shadow: var(--box-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.07));
   padding: var(--spacing-lg);
-  border: 1px solid var(--border-color-light);
+  border: 1px solid var(--border-color);
   transition: var(--transition-all);
   min-width: 300px;
   max-width: 600px;
@@ -184,7 +184,7 @@
 .calendar-day.today {
   border: 2px solid var(--primary-color); /* Today's border to primary for emphasis */
   font-weight: var(--font-weight-bold);
-  padding: calc(var(--spacing-xxs, 4px) - 1px);
+  padding: calc(var(--spacing-xxs, 4px) - 1px); /* Account for thicker border */
 }
 
 .calendar-day.today:not(.selected) {
@@ -211,6 +211,54 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.calendar-day.activity-low {
+  /* 1 task */
+  background: var(--success-color-xlight, #e6f4ea);
+  color: var(--success-color-dark, #1e7e34);
+  font-weight: var(--font-weight-semibold);
+}
+
+.calendar-day.activity-medium {
+  /* 2 tasks */
+  background: var(--success-color-light, #d4edda);
+  color: var(--success-color-dark, #1e7e34);
+  font-weight: var(--font-weight-semibold);
+}
+
+.calendar-day.activity-high {
+  /* 3 tasks */
+  background: var(--success-color, #28a745);
+  color: var(--light-color, #fff);
+  font-weight: var(--font-weight-bold);
+}
+
+.calendar-day.activity-four {
+  /* 4 tasks */
+  background: var(--info-color, #17a2b8);
+  color: var(--light-color, #fff);
+  font-weight: var(--font-weight-bold);
+}
+
+.calendar-day.activity-five {
+  /* 5 tasks */
+  background: var(
+    --warning-color,
+    #ffc107
+  ); /* Using warning for 5, adjust as needed */
+  color: var(--dark-color, #212529); /* Ensure contrast */
+  font-weight: var(--font-weight-bold);
+}
+
+.calendar-day.activity-max {
+  /* 6+ tasks */
+  background: var(
+    --primary-color-dark,
+    #005cb2
+  ); /* Using a darker primary for max */
+  color: var(--light-color, #fff);
+  font-weight: var(--font-weight-bold);
+}
+
 .task-list-actions {
   margin-top: var(--spacing-md);
   display: flex;
@@ -222,31 +270,29 @@
 .task-list-actions button {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold); /* Use defined variable */
+  font-weight: var(--font-weight-semibold);
 }
 
 .task-edit-input,
 .new-task-subtask-input {
-  /* Apply consistent styling to subtask input */
   flex-grow: 1;
-  padding: var(--spacing-xs) var(--spacing-sm); /* Consistent padding */
+  padding: var(--spacing-xs) var(--spacing-sm);
   border: 1px solid var(--border-color, #ccc);
   border-radius: var(--border-radius-sm, 4px);
-  font-size: var(--font-size-sm); /* Standardize font size for these inputs */
+  font-size: var(--font-size-sm);
   width: 100%;
-  box-sizing: border-box; /* Ensure padding is included in width */
+  box-sizing: border-box;
 }
 
-/* Styling for "Add Description" / "Add Subtasks" buttons */
 .add-optional-field-btn {
   background: none;
-  border: 1px dashed var(--border-color-muted); /* Softer, dashed border */
-  color: var(--text-muted-color);
+  border: 1px dashed var(--border-color-muted);
+  color: var(--text-color-secondary, var(--text-muted-color));
   font-size: var(--font-size-sm);
-  padding: var(--spacing-xxs) var(--spacing-sm); /* Adjusted padding */
+  padding: var(--spacing-xxs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   transition: var(--transition-base);
-  font-weight: var(--font-weight-normal); /* Lighter weight */
+  font-weight: var(--font-weight-normal);
 }
 
 .add-optional-field-btn:hover,
@@ -254,45 +300,33 @@
   background-color: var(--primary-color-xlight);
   border-color: var(--primary-color-light);
   color: var(--primary-color-dark);
-  border-style: solid; /* Change to solid on hover/focus */
+  border-style: solid;
 }
 
-.calendar-day.activity-low {
-  background: var(--success-color-light);
-  color: var(--success-color-dark);
-  font-weight: var(--font-weight-semibold);
-}
-
-.calendar-day.activity-medium {
-  background: var(--warning-color-background);
-  color: var(--warning-color-dark);
-  font-weight: var(--font-weight-semibold);
-  border: 1px solid var(--warning-color); /* Use main warning color for border */
-}
-
-.calendar-day.activity-high {
-  background: var(--primary-color);
-  color: var(--light-color);
-  font-weight: var(--font-weight-bold);
-}
-
-.task-description-input {
+.task-description-input,
+.task-link-input {
+  /* Common styling for these inputs */
   width: 100%;
   padding: var(--spacing-xs) var(--spacing-sm);
   margin-top: var(--spacing-xs);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-sm);
-  resize: vertical;
   box-sizing: border-box;
   background-color: var(--background-color, #fff);
   color: var(--text-color);
 }
-/* .task-list-form styling updated below */
+.task-description-input {
+  resize: vertical;
+}
+.task-link-input:focus,
+.task-description-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-ring);
+}
 
 .task-input-group {
   width: 100%;
-  /* margin-bottom: var(--spacing-xs); Removed, gap in form handles it */
 }
 
 .task-description-display {
@@ -344,12 +378,12 @@
 .activity-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-xs) var(--spacing-sm); /* Slightly reduced gap for compactness */
+  gap: var(--spacing-xs) var(--spacing-sm);
   margin: var(--spacing-md) 0 var(--spacing-xs) 0;
   font-size: var(--font-size-sm, 0.875rem);
   align-items: center;
   padding-left: var(--spacing-xs);
-  max-width: 275px;
+  max-width: 275px; /* Or adjust to fit more items if needed */
 }
 
 .activity-legend-title {
@@ -372,37 +406,42 @@
   margin-right: var(--spacing-xs, 0.5rem);
   border-radius: var(--border-radius-sm, 0.2rem);
   display: inline-block;
-  border: 1px solid transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Default subtle border */
 }
 
 .legend-color-box.activity-high {
-  background-color: var(--primary-color, #007bff);
-}
+  background-color: var(--success-color);
+} /* 3 tasks */
 .legend-color-box.activity-medium {
-  background-color: var(--warning-color-background);
-  border-color: var(--warning-color-border);
-}
+  background-color: var(--success-color-light);
+} /* 2 tasks */
 .legend-color-box.activity-low {
-  background-color: var(--success-color-light, #d4edda);
+  background-color: var(--success-color-xlight);
+} /* 1 task */
+.legend-color-box.activity-four {
+  background-color: var(--info-color, #17a2b8);
 }
+.legend-color-box.activity-five {
+  background-color: var(--warning-color, #ffc107);
+}
+.legend-color-box.activity-max {
+  background-color: var(--primary-color-dark, #005cb2);
+}
+
 .legend-color-box.activity-worked {
   background-color: var(--primary-color-light, #e0f0ff);
-  border-color: var(
-    --primary-color-dark
-  ); /* Darker border for better definition */
+  border-color: var(--primary-color-dark);
 }
 .legend-color-box.no-activity {
   background-color: var(--background-color-muted, #f0f0f0);
-  border-color: var(--border-color-muted, #e0e0e0);
+  border-color: var(--border-color-muted, #d0d0d0);
 }
 .legend-color-box.today {
   width: 12px;
   height: 12px;
-  border: var(--border-width-medium, 2px) solid var(--primary-color); /* Match .calendar-day.today border */
+  border: var(--border-width-medium, 2px) solid var(--primary-color);
   border-radius: 50%;
-  background: var(
-    --primary-color-xlight
-  ); /* Match .calendar-day.today background */
+  background: var(--primary-color-xlight);
 }
 
 /* ---------- Miscellaneous ---------- */
@@ -441,16 +480,14 @@
 /* Add New Task Form Styling */
 .task-list-form {
   display: flex;
-  flex-direction: column; /* Main sections stack vertically */
-  align-items: stretch; /* Children like input group take full width */
-  gap: var(--spacing-xxs); /* Reduced gap to bring button up slightly */
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--spacing-sm); /* Increased gap for better separation of elements */
   margin-bottom: var(--spacing-lg);
 }
 
 .task-input-group {
-  display: flex; /* Keeps task input and time input side-by-side */
-  flex-grow: 1; /* Allows it to take available space if form was row */
-  /* min-width: 250px; Not strictly needed in column layout */
+  display: flex;
   align-items: stretch;
   position: relative;
   background-color: var(--background-color, #fff);
@@ -458,7 +495,7 @@
   border-radius: var(--border-radius);
   transition: border-color var(--transition-duration, 0.2s) var(--easing-cubic),
     box-shadow var(--transition-duration, 0.2s) var(--easing-cubic);
-  width: 100%; /* Takes full width of the form column */
+  width: 100%;
 }
 
 .task-input-group:focus-within {
@@ -475,14 +512,13 @@
   font-size: var(--font-size-base, 1rem);
   background-color: transparent;
   border: none;
-  outline: none; /* Handled by parent focus */
+  outline: none;
   color: var(--text-color);
   line-height: 1.5;
 }
 
 .task-input {
   flex-grow: 1;
-  /* border-radius handled by parent .task-input-group */
 }
 
 .task-input::placeholder {
@@ -491,14 +527,13 @@
 }
 
 .task-time-input {
-  flex-grow: 0; /* Don't grow */
-  flex-shrink: 0; /* Don't shrink */
-  min-width: 120px; /* Increased min-width for better time visibility */
+  flex-grow: 0;
+  flex-shrink: 0;
+  min-width: 120px;
   border-left: var(--border-width-thin, 1px) solid
     var(--border-color-light, #f1f3f5);
   text-align: center;
   margin-left: 0;
-  /* border-radius handled by parent .task-input-group */
 }
 
 .task-time-input::-webkit-calendar-picker-indicator {
@@ -514,7 +549,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-xxs);
-  padding: var(--spacing-xs) var(--spacing-sm); /* Made button slightly less tall */
+  padding: var(--spacing-xs) var(--spacing-sm);
   min-width: 120px;
   background: linear-gradient(
     135deg,
@@ -532,29 +567,18 @@
     transform 0.1s var(--easing-cubic), box-shadow 0.2s var(--easing-cubic),
     border-color 0.2s var(--easing-cubic);
   letter-spacing: 0.03em;
-  align-self: flex-end; /* Align button to the right */
-  width: auto; /* Button width based on content */
-  max-width: 200px; /* Optional: prevent button from becoming too wide */
-}
-
-@media (min-width: 500px) {
-  /* On desktop, the button is already aligned to flex-end and auto width */
-  .add-task-btn {
-    align-self: flex-end;
-    width: auto;
-    min-width: 150px;
-  }
+  align-self: flex-end;
+  width: auto;
+  max-width: 200px;
 }
 
 .add-task-btn:disabled {
   background: var(--background-color-muted) !important;
   color: var(--text-muted-color) !important;
   cursor: not-allowed;
-  border-color: var(
-    --border-color-muted
-  ) !important; /* Ensure disabled border color */
-  box-shadow: none !important; /* Ensure no shadow on disabled */
-  transform: none !important; /* Prevent hover effects */
+  border-color: var(--border-color-muted) !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 .add-task-btn:hover:not(:disabled) {
   background: linear-gradient(
@@ -574,16 +598,13 @@
 .add-btn-icon {
   font-size: 1.2em;
   line-height: 1;
-  margin-right: var(--spacing-xxs); /* Space between icon and text */
+  margin-right: var(--spacing-xxs);
 }
 
-/* General focus for add-task-btn, not tied to media query */
 .add-task-btn:focus-visible {
-  border-color: var(
-    --primary-color
-  ); /* Highlight button border on its own focus */
-  box-shadow: var(--focus-ring), var(--box-shadow-md); /* Standard focus ring + depth */
-  z-index: 3; /* Ensure button's own focus is prominent */
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-ring), var(--box-shadow-md);
+  z-index: 3;
 }
 
 /* Task List Items */
@@ -602,11 +623,12 @@
   padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1rem);
   margin-bottom: var(--spacing-sm, 0.75rem);
   font-size: var(--font-size-base, 1rem);
-  border: var(--border-width-thin, 1px) solid var(--border-color-light, #f1f3f5);
+  border: var(--border-width-thin, 1px) solid var(--border-color, #e9ecef);
   box-shadow: var(--box-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
   transition: background 0.18s var(--easing-cubic),
     color 0.14s var(--easing-cubic), box-shadow 0.19s var(--easing-cubic),
-    border-color 0.19s var(--easing-cubic), transform 0.15s var(--easing-cubic);
+    border-color 0.19s var(--easing-cubic), transform 0.15s var(--easing-cubic),
+    border-left-color 0.2s ease; /* Added for completed state transition */
   font-weight: var(--font-weight-semibold, 500);
   letter-spacing: 0.01em;
 }
@@ -618,26 +640,57 @@
 .improved-task-list-li:hover:not(.editing),
 .improved-task-list-li:focus-within:not(.editing) {
   background: var(--primary-color-xlight, #e1effb);
-  border-color: var(--primary-color); /* Stronger border on hover */
+  border-color: var(--primary-color);
   box-shadow: var(--box-shadow, 0 3px 8px rgba(0, 0, 0, 0.08));
-  transform: translateY(-1px); /* Subtle lift effect */
+  transform: translateY(-1px);
 }
 
+/* Enhanced Completed Task Styling */
 .improved-task-list-li.completed .task-view-content .task-text,
 .improved-task-list-li.completed .task-view-content .task-time-display {
-  text-decoration: line-through;
-  color: var(--text-muted-color);
-  opacity: 0.7;
+  /* text-decoration: line-through; */
+  color: var(--success-color-dark, #1e7e34);
+  opacity: 0.85;
 }
 .improved-task-list-li.completed:not(.editing) {
-  /* Ensure editing style takes precedence */
-  background: var(--background-color-muted, #f2f2f2);
+  background: var(--success-color-xlight, #e6f4ea);
+  border-left: 4px solid var(--success-color, #28a745);
+  box-shadow: 0 2px 5px rgba(var(--success-color-rgb, 40, 167, 69), 0.1);
+  padding-left: calc(
+    var(--spacing-md, 1rem) - 4px
+  ); /* Adjust padding for border */
+}
+.improved-task-list-li.completed .task-text::after {
+  content: " (Completed)";
+  color: var(
+    --success-color-dark,
+    #1e7e34
+  ); /* Same color as the struck-through text */
+  font-size: 0.9em; /* Slightly smaller */
+  font-weight: var(
+    --font-weight-normal
+  ); /* Normal weight for the status text */
+  margin-left: var(--spacing-xxs);
+  opacity: 0.85; /* Match opacity of completed text */
 }
 
 .task-text {
   line-height: var(--line-height-base, 1.6);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* In EngagementPage.css */
+.task-text .task-link-inline-indicator {
+  font-size: 0.9em; /* Slightly smaller than task text */
+  text-decoration: none; /* Remove underline from the icon itself */
+  color: var(--info-color, #17a2b8); /* Match other link indicators */
+  /* Add any other specific styling */
+}
+
+.task-text .task-link-inline-indicator:hover {
+  color: var(--info-color-dark, #117a8b);
+  text-decoration: none;
 }
 
 .task-time-display {
@@ -647,38 +700,8 @@
   padding: 2px 4px;
   border-radius: 4px;
   font-size: 0.85em;
-  color: var(
-    --text-color-secondary
-  ); /* Slightly darker for better readability */
+  color: var(--text-color-secondary);
   background-color: var(--background-color-subtle, #f8fafd);
-}
-
-.delete-task-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted-color);
-  font-size: 1.05rem;
-  padding: var(--spacing-xxs);
-  cursor: pointer;
-  transition: color 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
-  line-height: 1;
-  opacity: 0.6;
-  margin-left: auto; /* Pushes button to the right */
-  border-radius: var(--border-radius-sm);
-  width: 28px; /* Explicit width */
-  height: 28px; /* Explicit height for square-ish feel */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.delete-task-btn:hover,
-.delete-task-btn:focus-visible {
-  color: var(--danger-color);
-  opacity: 1;
-  background-color: var(
-    --danger-color-background
-  ); /* Use existing variable from index.css */
 }
 
 .check-container {
@@ -698,40 +721,36 @@
   width: 22px;
   height: 22px;
   border-radius: var(--border-radius-sm, 0.2rem);
-  border: var(--border-width-medium, 2px) solid var(--border-color-muted); /* Slightly darker border for checkbox */
-  background: var(--background-color); /* Cleaner background */
+  border: var(--border-width-medium, 2px) solid var(--border-color);
+  background: var(--background-color);
   transition: border-color 0.18s var(--easing-cubic),
     background 0.18s var(--easing-cubic), box-shadow 0.18s var(--easing-cubic);
   position: relative;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle inner shadow */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .check-container input[type="checkbox"]:focus-visible + .custom-checkbox {
-  /* Changed to focus-visible */
   border-color: var(--primary-color);
   box-shadow: var(--focus-ring);
   outline: none;
 }
 .check-container input[type="checkbox"]:checked + .custom-checkbox {
-  border-color: var(
-    --primary-color
-  ); /* Use primary color for checked state border */
-  background: var(--primary-color); /* Fill with primary color */
-  box-shadow: none; /* Remove inner shadow when checked */
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  box-shadow: none;
 }
 
-/* Modern Checkmark for Custom Checkbox */
 .check-container input[type="checkbox"]:checked + .custom-checkbox:after {
   content: "";
   display: block;
-  width: 6px; /* Thinner checkmark */
-  height: 12px; /* Adjusted height */
-  border: solid var(--light-color); /* White checkmark */
-  border-width: 0 2.5px 2.5px 0; /* Adjusted border width for checkmark */
+  width: 6px;
+  height: 12px;
+  border: solid var(--light-color);
+  border-width: 0 2.5px 2.5px 0;
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -60%) rotate(45deg) scale(1); /* Centered and standard rotation */
+  transform: translate(-50%, -60%) rotate(45deg) scale(1);
   transition: border-color 0.16s var(--easing-cubic);
 }
 
@@ -752,7 +771,7 @@
 
 .task-list-tip {
   font-size: var(--font-size-sm, 0.98em);
-  color: var(--primary-color-dark); /* Darker for better contrast on light bg */
+  color: var(--primary-color-dark);
   background: var(--primary-color-xlight);
   text-align: center;
   border-radius: var(--border-radius, 8px);
@@ -763,7 +782,7 @@
 
 .calendar-controls {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Changed from center for prev/next */
   gap: var(--spacing-sm, 1rem);
   margin-top: var(--spacing-md, 1.5rem);
   width: 100%;
@@ -772,41 +791,71 @@
 .calendar-nav-btn {
   padding: var(--spacing-xs, 0.5rem) var(--spacing-md, 1.5rem);
   font-size: var(--font-size-sm, 0.875rem);
+  /* Assuming global .btn styles provide base appearance */
 }
 
 /* Task Item Edit Mode Styles */
 .task-content-area {
   flex-grow: 1;
   display: flex;
-  min-width: 0;
+  min-width: 0; /* Important for flex children */
 }
 
-.edit-pencil-btn {
+/* Base style for task action icon buttons */
+.task-action-icon-btn {
   background: none;
   border: none;
-  color: var(--text-muted-color);
   font-size: 1.05rem;
   padding: var(--spacing-xxs);
   cursor: pointer;
-  transition: var(--transition-color);
+  transition: color 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+  line-height: 1;
   opacity: 0.6;
-  margin-left: var(--spacing-xs, 0.5rem);
-  align-self: center;
   border-radius: var(--border-radius-sm);
   width: 28px;
   height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-muted-color);
+  margin-left: var(
+    --spacing-xs
+  ); /* Default margin for buttons after the first */
+}
+.task-action-icon-btn:first-of-type {
+  /* For delete button if it's the first in the group */
+  margin-left: auto;
+}
+.task-action-icon-btn:hover,
+.task-action-icon-btn:focus-visible {
+  opacity: 1;
 }
 
+.delete-task-btn {
+  /* Specific hover for delete */
+}
+.delete-task-btn:hover,
+.delete-task-btn:focus-visible {
+  color: var(--danger-color);
+  background-color: var(--danger-color-xlight, var(--danger-color-background));
+}
+
+.edit-pencil-btn {
+  /* Specific hover for edit */
+}
 .edit-pencil-btn:hover,
 .edit-pencil-btn:focus-visible {
   color: var(--primary-color);
-  opacity: 1;
-  background-color: var(
-    --primary-color-xlight
-  ); /* Use existing variable from index.css */
+  background-color: var(--primary-color-xlight, var(--primary-color-xxlight));
+}
+
+.view-details-btn {
+  /* Specific hover for view */
+}
+.view-details-btn:hover,
+.view-details-btn:focus-visible {
+  color: var(--info-color);
+  background-color: var(--info-color-xlight, var(--info-color-background));
 }
 
 .task-edit-form {
@@ -816,10 +865,25 @@
   gap: var(--spacing-xs, 0.5rem);
   min-width: 0;
 }
+.task-edit-input {
+  /* General style for inputs in edit form */
+  width: 100%;
+  padding: var(--spacing-xs);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-base); /* Match task text size */
+}
+.task-edit-link-input {
+  /* Specific if needed, otherwise inherits .task-edit-input */
+  margin-top: var(--spacing-xs); /* Space above link input in edit form */
+}
 
 .task-edit-form .task-edit-time-select {
   align-self: flex-start;
-  margin-left: 0;
+  margin-left: 0; /* Reset margin if any from global input styles */
+  padding: var(--spacing-xs); /* Consistent padding */
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
 }
 
 .task-edit-actions {
@@ -841,7 +905,7 @@
   transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out,
     box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
   min-width: 80px;
-  width: 100%;
+  width: 100%; /* Make buttons take full width in their flex container if stacked */
   text-align: center;
 }
 
@@ -862,7 +926,10 @@
 .task-edit-cancel-btn:hover {
   background-color: var(--border-color-light, #e0e0e0);
   border-color: var(--border-color-muted, #d0d0d0);
-  color: var(--text-color-dark);
+  color: var(
+    --text-color-dark,
+    var(--dark-color)
+  ); /* Ensure --text-color-dark is defined */
   box-shadow: var(--box-shadow-sm);
 }
 
@@ -890,18 +957,49 @@
   display: inline-flex;
   align-items: center;
   opacity: 0.8;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, color 0.2s ease; /* Added color transition */
 }
 .task-indicator-icon:hover {
   opacity: 1;
   color: var(--primary-color);
 }
+.task-text .task-link-inline-indicator {
+  font-size: 0.95em; /* Slightly smaller or same size as task text */
+  color: var(
+    --primary-color-dark,
+    #0056b3
+  ); /* Using a darker, more saturated link color */
+  text-decoration: none; /* Usually icons don't need underline */
+  font-weight: var(--font-weight-semibold, 600); /* Make it a bit bolder */
+  transition: color 0.2s ease, transform 0.15s ease;
+  display: inline-block; /* Allows for better spacing if needed */
+  margin-left: var(--spacing-xxs); /* Small space after task text */
+  vertical-align: baseline; /* Helps align with text */
+}
+
+.past-date-restriction {
+  color: var(--warning-color-dark, #d39e00); /* Use a warning color */
+  background-color: var(--warning-color-xlight, #fff8e1); /* Light warning background */
+  text-align: center;
+  border-radius: var(--border-radius, 8px);
+  padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 1rem);
+  margin-top: var(--spacing-sm, 1rem);
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--warning-color, #ffc107);
+}
+
+.task-text .task-link-inline-indicator:hover,
+.task-text .task-link-inline-indicator:focus-visible {
+  color: var(--primary-color, #007bff);
+  text-decoration: none;
+  transform: scale(1.1);
+}
 
 .subtask-progress-indicator {
   font-size: 0.9em;
   margin-left: 2px;
-  font-weight: var(--font-weight-bold); /* Bolder for emphasis */
-  color: var(--primary-color-dark); /* Darker for better contrast */
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color-dark);
   background-color: var(--primary-color-xxlight, #f0f7ff);
   padding: 1px 4px;
   border-radius: var(--border-radius-sm);
@@ -913,40 +1011,11 @@
   border-radius: var(--border-radius-sm);
 }
 
-.view-details-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted-color);
-  font-size: 1.05rem;
-  padding: var(--spacing-xxs);
-  cursor: pointer;
-  transition: var(--transition-color);
-  opacity: 0.6;
-  margin-left: var(--spacing-xs, 0.5rem);
-  align-self: center;
-  line-height: 1;
-  border-radius: var(--border-radius-sm);
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.view-details-btn:hover,
-.view-details-btn:focus-visible {
-  color: var(--info-color); /* Ensure --info-color is defined in index.css */
-  opacity: 1;
-  background-color: var(
-    --info-color-background
-  ); /* Ensure --info-color-background is defined */
-}
-
 .new-task-subtasks-section {
   width: 100%;
   margin-top: var(--spacing-sm);
   padding: var(--spacing-sm);
-  border: 1px solid var(--border-color-light);
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   background-color: var(--background-color);
 }
@@ -963,9 +1032,10 @@
   display: flex;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-xs);
-  margin-bottom: var(--spacing-sm); /* Ensure space below these buttons */
+  margin-bottom: var(--spacing-sm);
   width: 100%;
   justify-content: flex-start;
+  flex-wrap: wrap; /* Allow buttons to wrap */
 }
 
 .new-task-subtask-input-group {
@@ -981,11 +1051,16 @@
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-sm);
   background-color: var(--background-color);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Added transition */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.new-task-subtask-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-ring);
 }
 
 .add-new-subtask-btn {
   white-space: nowrap;
+  /* Assuming global .btn-secondary .btn-small are applied in JSX */
 }
 
 .new-task-subtasks-list {
@@ -1001,7 +1076,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-xs) 0;
-  border-bottom: 1px solid var(--border-color-extralight, #f0f0f0);
+  border-bottom: 1px solid var(--border-color-light, #f1f3f5);
 }
 .new-task-subtasks-list li:last-child {
   border-bottom: none;
@@ -1037,8 +1112,8 @@
   .improved-task-list,
   .calendar-widget-container {
     min-width: 275px;
-    width: 98%;
-    max-width: 600px;
+    width: 98%; /* Use percentage for better fit */
+    max-width: 600px; /* Keep a max width */
   }
   .engagement-main-container {
     padding: var(--spacing-md) var(--spacing-sm);
@@ -1073,19 +1148,19 @@
     flex-direction: column;
     align-items: stretch;
   }
-  /* .task-list-form is already column and align-items: stretch by default */
+  .task-list-form {
+    gap: var(--spacing-sm); /* Consistent gap for stacked form elements */
+  }
 
   .task-input-group {
-    margin-bottom: 0; /* Gap from form handles spacing */
+    margin-bottom: 0;
   }
-  .task-input-group:focus-within + .add-task-btn,
-  .add-task-btn:focus-visible {
-    border-color: var(--primary-color, #007bff); /* Standard focus for mobile */
-  }
+  /* Focus for Add Task button on mobile is handled by its own :focus-visible */
+
   .new-task-optional-actions {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-xs); /* Reduced gap for stacked buttons */
+    gap: var(--spacing-xs);
   }
   .add-optional-field-btn {
     width: 100%;

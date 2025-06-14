@@ -17,7 +17,9 @@ const initialNewTaskFormState = {
   text: "",
   time: "",
   description: "",
+  link: "", // Added for link feature
   showDescriptionInput: false,
+  showLinkInput: false, // Added for link feature
   showSubtasksArea: false,
   currentSubtaskText: "",
   subtasks: [], // Holds subtasks for the task being created
@@ -27,6 +29,7 @@ const initialEditState = {
   id: null,
   text: "",
   time: "",
+  link: "", // Added for link feature
 };
 
 // Helper to generate a simple unique ID for client-side temporary items
@@ -41,6 +44,18 @@ const getTodayDateString = () => {
   return `${day}-${month}-${year}`;
 };
 
+// Helper to parse DD-MM-YYYY to a Date object (ignoring time for comparison)
+const parseDDMMYYYYToDate = (dateStr) => {
+  const [day, month, year] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day); // month is 0-indexed
+};
+
+// Helper to check if a date string is in the past
+const isPastDate = (dateStr) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize today to the start of the day
+  return parseDDMMYYYYToDate(dateStr) < today;
+};
 
 const TaskList = ({
   tasks,
@@ -49,9 +64,10 @@ const TaskList = ({
   onDeleteTask,
   onUpdateTime,
   onUpdateTaskText,
+  onUpdateTaskLink, // Prop to handle link updates from EngagementPage
   onViewTaskDetails,
   currentTime,
-  selectedDateForDisplay, // Added this prop for dynamic header
+  selectedDateForDisplay,
 }) => {
   const [newTaskForm, setNewTaskForm] = useState(initialNewTaskFormState);
   const [userManuallySetNewTaskTime, setUserManuallySetNewTaskTime] =
@@ -103,7 +119,7 @@ const TaskList = ({
   }, []);
 
   const handleToggleNewTaskOptionalField = useCallback((field) => {
-    setNewTaskForm(prev => ({ ...prev, [field]: !prev[field] }));
+    setNewTaskForm((prev) => ({ ...prev, [field]: !prev[field] }));
   }, []);
 
   const handleNewSubtaskInputKeyDown = useCallback(
@@ -117,9 +133,9 @@ const TaskList = ({
   );
 
   const handleRemoveNewTaskSubtask = useCallback((subtaskId) => {
-    setNewTaskForm(prev => ({
+    setNewTaskForm((prev) => ({
       ...prev,
-      subtasks: prev.subtasks.filter((st) => st.id !== subtaskId)
+      subtasks: prev.subtasks.filter((st) => st.id !== subtaskId),
     }));
   }, []);
 
@@ -133,6 +149,7 @@ const TaskList = ({
         description: newTaskForm.showDescriptionInput
           ? newTaskForm.description.trim()
           : "",
+        link: newTaskForm.showLinkInput ? newTaskForm.link.trim() : "", // Pass link
         subtasks: newTaskForm.subtasks,
       });
       clearNewTaskForm();
@@ -140,17 +157,14 @@ const TaskList = ({
     [newTaskForm, onAddTask, clearNewTaskForm]
   );
 
-
   useEffect(() => {
-    // Repopulate if:
-    // 1. We have a currentTime.
-    // 2. The user hasn't manually set a time OR the task text is now empty (meaning form was just cleared).
-    if (currentTime && (!userManuallySetNewTaskTime || newTaskForm.text === "")) {
-      // If not manually set, always try to update to the current live time.
-      // After clearNewTaskForm, prev.time is "", so this will set it to currentTime.
-      setNewTaskForm(prev => ({ ...prev, time: currentTime }));
+    if (
+      currentTime &&
+      (!userManuallySetNewTaskTime || newTaskForm.text === "")
+    ) {
+      setNewTaskForm((prev) => ({ ...prev, time: currentTime }));
     }
-  }, [currentTime, userManuallySetNewTaskTime, newTaskForm.text]); // Added newTaskForm.text
+  }, [currentTime, userManuallySetNewTaskTime, newTaskForm.text]);
 
   useEffect(() => {
     if (editState.id && editInputRef.current) {
@@ -159,7 +173,6 @@ const TaskList = ({
     }
   }, [editState.id]);
 
-  // Handle Escape key for the main new task input
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (
@@ -169,7 +182,7 @@ const TaskList = ({
         clearNewTaskForm();
       }
     };
-    const inputElement = inputRef.current; // Capture the current ref value
+    const inputElement = inputRef.current;
     inputElement?.addEventListener("keydown", handleKeyDown);
     return () => {
       inputElement?.removeEventListener("keydown", handleKeyDown);
@@ -181,38 +194,51 @@ const TaskList = ({
       id: task.id,
       text: task.text,
       time: task.time || "",
+      link: task.link || "", // Populate link for editing
     });
   }, []);
 
   const handleCurrentEditTextChange = useCallback((e) => {
-    setEditState(prev => ({ ...prev, text: e.target.value }));
+    setEditState((prev) => ({ ...prev, text: e.target.value }));
   }, []);
 
   const handleCurrentEditTimeChange = useCallback((e) => {
-    setEditState(prev => ({ ...prev, time: e.target.value }));
+    setEditState((prev) => ({ ...prev, time: e.target.value }));
   }, []);
 
-  const handleSaveEditDetails = useCallback(
-    () => {
-      const { id, text, time } = editState;
-      if (!id) return;
+  const handleCurrentEditLinkChange = useCallback((e) => {
+    setEditState((prev) => ({ ...prev, link: e.target.value }));
+  }, []);
 
-      const trimmedText = text.trim();
-      const taskToUpdate = tasks.find((t) => t.id === id);
+  const handleSaveEditDetails = useCallback(() => {
+    const { id, text, time, link } = editState;
+    if (!id) return;
 
-      if (taskToUpdate && trimmedText) {
-        if (taskToUpdate.text !== trimmedText) {
-          onUpdateTaskText(id, trimmedText);
-        }
-        const timeToSave = time || null;
-        if (taskToUpdate.time !== timeToSave) {
-          onUpdateTime(id, timeToSave);
-        }
+    const trimmedText = text.trim();
+    const taskToUpdate = tasks.find((t) => t.id === id);
+
+    if (taskToUpdate && trimmedText) {
+      if (taskToUpdate.text !== trimmedText) {
+        onUpdateTaskText(id, trimmedText);
       }
-      resetEditDetailsState();
-    },
-    [editState, tasks, onUpdateTaskText, onUpdateTime, resetEditDetailsState]
-  );
+      const timeToSave = time || null;
+      if (taskToUpdate.time !== timeToSave) {
+        onUpdateTime(id, timeToSave);
+      }
+      const linkToSave = link.trim() || null;
+      if (onUpdateTaskLink && taskToUpdate.link !== linkToSave) {
+        onUpdateTaskLink(id, linkToSave);
+      }
+    }
+    resetEditDetailsState();
+  }, [
+    editState,
+    tasks,
+    onUpdateTaskText,
+    onUpdateTime,
+    onUpdateTaskLink, // Added to dependency array
+    resetEditDetailsState,
+  ]);
 
   const handleCancelEditDetails = useCallback(() => {
     resetEditDetailsState();
@@ -233,11 +259,7 @@ const TaskList = ({
         handleCancelEditDetails();
       }
     },
-    [
-      editState.id,
-      handleSaveEditDetails,
-      handleCancelEditDetails,
-    ]
+    [editState.id, handleSaveEditDetails, handleCancelEditDetails]
   );
 
   useEffect(() => {
@@ -272,6 +294,9 @@ const TaskList = ({
     selectedDateForDisplay === todayDateStr
       ? "Today's Tasks"
       : `Tasks for ${selectedDateForDisplay}`;
+
+  const allowTaskCreation = !isPastDate(selectedDateForDisplay);
+
   return (
     <section className="improved-task-list card" aria-label="Today's Tasks">
       <header className="task-list-header">
@@ -285,6 +310,7 @@ const TaskList = ({
         <h3>{headerText}</h3>
       </header>
       <form
+        aria-disabled={!allowTaskCreation}
         onSubmit={handleAddTaskSubmit}
         className="task-list-form"
         autoComplete="off"
@@ -295,11 +321,12 @@ const TaskList = ({
             type="text"
             value={newTaskForm.text}
             onChange={(e) => handleNewTaskFormChange("text", e.target.value)}
-            placeholder="Add a new task for today"
+            placeholder="Add a new task..."
             aria-label="Add a new task"
             className="task-input"
             maxLength={100}
             autoFocus
+            disabled={!allowTaskCreation}
           />
           <input
             type="time"
@@ -307,27 +334,49 @@ const TaskList = ({
             onChange={handleTimeChange}
             className="task-time-input"
             aria-label="Set time for new task"
+            disabled={!allowTaskCreation}
           />
         </div>
 
         {/* Optional Fields Toggles - only show if there's main task text */}
         {newTaskForm.text.trim() &&
-          (!newTaskForm.showDescriptionInput || !newTaskForm.showSubtasksArea) && (
+          allowTaskCreation &&
+          (!newTaskForm.showDescriptionInput ||
+            !newTaskForm.showLinkInput ||
+            !newTaskForm.showSubtasksArea) && (
             <div className="new-task-optional-actions">
               {!newTaskForm.showDescriptionInput && (
                 <button
                   type="button"
-                  onClick={() => handleToggleNewTaskOptionalField("showDescriptionInput")}
+                  onClick={() =>
+                    handleToggleNewTaskOptionalField("showDescriptionInput")
+                  }
                   className="btn-outline btn-small add-optional-field-btn"
+                  disabled={!allowTaskCreation}
                 >
                   + Description
+                </button>
+              )}
+              {!newTaskForm.showLinkInput && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleToggleNewTaskOptionalField("showLinkInput")
+                  }
+                  className="btn-outline btn-small add-optional-field-btn"
+                  disabled={!allowTaskCreation}
+                >
+                  + Link
                 </button>
               )}
               {!newTaskForm.showSubtasksArea && (
                 <button
                   type="button"
-                  onClick={() => handleToggleNewTaskOptionalField("showSubtasksArea")}
+                  onClick={() =>
+                    handleToggleNewTaskOptionalField("showSubtasksArea")
+                  }
                   className="btn-outline btn-small add-optional-field-btn"
+                  disabled={!allowTaskCreation}
                 >
                   + Subtasks
                 </button>
@@ -336,65 +385,96 @@ const TaskList = ({
           )}
 
         {/* Description Input Area - appears when toggled */}
-        {newTaskForm.showDescriptionInput && newTaskForm.text.trim() && (
-          <textarea
-            value={newTaskForm.description}
-            onChange={(e) => handleNewTaskFormChange("description", e.target.value)}
-            placeholder="Optional: Add a description..."
-            aria-label="Add a description for the new task"
-            className="task-description-input"
-            rows="3"
-          />
-        )}
+        {newTaskForm.showDescriptionInput &&
+          newTaskForm.text.trim() &&
+          allowTaskCreation && (
+            <textarea
+              value={newTaskForm.description}
+              onChange={(e) =>
+                handleNewTaskFormChange("description", e.target.value)
+              }
+              placeholder="Optional: Add a description..."
+              aria-label="Add a description for the new task"
+              className="task-description-input"
+              rows="3"
+              disabled={!allowTaskCreation}
+            />
+          )}
+
+        {/* Link Input Area - appears when toggled */}
+        {newTaskForm.showLinkInput &&
+          newTaskForm.text.trim() &&
+          allowTaskCreation && (
+            <input
+              type="url"
+              value={newTaskForm.link}
+              onChange={(e) => handleNewTaskFormChange("link", e.target.value)}
+              placeholder="Optional: Add a URL (e.g., https://example.com)"
+              className="task-link-input" // Ensure this class is styled in EngagementPage.css
+              disabled={!allowTaskCreation}
+            />
+          )}
 
         {/* Subtask Input Area - appears when toggled */}
-        {newTaskForm.showSubtasksArea && newTaskForm.text.trim() && (
-          <div className="new-task-subtasks-section">
-            <div className="new-task-subtask-input-group">
-              <input
-                type="text"
-                value={newTaskForm.currentSubtaskText}
-                onChange={(e) => handleNewTaskFormChange("currentSubtaskText", e.target.value)}
-                onKeyDown={handleNewSubtaskInputKeyDown}
-                placeholder="Enter subtask text and press Enter or click Add"
-                className="new-task-subtask-input"
-              />
-              <button
-                type="button"
-                onClick={handleAddNewTaskSubtask}
-                className="btn-secondary btn-small add-new-subtask-btn"
-                disabled={!newTaskForm.currentSubtaskText.trim()}
-              >
-                Add
-              </button>
-            </div>
-            {newTaskForm.subtasks.length > 0 && (
-              <div className="new-task-subtasks-list-container">
-                <ul className="new-task-subtasks-list">
-                  {newTaskForm.subtasks.map((st) => (
-                    <li key={st.id}>
-                      <span>{st.text}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveNewTaskSubtask(st.id)}
-                        className="remove-new-subtask-btn"
-                        aria-label="Remove subtask"
-                      >
-                        &times;
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+        {newTaskForm.showSubtasksArea &&
+          newTaskForm.text.trim() &&
+          allowTaskCreation && (
+            <div className="new-task-subtasks-section">
+              <div className="new-task-subtask-input-group">
+                <input
+                  type="text"
+                  value={newTaskForm.currentSubtaskText}
+                  onChange={(e) =>
+                    handleNewTaskFormChange(
+                      "currentSubtaskText",
+                      e.target.value
+                    )
+                  }
+                  onKeyDown={handleNewSubtaskInputKeyDown}
+                  placeholder="Enter subtask text and press Enter or click Add"
+                  className="new-task-subtask-input"
+                  disabled={!allowTaskCreation}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddNewTaskSubtask}
+                  className="btn-secondary btn-small add-new-subtask-btn"
+                  disabled={
+                    !allowTaskCreation || !newTaskForm.currentSubtaskText.trim()
+                  }
+                >
+                  Add
+                </button>
               </div>
-            )}
-          </div>
-        )}
+              {newTaskForm.subtasks.length > 0 && (
+                <div className="new-task-subtasks-list-container">
+                  <ul className="new-task-subtasks-list">
+                    {newTaskForm.subtasks.map((st) => (
+                      <li key={st.id}>
+                        <span>{st.text}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNewTaskSubtask(st.id)}
+                          className="remove-new-subtask-btn"
+                          disabled={!allowTaskCreation}
+                          aria-label="Remove subtask"
+                        >
+                          &times;
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         {/* Conditionally render Add Task button only if there's text */}
-        {newTaskForm.text.trim() && (
+        {newTaskForm.text.trim() && allowTaskCreation && (
           <button
             type="submit"
             className="add-task-btn"
             aria-label="Add Task"
+            disabled={!allowTaskCreation}
             title="Add Task"
           >
             <span className="add-btn-icon" aria-hidden="true">
@@ -404,6 +484,11 @@ const TaskList = ({
           </button>
         )}
       </form>
+      {!allowTaskCreation && (
+        <p className="task-list-tip past-date-restriction">
+          Task creation is not allowed for past dates.
+        </p>
+      )}
       {tasks.length === 0 ? (
         <div className="task-list-empty">
           <span
@@ -466,9 +551,16 @@ const TaskList = ({
                       className="task-time-select-inline task-edit-time-select"
                       aria-label={`Editing time for task: ${task.text}`}
                     />
+                    <input
+                      type="url"
+                      value={editState.link}
+                      onChange={handleCurrentEditLinkChange}
+                      placeholder="Add/Edit link (optional)"
+                      className="task-edit-input task-edit-link-input" // Style as needed
+                    />
                     <div className="task-edit-actions">
                       <button
-                        onClick={handleSaveEditDetails} // No longer needs task.id
+                        onClick={handleSaveEditDetails}
                         className="task-edit-save-btn"
                       >
                         Save
@@ -495,7 +587,26 @@ const TaskList = ({
                       }
                     }}
                   >
-                    <span className="task-text">{task.text}</span>
+                    <span className="task-text">
+                      {task.text}
+                      {task.link && (
+                        <>
+                          {" "}
+                          <a
+                            href={task.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="task-link-inline-indicator" // New class for specific styling if needed
+                            title={`Link: ${task.link}`}
+                            onClick={(e) => e.stopPropagation()} // Prevent task toggle
+                            onKeyDown={(e) => e.stopPropagation()}
+                          >
+                            🔗
+                          </a>
+                        </>
+                      )}
+                    </span>
+
                     <div className="task-indicators">
                       {task.description && (
                         <span
@@ -529,7 +640,6 @@ const TaskList = ({
                     >
                       {formatTime12Hour(task.time)}
                     </span>
-                    {/* Description and subtasks will be shown in a details modal */}
                   </div>
                 )}
               </div>
@@ -540,7 +650,7 @@ const TaskList = ({
                     e.stopPropagation();
                     handleStartEditDetails(task);
                   }}
-                  className="edit-pencil-btn"
+                  className="edit-pencil-btn task-action-icon-btn"
                   aria-label={`Edit task "${task.text}"`}
                   title="Edit task"
                 >
@@ -553,7 +663,7 @@ const TaskList = ({
                     e.stopPropagation();
                     onViewTaskDetails(task.id);
                   }}
-                  className="view-details-btn"
+                  className="view-details-btn task-action-icon-btn"
                   aria-label={`View details for task "${task.text}"`}
                   title="View task details"
                 >
@@ -564,15 +674,15 @@ const TaskList = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    requestDeleteTask(task); // Changed to request confirmation
+                    requestDeleteTask(task);
                   }}
-                  className="delete-task-btn"
+                  className="delete-task-btn task-action-icon-btn"
                   aria-label={`Delete "${task.text}"`}
                   title="Delete task"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
-                      requestDeleteTask(task); // Changed to request confirmation
+                      requestDeleteTask(task);
                     }
                   }}
                 >
@@ -590,7 +700,6 @@ const TaskList = ({
         Click the checkbox to mark tasks as complete!
       </footer>
 
-      {/* Confirmation Modal for Deleting a Main Task */}
       <Modal
         isOpen={isConfirmDeleteTaskOpen}
         onClose={cancelDeleteTask}
@@ -612,6 +721,7 @@ TaskList.propTypes = {
       completed: PropTypes.bool.isRequired,
       time: PropTypes.string,
       description: PropTypes.string,
+      link: PropTypes.string, // Added link to propTypes
       subtasks: PropTypes.array,
     })
   ).isRequired,
@@ -620,9 +730,10 @@ TaskList.propTypes = {
   onDeleteTask: PropTypes.func.isRequired,
   onUpdateTime: PropTypes.func.isRequired,
   onUpdateTaskText: PropTypes.func.isRequired,
+  onUpdateTaskLink: PropTypes.func, // Add if TaskList should directly update links
   onViewTaskDetails: PropTypes.func.isRequired,
   currentTime: PropTypes.string,
-  selectedDateForDisplay: PropTypes.string.isRequired, // Added prop type
+  selectedDateForDisplay: PropTypes.string.isRequired,
 };
 
 export default React.memo(TaskList);

@@ -1,5 +1,5 @@
 // EngagementPage.jsx
-import { useState, useEffect, useCallback, useMemo} from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import TaskList from "../components/engagement/TaskList";
 import ActivityCalendar from "../components/engagement/ActivityCalendar";
 import {
@@ -23,11 +23,7 @@ const dateToDDMMYYYY = (dateObj) => {
   return `${day}-${month}-${year}`;
 };
 
-/* formatDateForDisplay can be removed if selectedDay is always in the desired DD-MM-YYYY format for display
-const formatDateForDisplay = (dateStr_DD_MM_YYYY) => dateStr_DD_MM_YYYY;
-*/
-
-// Helper to get activity level based on completion percentage - keep this if you use it
+// Helper to get activity level based on completion percentage
 const getActivityLevel = (completed, total) => {
   if (total === 0) return "none";
   const percentage = (completed / total) * 100;
@@ -38,15 +34,19 @@ const getActivityLevel = (completed, total) => {
 };
 
 const calculateActivityForDate = (tasksForDateArray) => {
-  const validTasksArray = Array.isArray(tasksForDateArray) ? tasksForDateArray : [];
+  const validTasksArray = Array.isArray(tasksForDateArray)
+    ? tasksForDateArray
+    : [];
   const totalOnDate = validTasksArray.length;
-  const completedOnDate = validTasksArray.filter((task) => task.completed).length;
+  const completedOnDate = validTasksArray.filter(
+    (task) => task.completed
+  ).length;
 
   return {
     tasksCompleted: completedOnDate,
     worked: totalOnDate > 0, // Worked if there are any tasks for the day
     totalTasks: totalOnDate,
-    activityLevel: getActivityLevel(completedOnDate, totalOnDate), // Use the consistent helper
+    activityLevel: getActivityLevel(completedOnDate, totalOnDate),
   };
 };
 
@@ -54,49 +54,49 @@ const EngagementPage = () => {
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const [isTaskDetailsModalOpen, setIsTaskDetailsModalOpen] = useState(false);
   const [taskToViewDetails, setTaskToViewDetails] = useState(null);
+  // State to track which tasks the user explicitly chose to keep open
+  // despite all subtasks being complete. Format: { [taskId]: true }
+  const [tasksUserChoseToKeepOpen, setTasksUserChoseToKeepOpen] = useState(
+    {}
+  );
   const [isConfirmDeleteAllOpen, setIsConfirmDeleteAllOpen] = useState(false);
 
-  // ENGAGEMENT_TASKS_KEY now stores an object: { "DD-MM-YYYY": [tasks], ... }
-  const [tasksByDate, setTasksByDate] = useIndexedDb(ENGAGEMENT_TASKS_KEY, {}); // Keys will be DD-MM-YYYY
+  const [tasksByDate, setTasksByDate] = useIndexedDb(ENGAGEMENT_TASKS_KEY, {});
   const [activityData, setActivityData] = useIndexedDb(
     ENGAGEMENT_ACTIVITY_KEY,
-    {} // Keys will be DD-MM-YYYY
+    {}
   );
 
-  const location = useLocation(); // Get location object
-  const initialDate = location.state?.date || dateToDDMMYYYY(new Date()); // Check for date in state, default to today
+  const location = useLocation();
+  const initialDate = location.state?.date || dateToDDMMYYYY(new Date());
 
-  // Helper to parse DD-MM-YYYY string into a Date object
   const parseDDMMYYYY = (dateStr) => {
     if (!dateStr || !/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
-      return new Date(); // Return today if format is wrong or string is empty
+      return new Date();
     }
-    const [day, month, year] = dateStr.split('-').map(Number);
-    // Note: Month is 0-indexed in Date constructor
+    const [day, month, year] = dateStr.split("-").map(Number);
     return new Date(year, month - 1, day);
   };
 
-  // Initialize displayDate and selectedDay based on navigation state or today
-  const [displayDate, setDisplayDate] = useState(() => parseDDMMYYYY(initialDate));
-  const [selectedDay, setSelectedDay] = useState(initialDate); // DD-MM-YYYY
+  const [displayDate, setDisplayDate] = useState(() =>
+    parseDDMMYYYY(initialDate)
+  );
+  const [selectedDay, setSelectedDay] = useState(initialDate);
 
   const [currentTime, setCurrentTime] = useState(() =>
     new Date().toTimeString().slice(0, 5)
   );
 
- useEffect(() => {
-    // Derive activityData from tasksByDate whenever tasksByDate changes
+  useEffect(() => {
     const newActivityData = {};
     for (const [date, tasksOnDate] of Object.entries(tasksByDate)) {
       if (Array.isArray(tasksOnDate)) {
         newActivityData[date] = calculateActivityForDate(tasksOnDate);
       }
     }
-    // handle if an update to the DB is needed based on value changes.
     setActivityData(newActivityData);
-  }, [tasksByDate, setActivityData]); // setActivityData is stable from useIndexedDb
- 
-  // Define modal handlers before effects that might use them
+  }, [tasksByDate, setActivityData]);
+
   const handleViewTaskDetails = useCallback(
     (taskId) => {
       const task = (tasksByDate[selectedDay] || []).find(
@@ -113,20 +113,18 @@ const EngagementPage = () => {
   const handleCloseTaskDetailsModal = useCallback(() => {
     setIsTaskDetailsModalOpen(false);
     setTaskToViewDetails(null);
-  }, []); // No dependencies, safe to define early
+  }, []);
 
   useEffect(() => {
     if (isTaskDetailsModalOpen && taskToViewDetails) {
       const updatedTaskInList = (
         tasksByDate[taskToViewDetails.date] || []
       ).find(
-        (t) => t.id === taskToViewDetails.id // Assuming taskToViewDetails has a .date property
+        (t) => t.id === taskToViewDetails.id
       );
       if (!updatedTaskInList) {
-        // Task was deleted
         handleCloseTaskDetailsModal();
       } else if (updatedTaskInList !== taskToViewDetails) {
-        // Task data changed (e.g., subtask added/deleted)
         setTaskToViewDetails(updatedTaskInList);
       }
     }
@@ -145,16 +143,17 @@ const EngagementPage = () => {
   }, []);
 
   const addTaskWithDetails = useCallback(
-    ({ text, time, description, subtasks }) => {
+    ({ text, time, description, subtasks, link }) => {
       const newTask = {
         id: Date.now(),
         text,
         completed: false,
-        date: selectedDay, // This is correct, task object itself stores its date (DD-MM-YYYY)
+        date: selectedDay,
         time: time || null,
         description: description || null,
         subtasks: subtasks || [],
         completedAt: null,
+        link: link || null,
       };
       setTasksByDate((prevTasksByDate) => {
         const currentTasksForDay = prevTasksByDate[selectedDay] || [];
@@ -164,7 +163,6 @@ const EngagementPage = () => {
           [selectedDay]: updatedTasksForDay,
         };
       });
-      // Activity data will be updated by the useEffect watching tasksByDate
     },
     [selectedDay, setTasksByDate]
   );
@@ -172,18 +170,22 @@ const EngagementPage = () => {
   const toggleTask = useCallback(
     (id) => {
       setTasksByDate((prevTasksByDate) => {
-        const tasksForCurrentDay = prevTasksByDate[selectedDay] || []; // selectedDay is DD-MM-YYYY
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
         const taskToToggle = tasksForCurrentDay.find((task) => task.id === id);
         if (!taskToToggle) return prevTasksByDate;
 
         const newCompletedStatus = !taskToToggle.completed;
         let updatedSubtasks = taskToToggle.subtasks || [];
 
-        // If marking main task as complete, also mark all subtasks as complete
         if (newCompletedStatus && updatedSubtasks.length > 0) {
           updatedSubtasks = updatedSubtasks.map((st) => ({
             ...st,
             completed: true,
+          }));
+        } else if (!newCompletedStatus && updatedSubtasks.length > 0) {
+          updatedSubtasks = updatedSubtasks.map((st) => ({
+            ...st,
+            completed: false,
           }));
         }
 
@@ -192,8 +194,10 @@ const EngagementPage = () => {
             ? {
                 ...task,
                 completed: newCompletedStatus,
-                completedAt: newCompletedStatus ? dateToDDMMYYYY(new Date()) : null,
-                subtasks: updatedSubtasks, // Update subtasks
+                completedAt: newCompletedStatus
+                  ? dateToDDMMYYYY(new Date())
+                  : null,
+                subtasks: updatedSubtasks,
               }
             : task
         );
@@ -202,8 +206,16 @@ const EngagementPage = () => {
           [selectedDay]: updatedTasksForDay,
         };
       });
+      // Reset the "chose to keep open" flag if the task's completion status changed
+      setTasksUserChoseToKeepOpen((prev) => {
+        const newFlags = { ...prev };
+        if (newFlags[id]) {
+          delete newFlags[id];
+        }
+        return newFlags;
+      });
     },
-    [selectedDay, setTasksByDate]
+    [selectedDay, setTasksByDate, tasksUserChoseToKeepOpen]
   );
 
   const handleOpenCopyModal = useCallback(() => {
@@ -216,15 +228,14 @@ const EngagementPage = () => {
 
   const handleCalendarDayClick = useCallback(
     (dateStr_DD_MM_YYYY) => {
-      // ActivityCalendar now passes DD-MM-YYYY
       setSelectedDay(dateStr_DD_MM_YYYY);
     },
-    [setSelectedDay]
+    [setSelectedDay] // setSelectedDay is stable from useState
   );
 
   const handleCopyTasksToCurrentDay = useCallback(
     (tasksToCopyDetails) => {
-      const targetDate_DD_MM_YYYY = selectedDay; // selectedDay is DD-MM-YYYY
+      const targetDate_DD_MM_YYYY = selectedDay;
 
       if (
         !tasksToCopyDetails ||
@@ -237,18 +248,15 @@ const EngagementPage = () => {
       const newTasksToAdd = tasksToCopyDetails.map((task, index) => ({
         ...task,
         id: Date.now() + Math.random() + index,
-        date: targetDate_DD_MM_YYYY, // Assign to target date (DD-MM-YYYY)
+        date: targetDate_DD_MM_YYYY,
         completed: false,
         completedAt: null,
         description: task.description || null,
-        subtasks: task.subtasks
-          ? [
-              ...task.subtasks.map((st) => ({
-                ...st,
-                id: Date.now() + Math.random(), // Ensure new IDs for copied subtasks
-              })),
-            ]
-          : [],
+        subtasks: (task.subtasks || []).map((st) => ({
+          ...st,
+          id: Date.now() + Math.random(),
+          completed: false,
+        })),
       }));
 
       if (newTasksToAdd.length > 0) {
@@ -282,7 +290,7 @@ const EngagementPage = () => {
     if (selectedDay) {
       setTasksByDate((prevTasksByDate) => {
         const newTasksByDate = { ...prevTasksByDate };
-        delete newTasksByDate[selectedDay]; // Remove all tasks for that day
+        delete newTasksByDate[selectedDay];
         return newTasksByDate;
       });
     }
@@ -308,23 +316,18 @@ const EngagementPage = () => {
     (taskId, subtaskText) => {
       setTasksByDate((prevTasksByDate) => {
         const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
-        // let mainTaskWasModifiedForCompletion = false; // Not strictly needed if activityData updates via useEffect
-
         const updatedTasksForDay = tasksForCurrentDay.map((task) => {
           if (task.id === taskId) {
             const newSubtask = {
               id: Date.now() + Math.random(),
               text: subtaskText,
-              completed: false, // New subtasks are initially incomplete
+              completed: false,
             };
             const modifiedTask = {
               ...task,
               subtasks: [...(task.subtasks || []), newSubtask],
             };
-            // If the parent task was completed, mark it as incomplete
-            // because a new subtask (work item) has been added.
             if (modifiedTask.completed) {
-              // mainTaskWasModifiedForCompletion = true;
               return { ...modifiedTask, completed: false, completedAt: null };
             }
             return modifiedTask;
@@ -346,7 +349,59 @@ const EngagementPage = () => {
             const updatedSubtasks = (task.subtasks || []).map((st) =>
               st.id === subtaskId ? { ...st, ...updates } : st
             );
-            return { ...task, subtasks: updatedSubtasks };
+            let potentiallyUpdatedParentTask = {
+              ...task,
+              subtasks: updatedSubtasks,
+            };
+            const subtaskJustUnmarked =
+              updates.hasOwnProperty("completed") && !updates.completed;
+
+            if (subtaskJustUnmarked && tasksUserChoseToKeepOpen[task.id]) {
+              setTasksUserChoseToKeepOpen((prev) => {
+                const newFlags = { ...prev };
+                delete newFlags[task.id];
+                return newFlags;
+              });
+            }
+
+            if (subtaskJustUnmarked && potentiallyUpdatedParentTask.completed) {
+              potentiallyUpdatedParentTask.completed = false;
+              potentiallyUpdatedParentTask.completedAt = null;
+            }
+            return potentiallyUpdatedParentTask;
+          }
+          return task;
+        });
+        return { ...prevTasksByDate, [selectedDay]: updatedTasksForDay };
+      });
+    },
+    [selectedDay, setTasksByDate, tasksUserChoseToKeepOpen]
+  );
+
+  const handleUpdateTaskLink = useCallback(
+    (taskId, newLink) => {
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = tasksForCurrentDay.map(
+          (task) => (task.id === taskId ? { ...task, link: newLink } : task)
+        );
+        return { ...prevTasksByDate, [selectedDay]: updatedTasksForDay };
+      });
+    },
+    [selectedDay, setTasksByDate]
+  );
+
+  const handleMarkAllSubtasksComplete = useCallback(
+    (taskId) => {
+      setTasksByDate((prevTasksByDate) => {
+        const tasksForCurrentDay = prevTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = tasksForCurrentDay.map((task) => {
+          if (task.id === taskId && task.subtasks && task.subtasks.length > 0) {
+            const allSubtasksNowComplete = task.subtasks.map((st) => ({
+              ...st,
+              completed: true,
+            }));
+            return { ...task, subtasks: allSubtasksNowComplete };
           }
           return task;
         });
@@ -426,17 +481,13 @@ const EngagementPage = () => {
     setDisplayDate((date) => {
       const d = new Date(date);
       d.setMonth(d.getMonth() - 1);
-      // Adjust selectedDay if it falls out of the new month's range
       const [sDay, sMonth, sYear] = selectedDay.split("-").map(Number);
       const currentSelectedDateObj = new Date(sYear, sMonth - 1, sDay);
-
       let newSelectedDateObj = new Date(
         d.getFullYear(),
         d.getMonth(),
         currentSelectedDateObj.getDate()
       );
-      // If the day rolled over to the next month (e.g., trying to set Feb 31st),
-      // clamp to the last day of the target month.
       if (newSelectedDateObj.getMonth() !== d.getMonth()) {
         newSelectedDateObj = new Date(d.getFullYear(), d.getMonth() + 1, 0);
       }
@@ -448,7 +499,6 @@ const EngagementPage = () => {
     setDisplayDate((date) => {
       const d = new Date(date);
       d.setMonth(d.getMonth() + 1);
-      // Logic to adjust selectedDay to be within the new month
       const [sDay, sMonth, sYear] = selectedDay.split("-").map(Number);
       const currentSelectedDateObj = new Date(sYear, sMonth - 1, sDay);
       let newSelectedDateObj = new Date(
@@ -470,7 +520,7 @@ const EngagementPage = () => {
   };
 
   const tasksForSelectedDay = useMemo(
-    () => tasksByDate[selectedDay] || [], // selectedDay is DD-MM-YYYY
+    () => tasksByDate[selectedDay] || [],
     [tasksByDate, selectedDay]
   );
 
@@ -500,8 +550,8 @@ const EngagementPage = () => {
               onPrevMonth={handlePreviousMonth}
               onNextMonth={handleNextMonth}
               onToday={handleGoToToday}
-              selectedDay={selectedDay} // selectedDay is DD-MM-YYYY
-              onDayClick={handleCalendarDayClick} // Expects DD-MM-YYYY
+              selectedDay={selectedDay}
+              onDayClick={handleCalendarDayClick}
             />
           </div>
           <div className="improved-task-list">
@@ -512,9 +562,10 @@ const EngagementPage = () => {
               onDeleteTask={deleteTask}
               onUpdateTime={updateTaskTime}
               onUpdateTaskText={updateTaskText}
+              onUpdateTaskLink={handleUpdateTaskLink}
               onViewTaskDetails={handleViewTaskDetails}
               currentTime={currentTime}
-              selectedDateForDisplay={selectedDay} // selectedDay is already DD-MM-YYYY
+              selectedDateForDisplay={selectedDay}
             />
             <div className="task-list-actions">
               <button onClick={handleOpenCopyModal} className="btn-secondary">
@@ -536,19 +587,17 @@ const EngagementPage = () => {
       <CopyTaskModal
         isOpen={isCopyModalOpen}
         onClose={handleCloseCopyModal}
-        allTasksByDate={tasksByDate} // Keys are DD-MM-YYYY
-        targetDate={selectedDay} // DD-MM-YYYY
+        allTasksByDate={tasksByDate}
+        targetDate={selectedDay}
         onCopyTasks={handleCopyTasksToCurrentDay}
-        activityData={activityData} // Keys are DD-MM-YYYY
+        activityData={activityData}
       />
-      <Modal /* Used as Confirmation Modal for Delete All */
+      <Modal
         isOpen={isConfirmDeleteAllOpen}
         onClose={() => setIsConfirmDeleteAllOpen(false)}
         title="Delete All Tasks"
         isConfirmation={true}
-        confirmationMessage={`Are you sure you want to delete all ${
-          tasksForSelectedDay.length
-        } tasks for ${selectedDay}? This action cannot be undone.`}
+        confirmationMessage={`Are you sure you want to delete all ${tasksForSelectedDay.length} tasks for ${selectedDay}? This action cannot be undone.`}
         onConfirm={confirmDeleteAllTasks}
         confirmText="Delete All"
         cancelText="Cancel"
@@ -563,7 +612,13 @@ const EngagementPage = () => {
           onAddSubtask={handleAddSubtask}
           onUpdateSubtask={handleUpdateSubtask}
           onDeleteSubtask={handleDeleteSubtask}
-          // formatDateForDisplay prop removed, assuming TaskDetailsModal uses task.date directly
+          onToggleTask={toggleTask}
+          onMarkAllSubtasksComplete={handleMarkAllSubtasksComplete}
+          onUpdateTaskLink={handleUpdateTaskLink}
+          userChoseToKeepParentOpen={tasksUserChoseToKeepOpen[taskToViewDetails?.id] || false}
+          onSetUserChoseToKeepParentOpen={(taskId, value) => {
+            setTasksUserChoseToKeepOpen(prev => ({ ...prev, [taskId]: value }));
+          }}
         />
       )}
     </main>
