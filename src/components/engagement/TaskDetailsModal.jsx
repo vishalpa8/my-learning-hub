@@ -15,7 +15,7 @@ const TaskDetailsModal = ({
   onToggleTask,
   onMarkAllSubtasksComplete,
   onUpdateTaskLink, // Added prop for updating the link
-  userChoseToKeepParentOpen: propUserChoseToKeepParentOpen, // Renamed to avoid conflict if local state was kept
+  userChoseToKeepParentOpen, // Renamed to avoid conflict if local state was kept
   onSetUserChoseToKeepParentOpen,
 }) => {
   const [editingDescription, setEditingDescription] = useState(false);
@@ -214,7 +214,8 @@ const TaskDetailsModal = ({
       task.subtasks &&
       task.subtasks.length > 0 &&
       !task.completed &&
-      !propUserChoseToKeepParentOpen // Use prop here
+      !userChoseToKeepParentOpen && // Use the direct prop name
+      !isConfirmCompleteParentOpen // Only try to open if not already open
     ) {
       const allSubtasksNowComplete = task.subtasks.every((st) => st.completed);
       if (allSubtasksNowComplete) {
@@ -222,20 +223,15 @@ const TaskDetailsModal = ({
         if (!isConfirmCompleteParentOpen) {
           setIsConfirmCompleteParentOpen(true);
         }
-      } else if (isConfirmCompleteParentOpen) {
-        // If subtasks are no longer all complete (e.g., one was unchecked), close the prompt.
+      }
+    } else {
+      // If the primary conditions are not met (e.g., task is completed, user chose to keep open, no subtasks, etc.),
+      // and the prompt is open, close it.
+      if (isConfirmCompleteParentOpen) {
         setIsConfirmCompleteParentOpen(false);
       }
-    } else if (isConfirmCompleteParentOpen) {
-      // If other conditions (isOpen, task exists, !task.completed, propUserChoseToKeepParentOpen) are not met, close the prompt.
-      setIsConfirmCompleteParentOpen(false);
     }
-  }, [
-    task,
-    isOpen,
-    propUserChoseToKeepParentOpen,
-    isConfirmCompleteParentOpen,
-  ]);
+  }, [task, isOpen, userChoseToKeepParentOpen, isConfirmCompleteParentOpen]);
 
   const handleMarkAllSubtasksCompleteClick = useCallback(() => {
     if (task && onMarkAllSubtasksComplete) {
@@ -448,7 +444,7 @@ const TaskDetailsModal = ({
 
               if (
                 // Use prop here
-                propUserChoseToKeepParentOpen &&
+                userChoseToKeepParentOpen &&
                 allSubtasksComplete &&
                 !task.completed
               ) {
@@ -600,7 +596,7 @@ TaskDetailsModal.propTypes = {
   onToggleTask: PropTypes.func.isRequired,
   onMarkAllSubtasksComplete: PropTypes.func.isRequired,
   onUpdateTaskLink: PropTypes.func.isRequired,
-  userChoseToKeepParentOpen: PropTypes.bool.isRequired,
+  userChoseToKeepParentOpen: PropTypes.bool,
   onSetUserChoseToKeepParentOpen: PropTypes.func.isRequired,
 };
 

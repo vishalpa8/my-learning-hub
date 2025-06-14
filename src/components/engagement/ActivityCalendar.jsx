@@ -50,10 +50,15 @@ function getDayProps(
   if (day) {
     const act = activity && activity[dateStr]; // Ensure activity itself is not null/undefined
     if (act) {
-      if (act.tasksCompleted >= 3) className += " activity-high";
+      if (act.tasksCompleted >= 6) className += " activity-max"; // For 6+ tasks
+      else if (act.tasksCompleted === 5) className += " activity-five";
+      else if (act.tasksCompleted === 4) className += " activity-four";
+      else if (act.tasksCompleted === 3)
+        className += " activity-high"; // 3 tasks
       else if (act.tasksCompleted === 2) className += " activity-medium";
       else if (act.tasksCompleted === 1) className += " activity-low";
-      else if (act.worked) className += " activity-worked";
+      else if (act.worked)
+        className += " activity-worked"; // 0 completed, but tasks exist
       else className += " no-activity";
     } else {
       className += " no-activity";
@@ -191,16 +196,16 @@ const ActivityCalendar = ({
         {showLegend && (
           <div className="activity-legend">
             <div className="activity-legend-title">Legend:</div>
-            <LegendItem colorClass="activity-high" label="3+ tasks completed" />
+            <LegendItem colorClass="activity-low" label="1 task completed" />
             <LegendItem
               colorClass="activity-medium"
               label="2 tasks completed"
             />
-            <LegendItem colorClass="activity-low" label="1 task completed" />
-            <LegendItem
-              colorClass="activity-worked"
-              label="Activity (worked)"
-            />
+            <LegendItem colorClass="activity-high" label="3 tasks completed" />
+            <LegendItem colorClass="activity-four" label="4 tasks completed" />
+            <LegendItem colorClass="activity-five" label="5 tasks completed" />
+            <LegendItem colorClass="activity-max" label="6+ tasks completed" />
+            <LegendItem colorClass="activity-worked" label="Tasks (0 done)" />
             <LegendItem colorClass="no-activity" label="No activity" />
             <LegendItem colorClass="today" label="Today" />
           </div>
