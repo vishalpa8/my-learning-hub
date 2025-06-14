@@ -78,6 +78,7 @@ const TaskList = ({
   // State for main task deletion confirmation
   const [isConfirmDeleteTaskOpen, setIsConfirmDeleteTaskOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+  const [isTransitioningOut, setIsTransitioningOut] = useState(false);
 
   const inputRef = useRef(null);
   const editInputRef = useRef(null);
@@ -297,6 +298,20 @@ const TaskList = ({
 
   const allowTaskCreation = !isPastDate(selectedDateForDisplay);
 
+  // Effect to handle transitions when selectedDateForDisplay changes
+  useEffect(() => {
+    // Start fade-out transition
+    setIsTransitioningOut(true);
+
+    // After a short delay (enough for fade-out to start), allow new content to render
+    // and trigger fade-in (by removing the fade-out class)
+    const timer = setTimeout(() => {
+      setIsTransitioningOut(false);
+    }, 50); // Adjust delay if needed, should be less than transition duration
+
+    return () => clearTimeout(timer);
+  }, [selectedDateForDisplay]);
+
   return (
     <section className="improved-task-list card" aria-label="Today's Tasks">
       <header className="task-list-header">
@@ -309,396 +324,402 @@ const TaskList = ({
         </span>
         <h3>{headerText}</h3>
       </header>
-      <form
-        aria-disabled={!allowTaskCreation}
-        onSubmit={handleAddTaskSubmit}
-        className="task-list-form"
-        autoComplete="off"
+      <div
+        className={`task-list-content-wrapper ${
+          isTransitioningOut ? "fade-out-active" : ""
+        }`}
       >
-        <div className="task-input-group">
-          <input
-            ref={inputRef}
-            type="text"
-            value={newTaskForm.text}
-            onChange={(e) => handleNewTaskFormChange("text", e.target.value)}
-            placeholder="Add a new task..."
-            aria-label="Add a new task"
-            className="task-input"
-            maxLength={100}
-            autoFocus
-            disabled={!allowTaskCreation}
-          />
-          <input
-            type="time"
-            value={newTaskForm.time}
-            onChange={handleTimeChange}
-            className="task-time-input"
-            aria-label="Set time for new task"
-            disabled={!allowTaskCreation}
-          />
-        </div>
-
-        {/* Optional Fields Toggles - only show if there's main task text */}
-        {newTaskForm.text.trim() &&
-          allowTaskCreation &&
-          (!newTaskForm.showDescriptionInput ||
-            !newTaskForm.showLinkInput ||
-            !newTaskForm.showSubtasksArea) && (
-            <div className="new-task-optional-actions">
-              {!newTaskForm.showDescriptionInput && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleToggleNewTaskOptionalField("showDescriptionInput")
-                  }
-                  className="btn-outline btn-small add-optional-field-btn"
-                  disabled={!allowTaskCreation}
-                >
-                  + Description
-                </button>
-              )}
-              {!newTaskForm.showLinkInput && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleToggleNewTaskOptionalField("showLinkInput")
-                  }
-                  className="btn-outline btn-small add-optional-field-btn"
-                  disabled={!allowTaskCreation}
-                >
-                  + Link
-                </button>
-              )}
-              {!newTaskForm.showSubtasksArea && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleToggleNewTaskOptionalField("showSubtasksArea")
-                  }
-                  className="btn-outline btn-small add-optional-field-btn"
-                  disabled={!allowTaskCreation}
-                >
-                  + Subtasks
-                </button>
-              )}
-            </div>
-          )}
-
-        {/* Description Input Area - appears when toggled */}
-        {newTaskForm.showDescriptionInput &&
-          newTaskForm.text.trim() &&
-          allowTaskCreation && (
-            <textarea
-              value={newTaskForm.description}
-              onChange={(e) =>
-                handleNewTaskFormChange("description", e.target.value)
-              }
-              placeholder="Optional: Add a description..."
-              aria-label="Add a description for the new task"
-              className="task-description-input"
-              rows="3"
-              disabled={!allowTaskCreation}
-            />
-          )}
-
-        {/* Link Input Area - appears when toggled */}
-        {newTaskForm.showLinkInput &&
-          newTaskForm.text.trim() &&
-          allowTaskCreation && (
+        <form
+          aria-disabled={!allowTaskCreation}
+          onSubmit={handleAddTaskSubmit}
+          className="task-list-form"
+          autoComplete="off"
+        >
+          <div className="task-input-group">
             <input
-              type="url"
-              value={newTaskForm.link}
-              onChange={(e) => handleNewTaskFormChange("link", e.target.value)}
-              placeholder="Optional: Add a URL (e.g., https://example.com)"
-              className="task-link-input" // Ensure this class is styled in EngagementPage.css
+              ref={inputRef}
+              type="text"
+              value={newTaskForm.text}
+              onChange={(e) => handleNewTaskFormChange("text", e.target.value)}
+              placeholder="Add a new task..."
+              aria-label="Add a new task"
+              className="task-input"
+              maxLength={100}
+              autoFocus
               disabled={!allowTaskCreation}
             />
-          )}
+            <input
+              type="time"
+              value={newTaskForm.time}
+              onChange={handleTimeChange}
+              className="task-time-input"
+              aria-label="Set time for new task"
+              disabled={!allowTaskCreation}
+            />
+          </div>
 
-        {/* Subtask Input Area - appears when toggled */}
-        {newTaskForm.showSubtasksArea &&
-          newTaskForm.text.trim() &&
-          allowTaskCreation && (
-            <div className="new-task-subtasks-section">
-              <div className="new-task-subtask-input-group">
-                <input
-                  type="text"
-                  value={newTaskForm.currentSubtaskText}
-                  onChange={(e) =>
-                    handleNewTaskFormChange(
-                      "currentSubtaskText",
-                      e.target.value
-                    )
-                  }
-                  onKeyDown={handleNewSubtaskInputKeyDown}
-                  placeholder="Enter subtask text and press Enter or click Add"
-                  className="new-task-subtask-input"
-                  disabled={!allowTaskCreation}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddNewTaskSubtask}
-                  className="btn-secondary btn-small add-new-subtask-btn"
-                  disabled={
-                    !allowTaskCreation || !newTaskForm.currentSubtaskText.trim()
-                  }
-                >
-                  Add
-                </button>
-              </div>
-              {newTaskForm.subtasks.length > 0 && (
-                <div className="new-task-subtasks-list-container">
-                  <ul className="new-task-subtasks-list">
-                    {newTaskForm.subtasks.map((st) => (
-                      <li key={st.id}>
-                        <span>{st.text}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveNewTaskSubtask(st.id)}
-                          className="remove-new-subtask-btn"
-                          disabled={!allowTaskCreation}
-                          aria-label="Remove subtask"
-                        >
-                          &times;
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        {/* Conditionally render Add Task button only if there's text */}
-        {newTaskForm.text.trim() && allowTaskCreation && (
-          <button
-            type="submit"
-            className="add-task-btn"
-            aria-label="Add Task"
-            disabled={!allowTaskCreation}
-            title="Add Task"
-          >
-            <span className="add-btn-icon" aria-hidden="true">
-              ＋
-            </span>
-            <span>Add Task</span>
-          </button>
-        )}
-      </form>
-      {!allowTaskCreation && (
-        <p className="task-list-tip past-date-restriction">
-          Task creation is not allowed for past dates.
-        </p>
-      )}
-      {tasks.length === 0 ? (
-        <div className="task-list-empty">
-          <span
-            role="img"
-            aria-label="Seedling"
-            className="task-list-empty-icon"
-          >
-            🌱
-          </span>
-          No tasks for today yet. Add one to get started!
-        </div>
-      ) : (
-        <ul className="improved-task-list-ul">
-          {tasks.map((task) => (
-            <li
-              key={task.id}
-              className={`improved-task-list-li${
-                task.completed ? " completed" : ""
-              }${isEditingThisTask(task.id) ? " editing" : ""}`}
-            >
-              {!isEditingThisTask(task.id) && (
-                <label className="check-container">
-                  <input
-                    className="task-checkbox-input"
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onToggleTask(task.id);
-                    }}
-                    aria-label={
-                      task.completed
-                        ? `Mark task "${task.text}" as incomplete`
-                        : `Mark "${task.text}" as complete`
+          {/* Optional Fields Toggles - only show if there's main task text */}
+          {newTaskForm.text.trim() &&
+            allowTaskCreation &&
+            (!newTaskForm.showDescriptionInput ||
+              !newTaskForm.showLinkInput ||
+              !newTaskForm.showSubtasksArea) && (
+              <div className="new-task-optional-actions">
+                {!newTaskForm.showDescriptionInput && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleToggleNewTaskOptionalField("showDescriptionInput")
                     }
+                    className="btn-outline btn-small add-optional-field-btn"
+                    disabled={!allowTaskCreation}
+                  >
+                    + Description
+                  </button>
+                )}
+                {!newTaskForm.showLinkInput && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleToggleNewTaskOptionalField("showLinkInput")
+                    }
+                    className="btn-outline btn-small add-optional-field-btn"
+                    disabled={!allowTaskCreation}
+                  >
+                    + Link
+                  </button>
+                )}
+                {!newTaskForm.showSubtasksArea && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleToggleNewTaskOptionalField("showSubtasksArea")
+                    }
+                    className="btn-outline btn-small add-optional-field-btn"
+                    disabled={!allowTaskCreation}
+                  >
+                    + Subtasks
+                  </button>
+                )}
+              </div>
+            )}
+
+          {/* Description Input Area - appears when toggled */}
+          {newTaskForm.showDescriptionInput &&
+            newTaskForm.text.trim() &&
+            allowTaskCreation && (
+              <textarea
+                value={newTaskForm.description}
+                onChange={(e) =>
+                  handleNewTaskFormChange("description", e.target.value)
+                }
+                placeholder="Optional: Add a description..."
+                aria-label="Add a description for the new task"
+                className="task-description-input"
+                rows="3"
+                disabled={!allowTaskCreation}
+              />
+            )}
+
+          {/* Link Input Area - appears when toggled */}
+          {newTaskForm.showLinkInput &&
+            newTaskForm.text.trim() &&
+            allowTaskCreation && (
+              <input
+                type="url"
+                value={newTaskForm.link}
+                onChange={(e) => handleNewTaskFormChange("link", e.target.value)}
+                placeholder="Optional: Add a URL (e.g., https://example.com)"
+                className="task-link-input" // Ensure this class is styled in EngagementPage.css
+                disabled={!allowTaskCreation}
+              />
+            )}
+
+          {/* Subtask Input Area - appears when toggled */}
+          {newTaskForm.showSubtasksArea &&
+            newTaskForm.text.trim() &&
+            allowTaskCreation && (
+              <div className="new-task-subtasks-section">
+                <div className="new-task-subtask-input-group">
+                  <input
+                    type="text"
+                    value={newTaskForm.currentSubtaskText}
+                    onChange={(e) =>
+                      handleNewTaskFormChange(
+                        "currentSubtaskText",
+                        e.target.value
+                      )
+                    }
+                    onKeyDown={handleNewSubtaskInputKeyDown}
+                    placeholder="Enter subtask text and press Enter or click Add"
+                    className="new-task-subtask-input"
+                    disabled={!allowTaskCreation}
                   />
-                  <span className="custom-checkbox" aria-hidden="true"></span>
-                </label>
-              )}
-
-              <div className="task-content-area">
-                {isEditingThisTask(task.id) ? (
-                  <div
-                    className="task-edit-form"
-                    onClick={(e) => e.stopPropagation()}
+                  <button
+                    type="button"
+                    onClick={handleAddNewTaskSubtask}
+                    className="btn-secondary btn-small add-new-subtask-btn"
+                    disabled={
+                      !allowTaskCreation || !newTaskForm.currentSubtaskText.trim()
+                    }
                   >
-                    <input
-                      ref={editInputRef}
-                      type="text"
-                      value={editState.text}
-                      onChange={handleCurrentEditTextChange}
-                      className="task-edit-input"
-                      aria-label={`Editing task text: ${task.text}`}
-                      maxLength={100}
-                    />
-                    <input
-                      type="time"
-                      value={editState.time}
-                      onChange={handleCurrentEditTimeChange}
-                      className="task-time-select-inline task-edit-time-select"
-                      aria-label={`Editing time for task: ${task.text}`}
-                    />
-                    <input
-                      type="url"
-                      value={editState.link}
-                      onChange={handleCurrentEditLinkChange}
-                      placeholder="Add/Edit link (optional)"
-                      className="task-edit-input task-edit-link-input" // Style as needed
-                    />
-                    <div className="task-edit-actions">
-                      <button
-                        onClick={handleSaveEditDetails}
-                        className="task-edit-save-btn"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={handleCancelEditDetails}
-                        className="task-edit-cancel-btn"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className="task-view-content"
-                    onClick={() => onToggleTask(task.id)}
-                    title="Click to toggle complete/incomplete"
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onToggleTask(task.id);
-                      }
-                    }}
-                  >
-                    <span className="task-text">
-                      {task.text}
-                      {task.link && (
-                        <>
-                          {" "}
-                          <a
-                            href={task.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="task-link-inline-indicator" // New class for specific styling if needed
-                            title={`Link: ${task.link}`}
-                            onClick={(e) => e.stopPropagation()} // Prevent task toggle
-                            onKeyDown={(e) => e.stopPropagation()}
+                    Add
+                  </button>
+                </div>
+                {newTaskForm.subtasks.length > 0 && (
+                  <div className="new-task-subtasks-list-container">
+                    <ul className="new-task-subtasks-list">
+                      {newTaskForm.subtasks.map((st) => (
+                        <li key={st.id}>
+                          <span>{st.text}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveNewTaskSubtask(st.id)}
+                            className="remove-new-subtask-btn"
+                            disabled={!allowTaskCreation}
+                            aria-label="Remove subtask"
                           >
-                            🔗
-                          </a>
-                        </>
-                      )}
-                    </span>
-
-                    <div className="task-indicators">
-                      {task.description && (
-                        <span
-                          className="task-indicator-icon"
-                          title="Has description"
-                        >
-                          📝
-                        </span>
-                      )}
-                      {task.subtasks && task.subtasks.length > 0 && (
-                        <span
-                          className="task-indicator-icon"
-                          title={`${
-                            task.subtasks.filter((st) => st.completed).length
-                          }/${task.subtasks.length} subtasks completed`}
-                        >
-                          📋
-                          <span className="subtask-progress-indicator">
-                            {`${
-                              task.subtasks.filter((st) => st.completed).length
-                            }/${task.subtasks.length}`}
-                          </span>
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      className="task-time-display"
-                      aria-label={`Scheduled time: ${formatTime12Hour(
-                        task.time
-                      )}`}
-                    >
-                      {formatTime12Hour(task.time)}
-                    </span>
+                            &times;
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
+            )}
+          {/* Conditionally render Add Task button only if there's text */}
+          {newTaskForm.text.trim() && allowTaskCreation && (
+            <button
+              type="submit"
+              className="add-task-btn"
+              aria-label="Add Task"
+              disabled={!allowTaskCreation}
+              title="Add Task"
+            >
+              <span className="add-btn-icon" aria-hidden="true">
+                ＋
+              </span>
+              <span>Add Task</span>
+            </button>
+          )}
+        </form>
+        {!allowTaskCreation && (
+          <p className="task-list-tip past-date-restriction">
+            Task creation is not allowed for past dates.
+          </p>
+        )}
+        {tasks.length === 0 ? (
+          <div className="task-list-empty">
+            <span
+              role="img"
+              aria-label="Seedling"
+              className="task-list-empty-icon"
+            >
+              🌱
+            </span>
+            No tasks for today yet. Add one to get started!
+          </div>
+        ) : (
+          <ul className="improved-task-list-ul">
+            {tasks.map((task) => (
+              <li
+                key={task.id}
+                className={`improved-task-list-li${
+                  task.completed ? " completed" : ""
+                }${isEditingThisTask(task.id) ? " editing" : ""}`}
+              >
+                {!isEditingThisTask(task.id) && (
+                  <label className="check-container">
+                    <input
+                      className="task-checkbox-input"
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        onToggleTask(task.id);
+                      }}
+                      aria-label={
+                        task.completed
+                          ? `Mark task "${task.text}" as incomplete`
+                          : `Mark "${task.text}" as complete`
+                      }
+                    />
+                    <span className="custom-checkbox" aria-hidden="true"></span>
+                  </label>
+                )}
 
-              {!isEditingThisTask(task.id) && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStartEditDetails(task);
-                  }}
-                  className="edit-pencil-btn task-action-icon-btn"
-                  aria-label={`Edit task "${task.text}"`}
-                  title="Edit task"
-                >
-                  ✏️
-                </button>
-              )}
-              {!isEditingThisTask(task.id) && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onViewTaskDetails(task.id);
-                  }}
-                  className="view-details-btn task-action-icon-btn"
-                  aria-label={`View details for task "${task.text}"`}
-                  title="View task details"
-                >
-                  ℹ️
-                </button>
-              )}
-              {!isEditingThisTask(task.id) && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    requestDeleteTask(task);
-                  }}
-                  className="delete-task-btn task-action-icon-btn"
-                  aria-label={`Delete "${task.text}"`}
-                  title="Delete task"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
+                <div className="task-content-area">
+                  {isEditingThisTask(task.id) ? (
+                    <div
+                      className="task-edit-form"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        ref={editInputRef}
+                        type="text"
+                        value={editState.text}
+                        onChange={handleCurrentEditTextChange}
+                        className="task-edit-input"
+                        aria-label={`Editing task text: ${task.text}`}
+                        maxLength={100}
+                      />
+                      <input
+                        type="time"
+                        value={editState.time}
+                        onChange={handleCurrentEditTimeChange}
+                        className="task-time-select-inline task-edit-time-select"
+                        aria-label={`Editing time for task: ${task.text}`}
+                      />
+                      <input
+                        type="url"
+                        value={editState.link}
+                        onChange={handleCurrentEditLinkChange}
+                        placeholder="Add/Edit link (optional)"
+                        className="task-edit-input task-edit-link-input" // Style as needed
+                      />
+                      <div className="task-edit-actions">
+                        <button
+                          onClick={handleSaveEditDetails}
+                          className="task-edit-save-btn"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={handleCancelEditDetails}
+                          className="task-edit-cancel-btn"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="task-view-content"
+                      onClick={() => onToggleTask(task.id)}
+                      title="Click to toggle complete/incomplete"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onToggleTask(task.id);
+                        }
+                      }}
+                    >
+                      <span className="task-text">
+                        {task.text}
+                        {task.link && (
+                          <>
+                            {" "}
+                            <a
+                              href={task.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="task-link-inline-indicator" // New class for specific styling if needed
+                              title={`Link: ${task.link}`}
+                              onClick={(e) => e.stopPropagation()} // Prevent task toggle
+                              onKeyDown={(e) => e.stopPropagation()}
+                            >
+                              🔗
+                            </a>
+                          </>
+                        )}
+                      </span>
+
+                      <div className="task-indicators">
+                        {task.description && (
+                          <span
+                            className="task-indicator-icon"
+                            title="Has description"
+                          >
+                            📝
+                          </span>
+                        )}
+                        {task.subtasks && task.subtasks.length > 0 && (
+                          <span
+                            className="task-indicator-icon"
+                            title={`${
+                              task.subtasks.filter((st) => st.completed).length
+                            }/${task.subtasks.length} subtasks completed`}
+                          >
+                            📋
+                            <span className="subtask-progress-indicator">
+                              {`${
+                                task.subtasks.filter((st) => st.completed).length
+                              }/${task.subtasks.length}`}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                      <span
+                        className="task-time-display"
+                        aria-label={`Scheduled time: ${formatTime12Hour(
+                          task.time
+                        )}`}
+                      >
+                        {formatTime12Hour(task.time)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {!isEditingThisTask(task.id) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStartEditDetails(task);
+                    }}
+                    className="edit-pencil-btn task-action-icon-btn"
+                    aria-label={`Edit task "${task.text}"`}
+                    title="Edit task"
+                  >
+                    ✏️
+                  </button>
+                )}
+                {!isEditingThisTask(task.id) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewTaskDetails(task.id);
+                    }}
+                    className="view-details-btn task-action-icon-btn"
+                    aria-label={`View details for task "${task.text}"`}
+                    title="View task details"
+                  >
+                    ℹ️
+                  </button>
+                )}
+                {!isEditingThisTask(task.id) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       requestDeleteTask(task);
-                    }
-                  }}
-                >
-                  ×
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      <footer className="task-list-tip">
-        <span role="img" aria-label="Pointer">
-          👉
-        </span>{" "}
-        Click the checkbox to mark tasks as complete!
-      </footer>
+                    }}
+                    className="delete-task-btn task-action-icon-btn"
+                    aria-label={`Delete "${task.text}"`}
+                    title="Delete task"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        requestDeleteTask(task);
+                      }
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        <footer className="task-list-tip">
+          <span role="img" aria-label="Pointer">
+            👉
+          </span>{" "}
+          Click the checkbox to mark tasks as complete!
+        </footer>
+      </div> {/* End of task-list-content-wrapper */}
 
       <Modal
         isOpen={isConfirmDeleteTaskOpen}

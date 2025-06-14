@@ -136,19 +136,17 @@
   min-width: 38px;
   min-height: 38px;
   font-size: var(--font-size-base);
-  background: var(--background-color, #fff);
+  background-color: var(--background-color, #fff); /* Use background-color */
   box-sizing: border-box;
   font-weight: var(--font-weight-normal);
   color: var(--text-color, #212529);
   margin: 1px;
   cursor: pointer;
-  transition: var(--transition-all);
   outline: none;
   position: relative;
 }
 
 .calendar-day:not(.empty):hover {
-  background: var(--primary-color-xlight, #f0f7ff);
   transform: translateY(-2px);
   box-shadow: var(--box-shadow, 0 3px 8px rgba(0, 0, 0, 0.08));
   border-color: var(--primary-color, #007bff);
@@ -158,10 +156,10 @@
 .calendar-day:not(.empty):focus-visible {
   outline: 2px solid var(--primary-color-dark);
   outline-offset: 1px; /* Adjusted for tighter focus ring */
-  background-color: var(
-    --primary-color-xlight
-  ); /* Consistent with other focus */
+  background-color: var(--primary-color-xlight);
   z-index: 3; /* Ensure focus ring is visible */
+  transition: background-color 0.2s var(--easing-cubic),
+    outline 0.2s var(--easing-cubic), box-shadow 0.2s var(--easing-cubic);
 }
 
 .calendar-day.empty {
@@ -178,6 +176,10 @@
   font-weight: var(--font-weight-bold);
   box-shadow: var(--box-shadow-lg, 0 5px 15px rgba(0, 123, 255, 0.3));
   transform: translateY(-1px) scale(1.05); /* Slight pop effect */
+  transition: background-color 0.2s var(--easing-cubic),
+    color 0.2s var(--easing-cubic), border-color 0.2s var(--easing-cubic),
+    transform 0.2s var(--easing-cubic), box-shadow 0.2s var(--easing-cubic);
+
   z-index: 3;
 }
 
@@ -187,16 +189,11 @@
   padding: calc(var(--spacing-xxs, 4px) - 1px); /* Account for thicker border */
 }
 
-
 .calendar-day.no-activity:not(.selected):not(.today) {
   /* Ensure selected/today styles take precedence */
   background: var(--background-color-muted);
   color: var(--text-muted-color);
   font-weight: var(--font-weight-normal);
-}
-
-.calendar-day.no-activity:hover:not(.empty) {
-  background: var(--border-color-light);
 }
 
 .calendar-day.activity-worked {
@@ -235,20 +232,14 @@
 
 .calendar-day.activity-five {
   /* 5 tasks */
-  background: var(
-    --warning-color,
-    #ffc107
-  ); /* Using warning for 5, adjust as needed */
+  background: var(--warning-color, #ffc107);
   color: var(--dark-color, #212529); /* Ensure contrast */
   font-weight: var(--font-weight-bold);
 }
 
 .calendar-day.activity-max {
   /* 6+ tasks */
-  background: var(
-    --primary-color-dark,
-    #005cb2
-  ); /* Using a darker primary for max */
+  background: var(--primary-color-dark, #005cb2);
   color: var(--light-color, #fff);
   font-weight: var(--font-weight-bold);
 }
@@ -259,6 +250,20 @@
   justify-content: flex-end;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
+}
+
+/* Wrapper for TaskList content to enable smooth transitions */
+.task-list-content-wrapper {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.25s var(--easing-cubic),
+    transform 0.25s var(--easing-cubic);
+  /* Adjust duration and easing as needed */
+}
+
+.task-list-content-wrapper.fade-out-active {
+  opacity: 0;
+  transform: translateY(5px); /* Optional: slight move down during fade out */
 }
 
 .task-list-actions button {
