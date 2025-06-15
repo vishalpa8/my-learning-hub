@@ -39,6 +39,15 @@ export const DSA_LAST_VISITED_VIEW_DATES_KEY = "dsaLastVisitedViewDates";
 
 /** Key for storing the user's daily tasks. Expected value: An array of task objects. */
 export const ENGAGEMENT_TASKS_KEY = "engagementTasks";
+
+/**
+ * Key for tracking which tasks have already shown the "mark as completed" prompt.
+ * Expected value: An object mapping task IDs (string/number) to boolean.
+ * Example: { "12345": true, "67890": true }
+ */
+export const ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY =
+  "engagementAlreadyPromptedForComplete";
+
 /**
  * Key for storing aggregated daily activity data.
  * Useful for calendar views to quickly display daily engagement summaries.

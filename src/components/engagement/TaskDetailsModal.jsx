@@ -5,6 +5,8 @@ import Modal from "../shared/Modal";
 import "./TaskDetailsModal.css";
 import validator from "validator";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY } from "../../constants/localStorageKeys";
+import { useIndexedDb } from "../../hooks/useIndexedDb";
 
 const TaskDetailsModal = ({
   isOpen,
@@ -39,6 +41,11 @@ const TaskDetailsModal = ({
     useState(false);
   const [subtaskError, setSubtaskError] = useState("");
   const [subtaskLoading, setSubtaskLoading] = useState(false);
+
+  const [alreadyPromptedForComplete, setAlreadyPromptedForComplete] =
+    useIndexedDb(ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY, {});
+
+  const [hasPromptedThisStreak, setHasPromptedThisStreak] = useState(false);
 
   const descriptionTextareaRef = useRef(null);
 
@@ -235,9 +242,11 @@ const TaskDetailsModal = ({
   const confirmCompleteParentTask = () => {
     if (task && onToggleTask) onToggleTask(task.id);
     setIsConfirmCompleteParentOpen(false);
+    // Do NOT reset hasPromptedThisStreak here!
   };
   const cancelCompleteParentTask = () => {
     setIsConfirmCompleteParentOpen(false);
+    // Do NOT reset hasPromptedThisStreak here!
     if (task && onSetUserChoseToKeepParentOpen)
       onSetUserChoseToKeepParentOpen(task.id, true);
   };
@@ -249,16 +258,19 @@ const TaskDetailsModal = ({
       task &&
       task.subtasks &&
       task.subtasks.length > 0 &&
-      !task.completed &&
-      !userChoseToKeepParentOpen &&
-      !isConfirmCompleteParentOpen
+      !task.completed
     ) {
       const allSubtasksNowComplete = task.subtasks.every((st) => st.completed);
-      if (allSubtasksNowComplete) setIsConfirmCompleteParentOpen(true);
-    } else if (isConfirmCompleteParentOpen) {
-      setIsConfirmCompleteParentOpen(false);
+
+      if (allSubtasksNowComplete && !hasPromptedThisStreak) {
+        setIsConfirmCompleteParentOpen(true);
+        setHasPromptedThisStreak(true);
+      } else if (!allSubtasksNowComplete && hasPromptedThisStreak) {
+        // Reset streak if any subtask is unmarked
+        setHasPromptedThisStreak(false);
+      }
     }
-  }, [task, isOpen, userChoseToKeepParentOpen, isConfirmCompleteParentOpen]);
+  }, [isOpen, task, hasPromptedThisStreak]);
 
   // Do not render if not open or no task
   if (!isOpen || !task) return null;
@@ -290,7 +302,7 @@ const TaskDetailsModal = ({
         isOpen={
           isOpen && !isConfirmDeleteSubtaskOpen && !isConfirmCompleteParentOpen
         }
-        onClose={onClose}
+        onClose={onClose} // Do NOT reset hasPromptedThisStreak here!
         title={`Details for Task: ${task.text}`}
       >
         <div className="task-details-modal-content">
