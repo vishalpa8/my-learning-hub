@@ -85,10 +85,6 @@
   margin-bottom: var(--spacing-md, 1.5rem);
 }
 
-.activity-calendar .calendar-header-icon {
-  font-size: 1.3em;
-}
-
 .activity-calendar h3 {
   color: var(--primary-color-dark, #005cb2);
   font-size: var(--font-size-h3);
@@ -122,9 +118,6 @@
   padding: var(--spacing-xs, 0.5rem) 0;
   font-size: var(--font-size-sm);
   color: var(--text-muted-color);
-  background: transparent;
-  border-radius: 0;
-  letter-spacing: 0.01em;
 }
 
 .calendar-day {
@@ -136,14 +129,14 @@
   min-width: 38px;
   min-height: 38px;
   font-size: var(--font-size-base);
-  background-color: var(--background-color, #fff); /* Use background-color */
+  background-color: var(--background-color, #fff);
   box-sizing: border-box;
-  font-weight: var(--font-weight-normal);
   color: var(--text-color, #212529);
   margin: 1px;
   cursor: pointer;
   outline: none;
   position: relative;
+  font-weight: var(--font-weight-normal);
 }
 
 .calendar-day:not(.empty):hover {
@@ -155,11 +148,10 @@
 
 .calendar-day:not(.empty):focus-visible {
   outline: 2px solid var(--primary-color-dark);
-  outline-offset: 1px; /* Adjusted for tighter focus ring */
+  outline-offset: 1px;
   background-color: var(--primary-color-xlight);
-  z-index: 3; /* Ensure focus ring is visible */
-  transition: background-color 0.2s var(--easing-cubic),
-    outline 0.2s var(--easing-cubic), box-shadow 0.2s var(--easing-cubic);
+  z-index: 3;
+  transition: background-color 0.2s, outline 0.2s, box-shadow 0.2s;
 }
 
 .calendar-day.empty {
@@ -175,25 +167,19 @@
   border-color: var(--primary-color-dark, #0056b3);
   font-weight: var(--font-weight-bold);
   box-shadow: var(--box-shadow-lg, 0 5px 15px rgba(0, 123, 255, 0.3));
-  transform: translateY(-1px) scale(1.05); /* Slight pop effect */
-  transition: background-color 0.2s var(--easing-cubic),
-    color 0.2s var(--easing-cubic), border-color 0.2s var(--easing-cubic),
-    transform 0.2s var(--easing-cubic), box-shadow 0.2s var(--easing-cubic);
-
+  transform: translateY(-1px) scale(1.05);
   z-index: 3;
 }
 
 .calendar-day.today {
-  border: 2px solid var(--primary-color); /* Today's border to primary for emphasis */
+  border: 2px solid var(--primary-color);
   font-weight: var(--font-weight-bold);
-  padding: calc(var(--spacing-xxs, 4px) - 1px); /* Account for thicker border */
+  padding: calc(var(--spacing-xxs, 4px) - 1px);
 }
 
 .calendar-day.no-activity:not(.selected):not(.today) {
-  /* Ensure selected/today styles take precedence */
   background: var(--background-color-muted);
   color: var(--text-muted-color);
-  font-weight: var(--font-weight-normal);
 }
 
 .calendar-day.activity-worked {
@@ -202,43 +188,37 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.calendar-day.activity-low,
+.calendar-day.activity-medium,
+.calendar-day.activity-high,
+.calendar-day.activity-four,
+.calendar-day.activity-five,
+.calendar-day.activity-max {
+  font-weight: var(--font-weight-bold);
+}
 .calendar-day.activity-low {
-  /* 1 task */
   background: var(--success-color-xlight, #e6f4ea);
   color: var(--success-color-dark, #1e7e34);
   font-weight: var(--font-weight-semibold);
 }
-
 .calendar-day.activity-medium {
-  /* 2 tasks */
   background: var(--success-color-light, #d4edda);
   color: var(--success-color-dark, #1e7e34);
-  font-weight: var(--font-weight-semibold);
 }
-
 .calendar-day.activity-high {
-  /* 3 tasks */
   background: var(--success-color, #28a745);
   color: var(--light-color, #fff);
-  font-weight: var(--font-weight-bold);
 }
-
 .calendar-day.activity-four {
-  /* 4 tasks */
   background: var(--info-color, #17a2b8);
   color: var(--light-color, #fff);
-  font-weight: var(--font-weight-bold);
 }
-
 .calendar-day.activity-five {
-  /* 5 tasks */
   background: var(--warning-color, #ffc107);
   color: var(--dark-color, #212529); /* Ensure contrast */
   font-weight: var(--font-weight-bold);
 }
-
 .calendar-day.activity-max {
-  /* 6+ tasks */
   background: var(--primary-color-dark, #005cb2);
   color: var(--light-color, #fff);
   font-weight: var(--font-weight-bold);
@@ -255,7 +235,7 @@
 /* Wrapper for TaskList content to enable smooth transitions */
 .task-list-content-wrapper {
   opacity: 1;
-  transform: translateY(0);
+  /* transform: translateY(0); */
   transition: opacity 0.25s var(--easing-cubic),
     transform 0.25s var(--easing-cubic);
   /* Adjust duration and easing as needed */
@@ -642,6 +622,15 @@
   border-color: var(--primary-color);
   box-shadow: var(--box-shadow, 0 3px 8px rgba(0, 0, 0, 0.08));
   transform: translateY(-1px);
+}
+
+.drag-handle {
+  cursor: grab;
+  /* Optional for accessibility: */
+  user-select: none;
+}
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 /* Enhanced Completed Task Styling */
@@ -1114,58 +1103,73 @@
   .improved-task-list,
   .calendar-widget-container {
     min-width: 275px;
-    width: 98%; /* Use percentage for better fit */
-    max-width: 600px; /* Keep a max width */
+    width: 100%;
   }
-  .engagement-main-container {
-    padding: var(--spacing-md) var(--spacing-sm);
+  .task-list-empty {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-md, 1.5rem) var(--spacing-sm);
+  }
+  .task-list-tip {
+    font-size: var(--font-size-sm, 0.9rem);
+    padding: var(--spacing-sm, 1rem) 0;
+  }
+  .calendar-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm, 1rem);
+  }
+  .calendar-nav-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
-@media (max-width: 600px) {
+/* Print styles */
+@media print {
+  /* Hide elements that should not be printed */
+  .no-print {
+    display: none !important;
+  }
+  /* Ensure full width for printable area */
   .engagement-main-container {
-    max-width: 95vw;
-    padding: var(--spacing-md) var(--spacing-sm);
-    border-radius: var(--border-radius-lg);
-    margin: var(--spacing-sm) auto;
+    width: 100% !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
   }
+  /* Print specific styles for tables or grids */
   .calendar-grid-container {
-    min-width: auto;
+    display: table;
     width: 100%;
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-xs);
+    border-collapse: collapse;
   }
-  .activity-calendar,
-  .improved-task-list {
-    min-width: unset;
-    max-width: unset;
-    width: 100%;
-    padding: var(--spacing-md);
+  .calendar-header-day,
+  .calendar-day {
+    display: table-cell;
+    padding: 8px;
+    border: 1px solid #ddd;
   }
-  .engagement-page-layout h2 {
-    font-size: var(--font-size-xl);
-    margin-bottom: var(--spacing-md);
+  .calendar-header-day {
+    background: var(--primary-color);
+    color: white;
+    font-weight: bold;
   }
-  .task-edit-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .calendar-day {
+    background: white;
+    color: black;
   }
-  .task-list-form {
-    gap: var(--spacing-sm); /* Consistent gap for stacked form elements */
+  /* Adjust font sizes for print */
+  body {
+    font-size: 12pt !important;
   }
-
-  .task-input-group {
-    margin-bottom: 0;
+  h2,
+  h3 {
+    page-break-after: avoid;
   }
-  /* Focus for Add Task button on mobile is handled by its own :focus-visible */
-
-  .new-task-optional-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-xs);
+  /* Ensure buttons and interactive elements are not printed */
+  button,
+  [class*="btn"] {
+    display: none !important;
   }
-  .add-optional-field-btn {
-    width: 100%;
-    text-align: center;
-  }
-} /* End of EngagementPage.css Redesign */
+}

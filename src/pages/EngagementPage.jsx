@@ -561,6 +561,30 @@ const EngagementPage = () => {
     return tasksByDate[selectedDay] || [];
   }, [tasksByDate, selectedDay]);
 
+  const handleReorderTasks = useCallback(
+    (reorderedTasks) => {
+      setTasksByDate((prev) => ({
+        ...prev,
+        [selectedDay]: reorderedTasks,
+      }));
+    },
+    [setTasksByDate, selectedDay]
+  );
+
+  const handleReorderSubtasks = useCallback(
+    (taskId, reorderedSubtasks) => {
+      setTasksByDate((prev) => {
+        const currentTasksByDate = prev || {};
+        const tasksForCurrentDay = currentTasksByDate[selectedDay] || [];
+        const updatedTasksForDay = tasksForCurrentDay.map((task) =>
+          task.id === taskId ? { ...task, subtasks: reorderedSubtasks } : task
+        );
+        return { ...currentTasksByDate, [selectedDay]: updatedTasksForDay };
+      });
+    },
+    [setTasksByDate, selectedDay]
+  );
+
   return (
     <main className="engagement-page-layout main-content">
       <section className="dashboard-hero">
@@ -603,6 +627,8 @@ const EngagementPage = () => {
               onViewTaskDetails={handleViewTaskDetails}
               currentTime={currentTime}
               selectedDateForDisplay={selectedDay}
+              onReorderTasks={handleReorderTasks}
+              onReorderSubtasks={handleReorderSubtasks}
             />
             <div className="task-list-actions">
               <button onClick={handleOpenCopyModal} className="btn-secondary">
@@ -634,9 +660,7 @@ const EngagementPage = () => {
         onClose={() => setIsConfirmDeleteAllOpen(false)}
         title="Delete All Tasks"
         isConfirmation={true}
-        confirmationMessage={`Are you sure you want to delete all ${
-          tasksForSelectedDay.length
-        } tasks for ${selectedDay}? This action cannot be undone.`}
+        confirmationMessage={`Are you sure you want to delete all ${tasksForSelectedDay.length} tasks for ${selectedDay}? This action cannot be undone.`}
         onConfirm={confirmDeleteAllTasks}
         confirmText="Delete All"
         cancelText="Cancel"
@@ -663,6 +687,7 @@ const EngagementPage = () => {
               [taskId]: value,
             }));
           }}
+          onReorderSubtasks={handleReorderSubtasks}
         />
       )}
     </main>

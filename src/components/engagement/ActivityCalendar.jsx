@@ -36,50 +36,48 @@ function getDayProps(
   month,
   activity,
   isCopyModeActive,
-  currentTodayStr // Added parameter for today's date string
+  currentTodayStr
 ) {
-  let className = "calendar-day";
-  if (!day) className += " empty";
-  let cellStyle = !day ? { pointerEvents: "none" } : {};
+  if (!day) {
+    return {
+      className: "calendar-day empty",
+      style: { pointerEvents: "none" },
+      tabIndex: -1,
+      "aria-disabled": true,
+    };
+  }
+
   const dateStr = getDateStr(year, month, day);
+  let className = "calendar-day";
+  const cellStyle = {};
 
-  // Highlight selected day
+  // Activity coloring
+  const act = activity?.[dateStr];
+  if (act) {
+    if (act.tasksCompleted >= 6) className += " activity-max";
+    else if (act.tasksCompleted === 5) className += " activity-five";
+    else if (act.tasksCompleted === 4) className += " activity-four";
+    else if (act.tasksCompleted === 3) className += " activity-high";
+    else if (act.tasksCompleted === 2) className += " activity-medium";
+    else if (act.tasksCompleted === 1) className += " activity-low";
+    else if (act.worked) className += " activity-worked";
+    else className += " no-activity";
+  } else {
+    className += " no-activity";
+  }
+
+  if (dateStr === currentTodayStr) className += " today";
+  if (isCopyModeActive) cellStyle.cursor = "copy";
   if (selectedDay === dateStr) className += " selected";
-
-  // Add activity coloring
-  if (day) {
-    const act = activity && activity[dateStr]; // Ensure activity itself is not null/undefined
-    if (act) {
-      if (act.tasksCompleted >= 6) className += " activity-max"; // For 6+ tasks
-      else if (act.tasksCompleted === 5) className += " activity-five";
-      else if (act.tasksCompleted === 4) className += " activity-four";
-      else if (act.tasksCompleted === 3)
-        className += " activity-high"; // 3 tasks
-      else if (act.tasksCompleted === 2) className += " activity-medium";
-      else if (act.tasksCompleted === 1) className += " activity-low";
-      else if (act.worked)
-        className += " activity-worked"; // 0 completed, but tasks exist
-      else className += " no-activity";
-    } else {
-      className += " no-activity";
-    }
-    // Use passed-in today string
-    if (dateStr === currentTodayStr) className += " today";
-  }
-
-  if (day && isCopyModeActive) {
-    cellStyle.cursor = "copy"; // Change cursor in copy mode
-  }
 
   return {
     className,
-    onClick: day ? () => onDayClick && onDayClick(dateStr) : undefined,
-    tabIndex: day ? 0 : -1,
-    role: day ? "button" : undefined,
-    "aria-selected":
-      day && !isCopyModeActive ? selectedDay === dateStr : undefined,
-    "aria-label": day ? dateStr : undefined,
-    title: day ? dateStr : undefined,
+    onClick: () => onDayClick?.(dateStr),
+    tabIndex: 0,
+    role: "button",
+    "aria-selected": !isCopyModeActive ? selectedDay === dateStr : undefined,
+    "aria-label": dateStr,
+    title: dateStr,
     style: cellStyle,
   };
 }
@@ -93,6 +91,18 @@ function LegendItem({ colorClass, label }) {
     </span>
   );
 }
+
+const LEGEND_ITEMS = [
+  { colorClass: "activity-low", label: "1 task completed" },
+  { colorClass: "activity-medium", label: "2 tasks completed" },
+  { colorClass: "activity-high", label: "3 tasks completed" },
+  { colorClass: "activity-four", label: "4 tasks completed" },
+  { colorClass: "activity-five", label: "5 tasks completed" },
+  { colorClass: "activity-max", label: "6+ tasks completed" },
+  { colorClass: "activity-worked", label: "Tasks (0 done)" },
+  { colorClass: "no-activity", label: "No activity" },
+  { colorClass: "today", label: "Today" },
+];
 
 const ActivityCalendar = ({
   activity = {},
@@ -118,13 +128,15 @@ const ActivityCalendar = ({
 
   const gridDays = useMemo(() => getGridDays(year, month), [year, month]);
 
-  // Calculate today's date string once per render of ActivityCalendar
-  const todayDate = new Date();
-  const todayStr = getDateStr(
-    todayDate.getFullYear(),
-    todayDate.getMonth(),
-    todayDate.getDate()
-  );
+  const todayStr = useMemo(() => {
+    const todayDate = new Date();
+    return getDateStr(
+      todayDate.getFullYear(),
+      todayDate.getMonth(),
+      todayDate.getDate()
+    );
+  }, []);
+
   return (
     <section
       className="activity-calendar calendar-widget-container"
@@ -196,18 +208,9 @@ const ActivityCalendar = ({
         {showLegend && (
           <div className="activity-legend">
             <div className="activity-legend-title">Legend:</div>
-            <LegendItem colorClass="activity-low" label="1 task completed" />
-            <LegendItem
-              colorClass="activity-medium"
-              label="2 tasks completed"
-            />
-            <LegendItem colorClass="activity-high" label="3 tasks completed" />
-            <LegendItem colorClass="activity-four" label="4 tasks completed" />
-            <LegendItem colorClass="activity-five" label="5 tasks completed" />
-            <LegendItem colorClass="activity-max" label="6+ tasks completed" />
-            <LegendItem colorClass="activity-worked" label="Tasks (0 done)" />
-            <LegendItem colorClass="no-activity" label="No activity" />
-            <LegendItem colorClass="today" label="Today" />
+            {LEGEND_ITEMS.map((item) => (
+              <LegendItem key={item.colorClass} {...item} />
+            ))}
           </div>
         )}
       </div>

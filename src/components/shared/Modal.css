@@ -16,7 +16,6 @@
   z-index: 1000;
   padding: var(--spacing-md);
   animation: modalOverlayFadeIn 0.3s var(--easing-cubic) forwards;
-  backdrop-filter: blur(3px); /* Subtle blur effect for modern look */
 }
 
 .modal-content {
@@ -454,6 +453,26 @@
   border-color: var(--text-muted-color);
 }
 .confirmation-actions .btn-secondary:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Unified modal action button styles */
+.modal-actions button,
+.confirmation-actions button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--border-radius);
+  min-width: 100px;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s,
+    box-shadow 0.2s;
+  cursor: pointer;
+  outline: none;
+  width: auto;
+  text-align: center;
+}
+
+.modal-actions button:focus-visible,
+.confirmation-actions button:focus-visible {
   box-shadow: var(--focus-ring);
 }
 

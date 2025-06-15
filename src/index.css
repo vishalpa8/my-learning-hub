@@ -268,7 +268,6 @@ button.btn-danger:focus-visible {
 /* Card Styles */
 .card {
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-elevate);
   border: 1px solid var(--glass-border-color);

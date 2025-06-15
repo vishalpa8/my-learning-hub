@@ -171,19 +171,20 @@ const CopyTaskModal = ({
         tabIndex={-1} /* Make it focusable */
       >
         <div className="copy-task-modal-calendar">
-          <h4>Select Source Date</h4>
+          <h4 id="source-date-calendar-label">Select Source Date</h4>
           <ActivityCalendar
-            activity={activityData} // Keys are DD-MM-YYYY
+            activity={activityData}
             year={displayDate.getFullYear()}
             month={displayDate.getMonth()}
             onPrevMonth={handlePreviousMonth}
             onNextMonth={handleNextMonth}
             onToday={handleGoToToday}
-            selectedDay={sourceDate} // DD-MM-YYYY
-            onDayClick={handleModalCalendarDayClick} // Expects DD-MM-YYYY
+            selectedDay={sourceDate}
+            onDayClick={handleModalCalendarDayClick}
             showLegend={false}
             showFooter={false}
-            isCopyModeActive={true} // Indicate that clicks are for selecting source
+            isCopyModeActive={true}
+            aria-labelledby="source-date-calendar-label"
           />
         </div>
 
@@ -193,52 +194,59 @@ const CopyTaskModal = ({
           </h4>
           {selectableTasks.length > 0 && (
             <div className="copy-task-select-all-action">
-              <button onClick={handleSelectAllToggle} className="btn-link">
+              <button
+                onClick={handleSelectAllToggle}
+                className="btn-link"
+                disabled={selectableTasks.length === 0}
+              >
                 {areAllTasksSelected ? "Deselect All" : "Select All"} (
                 {selectableTasks.length})
               </button>
             </div>
           )}
-          {selectableTasks.length === 0 ? (
-            <p>
-              No tasks available on {sourceDate} to copy to {targetDate}.
-            </p>
-          ) : (
-            <ul>
-              {selectableTasks.map((task) => (
-                <li key={task.id} className="copy-task-item">
-                  <input
-                    type="checkbox"
-                    id={`copy-task-${task.id}`}
-                    checked={selectedTaskIds.has(task.id)}
-                    onChange={() => handleToggleTaskSelection(task.id)}
-                    aria-labelledby={`copy-task-label-${task.id}`}
-                  />
-                  <label
-                    id={`copy-task-label-${task.id}`}
-                    htmlFor={`copy-task-${task.id}`}
-                  >
-                    {task.time && <span>{task.time} - </span>}
-                    {task.text}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div aria-live="polite">
+            {selectableTasks.length === 0 ? (
+              <p>
+                No tasks available on {sourceDate} to copy to {targetDate}.
+              </p>
+            ) : (
+              <ul>
+                {selectableTasks.map((task) => (
+                  <li key={task.id} className="copy-task-item">
+                    <input
+                      type="checkbox"
+                      id={`copy-task-${task.id}`}
+                      checked={selectedTaskIds.has(task.id)}
+                      onChange={() => handleToggleTaskSelection(task.id)}
+                      aria-labelledby={`copy-task-label-${task.id}`}
+                    />
+                    <label
+                      id={`copy-task-label-${task.id}`}
+                      htmlFor={`copy-task-${task.id}`}
+                    >
+                      {task.time && <span>{task.time} - </span>}
+                      {task.text}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="modal-actions">
-        <button
-          onClick={handleCopyButtonClick}
-          disabled={selectedTaskIds.size === 0}
-          className="btn-primary"
-        >
-          Copy Selected ({selectedTaskIds.size})
-        </button>
-        <button onClick={handleCancel} className="btn-secondary">
-          Cancel
-        </button>
+        <div className="modal-actions">
+          <button
+            onClick={handleCopyButtonClick}
+            disabled={selectedTaskIds.size === 0}
+            className="btn-primary"
+            aria-disabled={selectedTaskIds.size === 0}
+          >
+            Copy Selected ({selectedTaskIds.size})
+          </button>
+          <button onClick={handleCancel} className="btn-secondary">
+            Cancel
+          </button>
+        </div>
       </div>
     </Modal>
   );

@@ -24,6 +24,12 @@
   word-break: break-word;
 }
 
+.subtask-edit-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
 .task-details-meta strong {
   color: var(--text-color);
 }
@@ -263,7 +269,9 @@
   background: var(--success-color-background);
 }
 
-.subtask-checkbox-label input[type="checkbox"]:checked + .custom-checkbox:after {
+.subtask-checkbox-label
+  input[type="checkbox"]:checked
+  + .custom-checkbox:after {
   content: "";
   display: block;
   width: 7px;
@@ -330,7 +338,7 @@
   line-height: 1.3;
   font-weight: var(--font-weight-medium);
   transition: background-color 0.2s ease, border-color 0.2s ease,
-              color 0.2s ease, box-shadow 0.2s ease;
+    color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Warning Button (Clear) */
@@ -339,7 +347,7 @@
   border: 1px solid var(--warning-color, #ffc107);
   color: var(--warning-color-dark, #b37700);
   transition: background-color 0.2s ease, border-color 0.2s ease,
-              color 0.2s ease, box-shadow 0.2s ease;
+    color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .description-actions .btn-warning:hover {
@@ -354,7 +362,8 @@
   background-color: var(--background-color-muted, #f0f0f0);
   border: 1px solid var(--border-color-light, #e0e0e0);
   color: var(--text-color);
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .description-actions .btn-secondary:hover {
@@ -397,11 +406,11 @@
   .subtask-list {
     border-color: var(--text-color);
   }
-  
+
   .subtask-item {
     border-bottom-color: var(--text-color);
   }
-  
+
   .custom-checkbox {
     border-color: var(--text-color);
   }
@@ -424,25 +433,50 @@
     padding: var(--spacing-xs);
     gap: var(--spacing-md);
   }
-  
+
   .description-actions,
   .link-actions {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .description-actions button,
   .link-actions button {
     width: 100%;
     margin-bottom: var(--spacing-xs);
   }
-  
+
   .subtask-add-form {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .subtask-add-form .add-subtask-btn {
     margin-top: var(--spacing-xs);
   }
+}
+
+/* Match subtask edit input to link edit input */
+.subtask-edit-area .task-details-input {
+  width: 100%;
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-base);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.subtask-edit-area .task-details-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+button,
+.btn-link {
+  cursor: pointer;
 }
