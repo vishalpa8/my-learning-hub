@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Dexie from "dexie";
+import isEqual from "fast-deep-equal";
 
-// --- Dexie Database Setup ---
+// Use a more specific database name to avoid potential conflicts
 // Keep db instance module-local. Export functions for specific global operations.
-const db = new Dexie("keyval-db");
+const db = new Dexie("my-learning-hub-db"); // Changed database name
 db.version(1).stores({
   // We will store items as {id: key, value: data}.
   // The 'id' field is our primary key (the string key we pass to the hook).
@@ -16,7 +17,12 @@ db.version(1).stores({
  */
 export async function clearEntireDatabase() {
   if (typeof window === "undefined") return;
-  await db["keyval-store"].clear();
+  try {
+    await db["keyval-store"].clear();
+  } catch (err) {
+    console.error("Error clearing IndexedDB 'keyval-store':", err);
+    throw err; // Re-throw to propagate the error
+  }
 }
 
 /**
@@ -28,19 +34,28 @@ export async function clearEntireDatabase() {
 export function useIndexedDb(key, initialValue) {
   const [value, setValue] = useState(initialValue);
   const [hasLoaded, setHasLoaded] = useState(false);
+  // This ref will hold the last value that was either loaded from or saved to the DB.
+  // Initialize to a unique symbol or undefined to ensure the first save of initialValue happens if DB is empty.
+  const lastPersistedValue = useRef(undefined);
+
   const [error, setError] = useState(null);
 
   // Load from IndexedDB on mount
   useEffect(() => {
     let isMounted = true;
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") {
+      setHasLoaded(true); // Treat as loaded if not in browser env
+      return;
+    }
 
     db["keyval-store"]
       .get(key)
       .then((result) => {
+        // result is { id: key, value: data } or undefined
         if (isMounted) {
           if (result && "value" in result) {
             setValue(result.value);
+            lastPersistedValue.current = result.value; // Crucial: Sync ref with loaded value
           }
           setHasLoaded(true);
         }
@@ -50,7 +65,7 @@ export function useIndexedDb(key, initialValue) {
           setError(err);
           setHasLoaded(true);
         }
-        console.error("IndexedDB load error:", err);
+        console.error(`useIndexedDb: Error loading key "${key}":`, err);
       });
 
     return () => {
@@ -60,11 +75,26 @@ export function useIndexedDb(key, initialValue) {
 
   // Save to IndexedDB when value changes (after initial load)
   useEffect(() => {
-    if (!hasLoaded || typeof window === "undefined") return;
-    db["keyval-store"].put({ id: key, value }).catch((err) => {
-      setError(err);
-      console.error("IndexedDB save error:", err);
-    });
+    if (!hasLoaded || typeof window === "undefined") {
+      return; // Don't save until loaded or if not in browser
+    }
+
+    // Deep compare current value with the last known persisted value
+    if (isEqual(value, lastPersistedValue.current)) {
+      return;
+    }
+
+    // Optimistically update the ref to prevent re-saves during the async operation
+    const valueToSave = value;
+    lastPersistedValue.current = valueToSave;
+
+    db["keyval-store"]
+      .put({ id: key, value: valueToSave })
+      .then(() => {}) // No action needed on success, ref is already updated
+      .catch((err) => {
+        setError(err);
+        console.error(`useIndexedDb: Error saving key "${key}":`, err);
+      });
   }, [key, value, hasLoaded]);
 
   // Stable setter
