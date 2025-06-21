@@ -552,12 +552,12 @@
 }
 
 .add-task-btn:disabled {
-  background: var(--background-color-muted) !important;
-  color: var(--text-muted-color) !important;
+  background: var(--background-color-muted);
+  color: var(--text-muted-color);
   cursor: not-allowed;
-  border-color: var(--border-color-muted) !important;
-  box-shadow: none !important;
-  transform: none !important;
+  border-color: var(--border-color-muted);
+  box-shadow: none;
+  transform: none;
 }
 .add-task-btn:hover:not(:disabled) {
   background: linear-gradient(
@@ -666,19 +666,6 @@
   line-height: var(--line-height-base, 1.6);
   white-space: pre-wrap;
   word-break: break-word;
-}
-
-/* In EngagementPage.css */
-.task-text .task-link-inline-indicator {
-  font-size: 0.9em; /* Slightly smaller than task text */
-  text-decoration: none; /* Remove underline from the icon itself */
-  color: var(--info-color, #17a2b8); /* Match other link indicators */
-  /* Add any other specific styling */
-}
-
-.task-text .task-link-inline-indicator:hover {
-  color: var(--info-color-dark, #117a8b);
-  text-decoration: none;
 }
 
 .task-time-display {
@@ -947,10 +934,7 @@
   opacity: 0.8;
   transition: opacity 0.2s ease, color 0.2s ease; /* Added color transition */
 }
-.task-indicator-icon:hover {
-  opacity: 1;
-  color: var(--primary-color);
-}
+
 .task-text .task-link-inline-indicator {
   font-size: 0.95em; /* Slightly smaller or same size as task text */
   color: var(
@@ -965,12 +949,31 @@
   vertical-align: baseline; /* Helps align with text */
 }
 
+.task-indicator-icon:hover {
+  opacity: 1;
+  color: var(--primary-color);
+}
+
+/* Styles for Subtasks within TaskDetailsModal */
+/* These styles are being added here as requested, but would ideally live in TaskDetailsModal.css */
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.subtask-checkbox-label {
+  /* This label contains the checkbox and text */
+  flex-grow: 1; /* This makes the label take up available space, pushing buttons to the right */
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+}
+
 .past-date-restriction {
   color: var(--warning-color-dark, #d39e00); /* Use a warning color */
-  background-color: var(
-    --warning-color-xlight,
-    #fff8e1
-  ); /* Light warning background */
+  background-color: var(--warning-color-xlight, #fff8e1);
   text-align: center;
   border-radius: var(--border-radius, 8px);
   padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 1rem);
@@ -1000,6 +1003,69 @@
   outline: 2px solid var(--primary-color-light);
   outline-offset: 2px;
   border-radius: var(--border-radius-sm);
+}
+
+/* Task View Controls (Daily/Week/Month buttons) */
+.task-view-controls {
+  display: flex;
+  padding: 4px;
+  background-color: var(--background-color-muted, #e9ecef);
+  border-radius: var(--border-radius, 8px);
+  margin: 0 auto var(--spacing-lg) auto;
+  width: fit-content;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-view-mode {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: none;
+  background-color: transparent;
+  border-radius: var(--border-radius-sm, 6px);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-color-secondary);
+  flex-grow: 1;
+  text-align: center;
+}
+
+.btn-view-mode:hover:not(.active) {
+  color: var(--text-color);
+}
+
+.btn-view-mode.active {
+  background-color: var(--background-color, #fff);
+  color: var(--primary-color-dark);
+  font-weight: var(--font-weight-bold);
+  box-shadow: var(--box-shadow-md, 0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+/* New Task End Date Section */
+.new-task-end-date-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  width: 100%; /* Ensure it takes full width */
+}
+
+.new-task-end-date-section label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted-color);
+  white-space: nowrap; /* Prevent label from wrapping */
+}
+
+.task-end-date-input,
+.task-edit-end-date-input {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: var(--font-size-sm);
+  flex-grow: 1; /* Allow it to take available space */
 }
 
 .new-task-subtasks-section {
@@ -1091,6 +1157,69 @@
 .remove-new-subtask-btn:hover {
   opacity: 1;
   color: var(--danger-color-dark);
+}
+
+/* Specific styling for edit mode end date input */
+.task-edit-end-date-input {
+  flex-basis: 150px;
+  min-width: 120px;
+}
+
+/* Drag Handle for Reordering */
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+  font-size: 1.2em; /* Make it a bit larger */
+  color: var(--text-muted-color);
+  opacity: 0.6;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  padding: 0 var(--spacing-xxs); /* Add some padding */
+}
+
+.drag-handle:hover {
+  opacity: 1;
+  color: var(--primary-color-dark);
+}
+
+.improved-task-list-li.dragging {
+  box-shadow: var(--box-shadow-xl); /* Stronger shadow when dragging */
+  transform: rotate(2deg) translateY(-5px); /* Slight rotation and lift */
+  background-color: var(
+    --primary-color-xxlight
+  ); /* Light background when dragging */
+  border-color: var(--primary-color-light);
+}
+
+/* Adjustments for task-edit-form to accommodate end date input */
+.task-edit-form {
+  flex-direction: column; /* Ensure elements stack vertically */
+  gap: var(--spacing-xs); /* Consistent spacing */
+}
+
+/* Adjustments for task-edit-actions to align properly */
+.task-edit-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  justify-content: flex-end; /* Align buttons to the right */
+  width: 100%; /* Take full width */
+}
+
+/* Ensure buttons within task-edit-actions don't stretch too much */
+.task-edit-save-btn,
+.task-edit-cancel-btn {
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: auto; /* Reset width to auto */
+  min-width: 80px; /* Maintain minimum width */
+}
+
+/* Adjustments for task-indicators to prevent wrapping issues with new end date display */
+.task-indicators {
+  display: flex;
+  flex-wrap: wrap; /* Allow indicators to wrap if space is tight */
+  gap: var(--spacing-xs);
+  align-items: center;
 }
 
 /* Responsive adjustments */

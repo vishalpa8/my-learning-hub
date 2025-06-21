@@ -4,479 +4,546 @@
    Modal Content & Base Layout
    ========================================================================== */
 
-.task-details-modal-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-sm) var(--spacing-xs);
-}
-
-/* ==========================================================================
-   Meta Information Section
-   ========================================================================== */
-
-.task-details-meta {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted-color);
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--border-color-light);
-  word-break: break-word;
-}
-
-.subtask-edit-area {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  width: 100%;
-}
-.task-details-meta strong {
-  color: var(--text-color);
-}
-
-.task-details-completed-status {
-  font-weight: var(--font-weight-bold);
-  color: var(--success-color);
-  margin-left: var(--spacing-xs);
-}
-
-/* ==========================================================================
-   Section Headers
-   ========================================================================== */
-
-.task-details-section h4 {
-  font-size: var(--font-size-h4, 1.1rem);
-  color: var(--primary-color-dark);
-  margin: var(--spacing-sm) 0 var(--spacing-md) 0;
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--border-color-light);
-  letter-spacing: 0.01em;
-}
-
-/* ==========================================================================
-   Description Section
-   ========================================================================== */
-
-/* Display Mode */
-.description-display-area .description-text {
-  margin: 0 0 var(--spacing-sm) 0;
-  line-height: var(--line-height-base);
-  white-space: pre-wrap;
-  word-break: break-word;
-  background-color: var(--background-color-subtle);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-sm);
-  min-height: 50px;
-}
-
-.description-display-area .text-muted {
-  font-style: italic;
-  padding: var(--spacing-sm);
-}
-
-.description-view-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-xs);
-}
-
-.edit-description-btn {
-  margin-top: var(--spacing-xxs);
-  font-size: var(--font-size-sm);
-}
-
-/* Edit Mode */
-.description-edit-area .task-details-textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-base);
-  background-color: var(--background-color);
-  color: var(--text-color);
-  resize: vertical;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.description-edit-area .task-details-textarea:focus {
-  border-color: var(--primary-color);
-  box-shadow: var(--focus-ring);
-  outline: none;
-}
-
-/* ==========================================================================
-   Link Section
-   ========================================================================== */
-
-/* Display Mode */
-.link-display-area {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-xs);
-}
-
-.task-link-display {
-  color: var(--primary-color);
-  text-decoration: underline;
-  word-break: break-all;
-  padding: var(--spacing-xs) 0;
-  display: inline-block;
-  max-width: 100%;
-  transition: color 0.2s ease;
-}
-
-.task-link-display:hover {
-  color: var(--primary-color-dark);
-}
-
-.edit-link-btn,
-.add-link-btn {
-  font-size: var(--font-size-sm);
-}
-
-/* Edit Mode */
-.link-edit-area .task-details-input {
-  width: 100%;
-  padding: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-base);
-  background-color: var(--background-color);
-  color: var(--text-color);
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.link-edit-area .task-details-input:focus {
-  border-color: var(--primary-color);
-  box-shadow: var(--focus-ring);
-  outline: none;
-}
-
-/* ==========================================================================
-   Subtasks Section
-   ========================================================================== */
-
-/* Add Form */
-.subtask-add-form {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
-  align-items: center;
-}
-
-.subtask-add-form .subtask-input {
-  flex-grow: 1;
-  padding: var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-base);
-  background-color: var(--background-color);
-  color: var(--text-color);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.subtask-add-form .subtask-input:focus {
-  border-color: var(--primary-color);
-  box-shadow: var(--focus-ring);
-  outline: none;
-}
-
-.subtask-add-form .add-subtask-btn {
-  padding: var(--spacing-sm) var(--spacing-md);
-  min-width: 100px;
-  line-height: 1;
-  font-weight: var(--font-weight-medium);
-  white-space: nowrap;
-}
-
-/* Batch Actions */
-.subtasks-batch-actions {
-  margin-bottom: var(--spacing-sm);
-  display: flex;
-  justify-content: flex-start;
-}
-
-/* Subtask List */
-.subtask-list {
-  list-style: none;
-  padding: var(--spacing-sm);
-  margin: 0;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid var(--border-color-light);
-  border-radius: var(--border-radius-md);
-}
-
-.subtask-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) 0;
-  border-bottom: 1px dashed var(--border-color-extralight, #f0f0f0);
-}
-
-.subtask-item:last-child {
-  border-bottom: none;
-}
-
-.subtask-item.completed .subtask-text {
-  text-decoration: line-through;
-  color: var(--text-muted-color);
-  opacity: 0.8;
-}
-
-/* Custom Checkbox */
-.subtask-checkbox-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  flex-grow: 1;
-  gap: var(--spacing-sm);
-  min-width: 0;
-}
-
-.subtask-checkbox-label input[type="checkbox"] {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  position: absolute;
-}
-
-.subtask-checkbox-label .custom-checkbox {
-  width: 20px;
-  height: 20px;
-  border-radius: var(--border-radius-sm);
-  border: 2px solid var(--border-color-light);
-  background: var(--background-color-subtle);
-  position: relative;
-  flex-shrink: 0;
-  transition: border-color 0.18s ease, background 0.18s ease;
-}
-
-.subtask-checkbox-label input[type="checkbox"]:focus + .custom-checkbox {
-  border-color: var(--primary-color);
-  box-shadow: var(--focus-ring);
-}
-
-.subtask-checkbox-label input[type="checkbox"]:checked + .custom-checkbox {
-  border-color: var(--success-color);
-  background: var(--success-color-background);
-}
-
-.subtask-checkbox-label
-  input[type="checkbox"]:checked
-  + .custom-checkbox:after {
-  content: "";
-  display: block;
-  width: 7px;
-  height: 12px;
-  border: solid var(--success-color);
-  border-width: 0 2.5px 2.5px 0;
-  position: absolute;
-  left: 50%;
-  top: 45%;
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.subtask-text {
-  flex-grow: 1;
-  line-height: var(--line-height-base);
-  word-break: break-word;
-  color: var(--text-color);
-}
-
-/* Delete Button */
-.delete-subtask-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted-color);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: var(--spacing-xxs);
-  line-height: 1;
-  flex-shrink: 0;
-  opacity: 0.5;
-  border-radius: var(--border-radius-sm);
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
-}
-
-.delete-subtask-btn:hover {
-  color: var(--danger-color);
-  background-color: var(--danger-color-xxlight, #fff1f2);
-  opacity: 1;
-}
-
-/* ==========================================================================
-   Action Buttons & Forms
-   ========================================================================== */
-
-/* Common Button Styles */
-.description-actions,
-.link-actions {
-  display: flex;
-  gap: var(--spacing-lg);
-  justify-content: flex-end;
-  margin-top: var(--spacing-xs);
-  flex-wrap: wrap;
-}
-
-.description-actions button,
-.link-actions button {
-  padding: var(--spacing-xs) var(--spacing-md);
-  min-width: 80px;
-  line-height: 1.3;
-  font-weight: var(--font-weight-medium);
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* Warning Button (Clear) */
-.description-actions .btn-warning {
-  background-color: transparent;
-  border: 1px solid var(--warning-color, #ffc107);
-  color: var(--warning-color-dark, #b37700);
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.description-actions .btn-warning:hover {
-  background-color: var(--warning-color-xlight, #fff8e1);
-  border-color: var(--warning-color-dark, #b37700);
-  color: var(--warning-color-darker, #8c5e00);
-  box-shadow: var(--box-shadow-sm);
-}
-
-/* Secondary Button (Cancel) */
-.description-actions .btn-secondary {
-  background-color: var(--background-color-muted, #f0f0f0);
-  border: 1px solid var(--border-color-light, #e0e0e0);
-  color: var(--text-color);
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.description-actions .btn-secondary:hover {
-  background-color: var(--border-color-light, #e9e9e9);
-  border-color: var(--border-color-muted, #d0d0d0);
-  box-shadow: var(--box-shadow-sm);
-}
-
-/* ==========================================================================
-   Error Messages & Utility Classes
-   ========================================================================== */
-
-.input-error-message {
-  color: var(--danger-color, #dc3545);
-  font-size: var(--font-size-sm, 0.875rem);
-  margin: var(--spacing-xxs, 4px) 0 var(--spacing-xs, 8px) 0;
-}
-
-.text-muted {
-  color: var(--text-muted-color);
-  font-style: italic;
-}
-
-/* ==========================================================================
-   Accessibility & Responsive Design
-   ========================================================================== */
-
-/* Focus Management */
-.task-details-modal-content button:focus-visible,
-.task-details-modal-content input:focus-visible,
-.task-details-modal-content textarea:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-  .task-details-meta,
-  .task-details-section h4,
-  .subtask-list {
-    border-color: var(--text-color);
-  }
-
-  .subtask-item {
-    border-bottom-color: var(--text-color);
-  }
-
-  .custom-checkbox {
-    border-color: var(--text-color);
-  }
-}
-
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  .task-details-modal-content *,
-  .task-details-modal-content *::before,
-  .task-details-modal-content *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .task-details-modal-content {
-    padding: var(--spacing-xs);
-    gap: var(--spacing-md);
-  }
-
-  .description-actions,
-  .link-actions {
+   .task-details-modal-content {
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-xs);
   }
-
-  .description-actions button,
-  .link-actions button {
+  
+  /* ==========================================================================
+     Meta Information Section
+     ========================================================================== */
+  
+  .task-details-meta {
+    background-color: var(--primary-color-xlight, #e7f3ff);
+    border-left: 4px solid var(--primary-color, #007bff);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: 0 0 var(--spacing-lg) 0; /* Add margin to separate from content below */
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    font-size: var(--font-size-base);
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+    gap: var(--spacing-xs) var(--spacing-md); /* Gap between items */
+  }
+  
+  .subtask-edit-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
     width: 100%;
-    margin-bottom: var(--spacing-xs);
   }
-
-  .subtask-add-form {
-    flex-direction: column;
-    align-items: stretch;
+  
+  .task-details-meta strong {
+    color: var(--primary-color-dark);
+    font-weight: var(--font-weight-bold);
+    margin-right: var(--spacing-xxs); /* Small space after the label */
   }
-
-  .subtask-add-form .add-subtask-btn {
+  
+  .task-details-meta .meta-separator {
+    margin-left: var(--spacing-sm);
+    padding-left: var(--spacing-sm);
+    border-left: 1px solid var(--border-color-muted);
+  }
+  
+  .task-details-completed-status {
+    font-weight: var(--font-weight-bold);
+    color: var(--success-color-dark);
+    background-color: var(--success-color-xlight);
+    padding: 2px 6px;
+    border-radius: var(--border-radius-sm);
+    margin-left: auto; /* Pushes it to the right */
+  }
+  
+  /* ==========================================================================
+     Section Headers
+     ========================================================================== */
+  
+  .task-details-section h4 {
+    font-size: var(--font-size-h4, 1.1rem);
+    color: var(--primary-color-dark);
+    margin: var(--spacing-sm) 0 var(--spacing-md) 0;
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color-light);
+    letter-spacing: 0.01em;
+  }
+  
+  /* ==========================================================================
+     Description Section
+     ========================================================================== */
+  
+  /* Display Mode */
+  .description-display-area .description-text {
+    margin: 0 0 var(--spacing-sm) 0;
+    line-height: var(--line-height-base);
+    white-space: pre-wrap;
+    word-break: break-word;
+    background-color: var(--background-color-subtle);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    min-height: 50px;
+  }
+  
+  .description-display-area .text-muted {
+    font-style: italic;
+    padding: var(--spacing-sm);
+  }
+  
+  .description-view-actions {
+    display: flex;
+    gap: var(--spacing-sm);
     margin-top: var(--spacing-xs);
   }
-}
-
-/* Match subtask edit input to link edit input */
-.subtask-edit-area .task-details-input {
-  width: 100%;
-  padding: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-base);
-  background-color: var(--background-color);
-  color: var(--text-color);
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.subtask-edit-area .task-details-input:focus {
-  border-color: var(--primary-color);
-  box-shadow: var(--focus-ring);
-  outline: none;
-}
-
-button,
-.btn-link {
-  cursor: pointer;
-}
+  
+  .edit-description-btn {
+    margin-top: var(--spacing-xxs);
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Edit Mode */
+  .description-edit-area .task-details-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .description-edit-area .task-details-textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--focus-ring);
+    outline: none;
+  }
+  
+  /* ==========================================================================
+     Link Section
+     ========================================================================== */
+  
+  /* Display Mode */
+  .link-display-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+  
+  .task-link-display {
+    color: var(--primary-color);
+    text-decoration: underline;
+    word-break: break-all;
+    padding: var(--spacing-xs) 0;
+    display: inline-block;
+    max-width: 100%;
+    transition: color 0.2s ease;
+  }
+  
+  .task-link-display:hover {
+    color: var(--primary-color-dark);
+  }
+  
+  .edit-link-btn,
+  .add-link-btn {
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Edit Mode */
+  .link-edit-area .task-details-input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .link-edit-area .task-details-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--focus-ring);
+    outline: none;
+  }
+  
+  /* ==========================================================================
+     Subtasks Section
+     ========================================================================== */
+  
+  /* Add Form */
+  .subtask-add-form {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    align-items: center;
+  }
+  
+  .subtask-add-form .subtask-input {
+    flex-grow: 1;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .subtask-add-form .subtask-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--focus-ring);
+    outline: none;
+  }
+  
+  .subtask-add-form .add-subtask-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-width: 100px;
+    line-height: 1;
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+  }
+  
+  /* Batch Actions */
+  .subtasks-batch-actions {
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    justify-content: flex-start;
+  }
+  
+  /* Subtask List */
+  .subtask-list {
+    list-style: none;
+    padding: var(--spacing-sm);
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--border-radius-md);
+  }
+  
+  .subtask-item:last-child {
+    border-bottom: none;
+  }
+  
+  .subtask-item.completed .subtask-text {
+    text-decoration: line-through;
+    color: var(--text-muted-color);
+    opacity: 0.8;
+  }
+  
+  /* Custom Checkbox */
+  .subtask-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    flex-grow: 1;
+    gap: var(--spacing-sm);
+    min-width: 0;
+  }
+  
+  .subtask-checkbox-label input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  
+  .subtask-checkbox-label .custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--border-radius-sm);
+    border: 2px solid var(--border-color-light);
+    background: var(--background-color-subtle);
+    position: relative;
+    flex-shrink: 0;
+    transition: border-color 0.18s ease, background 0.18s ease;
+  }
+  
+  .subtask-checkbox-label input[type="checkbox"]:focus + .custom-checkbox {
+    border-color: var(--primary-color);
+    box-shadow: var(--focus-ring);
+  }
+  
+  .subtask-checkbox-label input[type="checkbox"]:checked + .custom-checkbox {
+    border-color: var(--success-color);
+    background: var(--success-color-background);
+  }
+  
+  .subtask-checkbox-label
+    input[type="checkbox"]:checked
+    + .custom-checkbox:after {
+    content: "";
+    display: block;
+    width: 7px;
+    height: 12px;
+    border: solid var(--success-color);
+    border-width: 0 2.5px 2.5px 0;
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  
+  .subtask-text {
+    flex-grow: 1;
+    line-height: var(--line-height-base);
+    word-break: break-word;
+    color: var(--text-color);
+  }
+  
+  /* Delete Button */
+  .delete-subtask-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted-color);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: var(--spacing-xxs);
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.5;
+    border-radius: var(--border-radius-sm);
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+  }
+  
+  .delete-subtask-btn:hover {
+    color: var(--danger-color);
+    background-color: var(--danger-color-xxlight, #fff1f2);
+    opacity: 1;
+  }
+  
+  /* ==========================================================================
+     Action Buttons & Forms
+     ========================================================================== */
+  
+  /* Common Button Styles */
+  .description-actions,
+  .link-actions {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: flex-end;
+    margin-top: var(--spacing-xs);
+    flex-wrap: wrap;
+  }
+  
+  .description-actions button,
+  .link-actions button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    min-width: 80px;
+    line-height: 1.3;
+    font-weight: var(--font-weight-medium);
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+      color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  /* Warning Button (Clear) */
+  .description-actions .btn-warning {
+    background-color: transparent;
+    border: 1px solid var(--warning-color, #ffc107);
+    color: var(--warning-color-dark, #b37700);
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+      color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .description-actions .btn-warning:hover {
+    background-color: var(--warning-color-xlight, #fff8e1);
+    border-color: var(--warning-color-dark, #b37700);
+    color: var(--warning-color-darker, #8c5e00);
+    box-shadow: var(--box-shadow-sm);
+  }
+  
+  /* Secondary Button (Cancel) */
+  .description-actions .btn-secondary {
+    background-color: var(--background-color-muted, #f0f0f0);
+    border: 1px solid var(--border-color-light, #e0e0e0);
+    color: var(--text-color);
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  
+  .description-actions .btn-secondary:hover {
+    background-color: var(--border-color-light, #e9e9e9);
+    border-color: var(--border-color-muted, #d0d0d0);
+    box-shadow: var(--box-shadow-sm);
+  }
+  
+  /* ==========================================================================
+     Error Messages & Utility Classes
+     ========================================================================== */
+  
+  .input-error-message {
+    color: var(--danger-color, #dc3545);
+    font-size: var(--font-size-sm, 0.875rem);
+    margin: var(--spacing-xxs, 4px) 0 var(--spacing-xs, 8px) 0;
+  }
+  
+  .text-muted {
+    color: var(--text-muted-color);
+    font-style: italic;
+  }
+  
+  /* ==========================================================================
+     Accessibility & Responsive Design
+     ========================================================================== */
+  
+  /* Focus Management */
+  .task-details-modal-content button:focus-visible,
+  .task-details-modal-content input:focus-visible,
+  .task-details-modal-content textarea:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+  
+  /* High Contrast Mode */
+  @media (prefers-contrast: high) {
+    .task-details-meta,
+    .task-details-section h4,
+    .subtask-list {
+      border-color: var(--text-color);
+    }
+  
+    .subtask-item {
+      border-bottom-color: var(--text-color);
+    }
+  
+    .custom-checkbox {
+      border-color: var(--text-color);
+    }
+  }
+  
+  /* Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    .task-details-modal-content *,
+    .task-details-modal-content *::before,
+    .task-details-modal-content *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+  
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .task-details-modal-content {
+      padding: var(--spacing-xs);
+      gap: var(--spacing-md);
+    }
+  
+    .description-actions,
+    .link-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .description-actions button,
+    .link-actions button {
+      width: 100%;
+      margin-bottom: var(--spacing-xs);
+    }
+  
+    .subtask-add-form {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .subtask-add-form .add-subtask-btn {
+      margin-top: var(--spacing-xs);
+    }
+  }
+  
+  /* Match subtask edit input to link edit input */
+  .subtask-edit-area .task-details-input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .subtask-edit-area .task-details-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--focus-ring);
+    outline: none;
+  }
+  
+  button,
+  .btn-link {
+    cursor: pointer;
+  }
+  
+  /* New styles for End Date Section in TaskDetailsModal */
+  .end-date-display-area .end-date-text {
+    margin: 0 0 var(--spacing-sm) 0;
+    line-height: var(--line-height-base);
+    background-color: var(--background-color-subtle);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    min-height: 50px; /* Ensure consistent height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-color-dark);
+  }
+  
+  .end-date-edit-area input[type="date"] {
+    width: 100%;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .end-date-edit-area input[type="date"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--focus-ring);
+    outline: none;
+  }
+  
+  .end-date-actions {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: flex-end;
+    margin-top: var(--spacing-xs);
+    flex-wrap: wrap;
+  }
+  
+  .end-date-actions button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    min-width: 80px;
+    line-height: 1.3;
+    font-weight: var(--font-weight-medium);
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+      color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .edit-end-date-btn,
+  .add-end-date-btn,
+  .clear-end-date-btn {
+    font-size: var(--font-size-sm);
+  }
+  

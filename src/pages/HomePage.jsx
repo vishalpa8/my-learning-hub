@@ -1,6 +1,7 @@
 // HomePage.jsx
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+
 import Modal from "../components/shared/Modal"; // Import the Modal component
 import ProgressBarDisplay from "../components/shared/ProgressBarDisplay";
 import { useIndexedDb, clearEntireDatabase } from "../hooks/useIndexedDb"; // Assumes clearEntireDatabase is exported
@@ -9,17 +10,16 @@ import {
   CHESS_LEARNING_PROGRESS_KEY,
   ENGAGEMENT_TASKS_KEY, // Import the key
 } from "../constants/localStorageKeys";
+import {
+  dateToDDMMYYYY,
+  parseDDMMYYYYToDateObj,
+  parseYYYYMMDDToDateObj,
+  isWithinInterval,
+} from "../utils/dateHelpers";
+
 import { dsaData } from "../data/dsaData";
 import { playlistVideoData } from "../data/chessData";
 import "../styles/HomePage.css";
-
-// Define getDateString at a higher scope
-const getDateString = (date) => {
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`; // Output: DD-MM-YYYY
-};
 
 const HomePage = () => {
   const [completedDsaProblems] = useIndexedDb(DSA_COMPLETED_PROBLEMS_KEY, {});
@@ -45,11 +45,25 @@ const HomePage = () => {
   }, [completedChessVideos]);
 
   const engagementProgress = useMemo(() => {
-    const todayStr = getDateString(new Date());
-    const allTasksData = engagementTasksData || {};
-    const todaysTasks = allTasksData[todayStr] || [];
-    const todaysCompleted = todaysTasks.filter((task) => task.completed).length;
-    const todaysTotal = todaysTasks.length;
+    const todayObj = new Date();
+    const todayStr = dateToDDMMYYYY(todayObj);
+    const allTasks = Object.values(engagementTasksData || {}).flat();
+
+    // Correctly filter for tasks active today, including multi-day tasks
+    const tasksActiveToday = allTasks.filter((task) => {
+      const taskStart = parseDDMMYYYYToDateObj(task.date);
+      const taskEnd = task.endDate
+        ? parseYYYYMMDDToDateObj(task.endDate)
+        : taskStart;
+      return isWithinInterval(todayObj, { start: taskStart, end: taskEnd });
+    });
+
+    // Correctly count completed tasks by checking the completions object for today's date
+    const todaysCompleted = tasksActiveToday.filter(
+      (task) => task.completions && task.completions[todayStr]
+    ).length;
+
+    const todaysTotal = tasksActiveToday.length;
     const todaysPercent =
       todaysTotal > 0 ? Math.round((todaysCompleted / todaysTotal) * 100) : 0;
     return {
@@ -60,30 +74,38 @@ const HomePage = () => {
   }, [engagementTasksData]);
 
   // Prepare data for ProgressCards to make the ProgressCard component more generic
-  const dsaCardData = useMemo(() => ({
-    completed: dsaProgress.completed,
-    total: dsaProgress.total,
-    percent: dsaProgress.percent,
-    label: `${dsaProgress.completed} / ${dsaProgress.total} (${dsaProgress.percent}%)`,
-    linkText: "View Details"
-  }), [dsaProgress]);
+  const dsaCardData = useMemo(
+    () => ({
+      completed: dsaProgress.completed,
+      total: dsaProgress.total,
+      percent: dsaProgress.percent,
+      label: `${dsaProgress.completed} / ${dsaProgress.total} (${dsaProgress.percent}%)`,
+      linkText: "View Details",
+    }),
+    [dsaProgress]
+  );
 
-  const chessCardData = useMemo(() => ({
-    completed: chessProgress.completed,
-    total: chessProgress.total,
-    percent: chessProgress.percent,
-    label: `${chessProgress.completed} / ${chessProgress.total} (${chessProgress.percent}%)`,
-    linkText: "View Details"
-  }), [chessProgress]);
+  const chessCardData = useMemo(
+    () => ({
+      completed: chessProgress.completed,
+      total: chessProgress.total,
+      percent: chessProgress.percent,
+      label: `${chessProgress.completed} / ${chessProgress.total} (${chessProgress.percent}%)`,
+      linkText: "View Details",
+    }),
+    [chessProgress]
+  );
 
-  const engagementCardData = useMemo(() => ({
-    completed: engagementProgress.todaysCompleted,
-    total: engagementProgress.todaysTotal,
-    percent: engagementProgress.todaysPercent,
-    label: `Today: ${engagementProgress.todaysCompleted} / ${engagementProgress.todaysTotal}`,
-    linkText: "Manage Tasks"
-  }), [engagementProgress]);
-
+  const engagementCardData = useMemo(
+    () => ({
+      completed: engagementProgress.todaysCompleted,
+      total: engagementProgress.todaysTotal,
+      percent: engagementProgress.todaysPercent,
+      label: `Today: ${engagementProgress.todaysCompleted} / ${engagementProgress.todaysTotal}`,
+      linkText: "Manage Tasks",
+    }),
+    [engagementProgress]
+  );
 
   const handleResetAllProgress = async () => {
     setShowResetConfirmModal(true);
@@ -275,13 +297,14 @@ const ProgressCard = ({
   percent,
   link,
   label, // New prop for the progress bar label
-  linkText // New prop for the button text
+  linkText, // New prop for the button text
 }) => (
   <div className="progress-card">
     <div className="progress-card-header">
       <span className="progress-card-icon">{icon}</span>
       <h3>{title}</h3>
-      <span className="progress-card-percent">{percent}%</span> {/* Always display percent */}
+      <span className="progress-card-percent">{percent}%</span>{" "}
+      {/* Always display percent */}
     </div>
     {total > 0 || (title === "Daily Routine" && completed >= 0) ? ( // Show progress bar if there's a total, or for daily routine even if total is 0 but completed is known
       <ProgressBarDisplay
@@ -289,12 +312,10 @@ const ProgressCard = ({
         total={total}
         label={label} // Use the passed label
       />
-    ) : (
-      // Optional: Show a message if there's no data to display for progress
-      // <p className="no-progress-data">No activity yet.</p> 
-      // Or render nothing if total is 0 and it's not daily routine
-      null
-    )}
+    ) : // Optional: Show a message if there's no data to display for progress
+    // <p className="no-progress-data">No activity yet.</p>
+    // Or render nothing if total is 0 and it's not daily routine
+    null}
     <Link to={link} className="home-btn-primary">
       {linkText} {/* Use the passed button text */}
     </Link>

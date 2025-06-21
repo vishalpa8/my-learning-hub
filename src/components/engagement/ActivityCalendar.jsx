@@ -36,7 +36,8 @@ function getDayProps(
   month,
   activity,
   isCopyModeActive,
-  currentTodayStr
+  currentTodayStr,
+  copyableDays // <-- new param
 ) {
   if (!day) {
     return {
@@ -50,6 +51,28 @@ function getDayProps(
   const dateStr = getDateStr(year, month, day);
   let className = "calendar-day";
   const cellStyle = {};
+
+  // In copy mode, only allow days in copyableDays
+  let isCopyable = true;
+  if (isCopyModeActive && copyableDays) {
+    isCopyable = copyableDays.has
+      ? copyableDays.has(dateStr)
+      : Array.isArray(copyableDays)
+      ? copyableDays.includes(dateStr)
+      : false;
+    if (!isCopyable) {
+      className += " not-copyable";
+      cellStyle.pointerEvents = "none";
+      cellStyle.opacity = 0.5;
+      return {
+        className,
+        style: cellStyle,
+        tabIndex: -1,
+        "aria-disabled": true,
+        title: "No copyable tasks on this day",
+      };
+    }
+  }
 
   // Activity coloring
   const act = activity?.[dateStr];
@@ -67,12 +90,12 @@ function getDayProps(
   }
 
   if (dateStr === currentTodayStr) className += " today";
-  if (isCopyModeActive) cellStyle.cursor = "copy";
+  if (isCopyModeActive) cellStyle.cursor = isCopyable ? "copy" : "not-allowed";
   if (selectedDay === dateStr) className += " selected";
 
   return {
     className,
-    onClick: () => onDayClick?.(dateStr),
+    onClick: () => isCopyable && onDayClick?.(dateStr),
     tabIndex: 0,
     role: "button",
     "aria-selected": !isCopyModeActive ? selectedDay === dateStr : undefined,
@@ -116,6 +139,7 @@ const ActivityCalendar = ({
   isCopyModeActive = false,
   showLegend = true,
   showFooter = true,
+  copyableDays, // <-- new prop
 }) => {
   const monthLabel = useMemo(
     () =>
@@ -169,7 +193,8 @@ const ActivityCalendar = ({
                 month,
                 activity,
                 isCopyModeActive,
-                todayStr // Pass down the calculated today string
+                todayStr,
+                copyableDays // <-- pass down
               );
               return (
                 <div key={i + DAYS_OF_WEEK.length} {...cellProps}>
@@ -245,6 +270,9 @@ ActivityCalendar.propTypes = {
   isCopyModeActive: PropTypes.bool,
   showLegend: PropTypes.bool,
   showFooter: PropTypes.bool,
+  copyableDays: PropTypes.oneOfType([
+    PropTypes.instanceOf(Set),
+    PropTypes.arrayOf(PropTypes.string),
+  ]), // Accept Set or array
 };
-
-export default React.memo(ActivityCalendar);
+export default ActivityCalendar;

@@ -3,6 +3,13 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import Modal from "../shared/Modal";
 import PropTypes from "prop-types";
 import "./EngagementPage.css";
+import {
+  dateToDDMMYYYY,
+  convertDDMMYYYYtoYYYYMMDD,
+  isPastDate,
+  parseYYYYMMDDToDateObj,
+} from "../../utils/dateHelpers";
+
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 function formatTime12Hour(timeStr) {
@@ -18,46 +25,24 @@ const initialNewTaskFormState = {
   text: "",
   time: "",
   description: "",
-  link: "", // Added for link feature
+  endDate: "",
   showDescriptionInput: false,
-  showLinkInput: false, // Added for link feature
+  showLinkInput: false,
+  showEndDateInput: false,
   showSubtasksArea: false,
   currentSubtaskText: "",
-  subtasks: [], // Holds subtasks for the task being created
+  subtasks: [],
 };
 
 const initialEditState = {
   id: null,
   text: "",
   time: "",
-  link: "", // Added for link feature
+  startDate: "", // For edit validation
 };
 
 // Helper to generate a simple unique ID for client-side temporary items
 const generateTempId = () => Date.now() + Math.random();
-
-// Helper to get today's date in DD-MM-YYYY format
-const getTodayDateString = () => {
-  const today = new Date();
-  const day = String(today.getDate()).padStart(2, "0");
-  const month = String(today.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
-  const year = today.getFullYear();
-  return `${day}-${month}-${year}`;
-};
-
-// Helper to parse DD-MM-YYYY to a Date object (ignoring time for comparison)
-const parseDDMMYYYYToDate = (dateStr) => {
-  const [day, month, year] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day); // month is 0-indexed
-};
-
-// Helper to check if a date string is in the past
-const isPastDate = (dateStr) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize today to the start of the day
-  return parseDDMMYYYYToDate(dateStr) < today;
-};
-
 const TaskList = ({
   tasks,
   onAddTask,
@@ -66,10 +51,13 @@ const TaskList = ({
   onUpdateTime,
   onUpdateTaskText,
   onUpdateTaskLink,
+  onUpdateTaskEndDate,
   onViewTaskDetails,
   currentTime,
   selectedDateForDisplay,
-  onReorderTasks, // <-- Now required
+  onReorderTasks,
+  viewMode,
+  onSetViewMode,
 }) => {
   const [newTaskForm, setNewTaskForm] = useState(initialNewTaskFormState);
   const [userManuallySetNewTaskTime, setUserManuallySetNewTaskTime] =
@@ -152,7 +140,8 @@ const TaskList = ({
         description: newTaskForm.showDescriptionInput
           ? newTaskForm.description.trim()
           : "",
-        link: newTaskForm.showLinkInput ? newTaskForm.link.trim() : "", // Pass link
+        link: newTaskForm.showLinkInput ? newTaskForm.link.trim() : "",
+        endDate: newTaskForm.showEndDateInput ? newTaskForm.endDate : "",
         subtasks: newTaskForm.subtasks,
       });
       clearNewTaskForm();
@@ -197,7 +186,7 @@ const TaskList = ({
       id: task.id,
       text: task.text,
       time: task.time || "",
-      link: task.link || "", // Populate link for editing
+      startDate: task.startDate || "", // Assumes YYYY-MM-DD format from parent
     });
   }, []);
 
@@ -209,12 +198,8 @@ const TaskList = ({
     setEditState((prev) => ({ ...prev, time: e.target.value }));
   }, []);
 
-  const handleCurrentEditLinkChange = useCallback((e) => {
-    setEditState((prev) => ({ ...prev, link: e.target.value }));
-  }, []);
-
   const handleSaveEditDetails = useCallback(() => {
-    const { id, text, time, link } = editState;
+    const { id, text, time } = editState;
     if (!id) return;
 
     const trimmedText = text.trim();
@@ -228,20 +213,9 @@ const TaskList = ({
       if (taskToUpdate.time !== timeToSave) {
         onUpdateTime(id, timeToSave);
       }
-      const linkToSave = link.trim() || null;
-      if (onUpdateTaskLink && taskToUpdate.link !== linkToSave) {
-        onUpdateTaskLink(id, linkToSave);
-      }
     }
     resetEditDetailsState();
-  }, [
-    editState,
-    tasks,
-    onUpdateTaskText,
-    onUpdateTime,
-    onUpdateTaskLink, // Added to dependency array
-    resetEditDetailsState,
-  ]);
+  }, [editState, tasks, onUpdateTaskText, onUpdateTime, resetEditDetailsState]);
 
   const handleCancelEditDetails = useCallback(() => {
     resetEditDetailsState();
@@ -292,13 +266,49 @@ const TaskList = ({
     setTaskToDelete(null);
   }, []);
 
-  const todayDateStr = getTodayDateString();
-  const headerText =
-    selectedDateForDisplay === todayDateStr
+  // Generate a more informative delete confirmation message
+  const getDeleteConfirmationMessage = (task) => {
+    if (!task) return "";
+    // Robustly detect multi-day task: endDate exists and is different from start date
+    if (task.endDate && task.endDate !== convertDDMMYYYYtoYYYYMMDD(task.date)) {
+      const formattedStartDate = task.date;
+      const formattedEndDate = dateToDDMMYYYY(
+        parseYYYYMMDDToDateObj(task.endDate)
+      );
+      return `This is a multi-day task active from ${formattedStartDate} to ${formattedEndDate}. Deleting it will remove it permanently from all days. Are you sure you want to delete "${task.text}"?`;
+    }
+    // Standard message for single-day tasks
+    return `Are you sure you want to delete the task "${task.text}"? This action cannot be undone.`;
+  };
+  // ...existing code...
+  const todayDateStr = dateToDDMMYYYY(new Date());
+  const isTodayView =
+    viewMode === "date" && selectedDateForDisplay === todayDateStr;
+
+  const headerText = (() => {
+    if (viewMode === "week") return "This Week's Tasks";
+    if (viewMode === "month") return "This Month's Tasks";
+    return isTodayView
       ? "Today's Tasks"
       : `Tasks for ${selectedDateForDisplay}`;
+  })();
 
+  const getEmptyMessage = () => {
+    switch (viewMode) {
+      case "week":
+        return "No tasks for this week. Add one to get started!";
+      case "month":
+        return "No tasks for this month. Add one to get started!";
+      default: // Covers 'date' view
+        return "No tasks for today yet. Add one to get started!";
+    }
+  };
   const allowTaskCreation = !isPastDate(selectedDateForDisplay);
+  const minEndDateForNewTask = convertDDMMYYYYtoYYYYMMDD(
+    selectedDateForDisplay
+  );
+
+  const isReorderingEnabled = viewMode === "date";
 
   // Effect to handle transitions when selectedDateForDisplay changes
   useEffect(() => {
@@ -341,6 +351,29 @@ const TaskList = ({
         </span>
         <h3>{headerText}</h3>
       </header>
+      <div className="task-view-controls">
+        <button
+          type="button"
+          className={`btn-view-mode ${isTodayView ? "active" : ""}`}
+          onClick={() => onSetViewMode("date")}
+        >
+          Today
+        </button>
+        <button
+          type="button"
+          className={`btn-view-mode ${viewMode === "week" ? "active" : ""}`}
+          onClick={() => onSetViewMode("week")}
+        >
+          This Week
+        </button>
+        <button
+          type="button"
+          className={`btn-view-mode ${viewMode === "month" ? "active" : ""}`}
+          onClick={() => onSetViewMode("month")}
+        >
+          This Month
+        </button>
+      </div>
       <div
         className={`task-list-content-wrapper ${
           isTransitioningOut ? "fade-out-active" : ""
@@ -349,8 +382,8 @@ const TaskList = ({
         <form
           aria-disabled={!allowTaskCreation}
           onSubmit={handleAddTaskSubmit}
-          className="task-list-form"
           autoComplete="off"
+          className="task-list-form"
         >
           <div className="task-input-group">
             <input
@@ -380,6 +413,7 @@ const TaskList = ({
             allowTaskCreation &&
             (!newTaskForm.showDescriptionInput ||
               !newTaskForm.showLinkInput ||
+              !newTaskForm.showEndDateInput ||
               !newTaskForm.showSubtasksArea) && (
               <div className="new-task-optional-actions">
                 {!newTaskForm.showDescriptionInput && (
@@ -404,6 +438,18 @@ const TaskList = ({
                     disabled={!allowTaskCreation}
                   >
                     + Link
+                  </button>
+                )}
+                {!newTaskForm.showEndDateInput && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleToggleNewTaskOptionalField("showEndDateInput")
+                    }
+                    className="btn-outline btn-small add-optional-field-btn"
+                    disabled={!allowTaskCreation}
+                  >
+                    + End Date
                   </button>
                 )}
                 {!newTaskForm.showSubtasksArea && (
@@ -449,9 +495,29 @@ const TaskList = ({
                   handleNewTaskFormChange("link", e.target.value)
                 }
                 placeholder="Optional: Add a URL (e.g., https://example.com)"
-                className="task-link-input" // Ensure this class is styled in EngagementPage.css
+                className="task-link-input"
                 disabled={!allowTaskCreation}
               />
+            )}
+
+          {/* End Date Input Area - appears when toggled */}
+          {newTaskForm.showEndDateInput &&
+            newTaskForm.text.trim() &&
+            allowTaskCreation && (
+              <div className="new-task-end-date-section">
+                <label htmlFor="new-task-end-date">End Date (optional)</label>
+                <input
+                  id="new-task-end-date"
+                  type="date"
+                  value={newTaskForm.endDate}
+                  onChange={(e) =>
+                    handleNewTaskFormChange("endDate", e.target.value)
+                  }
+                  min={minEndDateForNewTask}
+                  className="task-end-date-input"
+                  disabled={!allowTaskCreation}
+                />
+              </div>
             )}
 
           {/* Subtask Input Area - appears when toggled */}
@@ -538,7 +604,7 @@ const TaskList = ({
             >
               🌱
             </span>
-            No tasks for today yet. Add one to get started!
+            {getEmptyMessage()}
           </div>
         ) : (
           <DragDropContext onDragEnd={handleTaskDragEnd}>
@@ -554,39 +620,43 @@ const TaskList = ({
                       key={task.id}
                       draggableId={String(task.id)}
                       index={index}
+                      isDragDisabled={!isReorderingEnabled}
                     >
                       {(provided, snapshot) => (
                         <li
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           className={`improved-task-list-li${
-                            task.completed ? " completed" : ""
+                            task.isCompletedOnThisDay ? " completed" : ""
                           }${isEditingThisTask(task.id) ? " editing" : ""} ${
                             snapshot.isDragging ? "dragging" : ""
                           }`}
                         >
-                          {/* Optional: Drag handle icon for better UX */}
-                          <span
-                            className="drag-handle"
-                            {...provided.dragHandleProps}
-                            aria-label="Drag to reorder"
-                            tabIndex={0}
-                            role="button"
-                          >
-                            ⋮⋮
-                          </span>
+                          {isReorderingEnabled && (
+                            /* Drag handle icon for reordering */
+                            <span
+                              className="drag-handle"
+                              {...provided.dragHandleProps}
+                              aria-label="Drag to reorder"
+                              tabIndex={0}
+                              role="button"
+                            >
+                              ⋮⋮
+                            </span>
+                          )}
+
                           {!isEditingThisTask(task.id) && (
                             <label className="check-container">
                               <input
                                 className="task-checkbox-input"
                                 type="checkbox"
-                                checked={task.completed}
+                                checked={task.isCompletedOnThisDay}
                                 onChange={(e) => {
                                   e.stopPropagation();
-                                  onToggleTask(task.id);
+                                  onToggleTask(task.id, task.displayDate); // Pass instance-specific date
                                 }}
                                 aria-label={
-                                  task.completed
+                                  task.isCompletedOnThisDay
                                     ? `Mark task "${task.text}" as incomplete`
                                     : `Mark "${task.text}" as complete`
                                 }
@@ -620,13 +690,6 @@ const TaskList = ({
                                   className="task-time-select-inline task-edit-time-select"
                                   aria-label={`Editing time for task: ${task.text}`}
                                 />
-                                <input
-                                  type="url"
-                                  value={editState.link}
-                                  onChange={handleCurrentEditLinkChange}
-                                  placeholder="Add/Edit link (optional)"
-                                  className="task-edit-input task-edit-link-input" // Style as needed
-                                />
                                 <div className="task-edit-actions">
                                   <button
                                     onClick={handleSaveEditDetails}
@@ -645,14 +708,16 @@ const TaskList = ({
                             ) : (
                               <div
                                 className="task-view-content"
-                                onClick={() => onToggleTask(task.id)}
+                                onClick={() =>
+                                  onToggleTask(task.id, task.displayDate)
+                                }
                                 title="Click to toggle complete/incomplete"
                                 role="button"
                                 tabIndex={0}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
-                                    onToggleTask(task.id);
+                                    onToggleTask(task.id, task.displayDate);
                                   }
                                 }}
                               >
@@ -665,9 +730,9 @@ const TaskList = ({
                                         href={task.link}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="task-link-inline-indicator" // New class for specific styling if needed
+                                        className="task-link-inline-indicator"
                                         title={`Link: ${task.link}`}
-                                        onClick={(e) => e.stopPropagation()} // Prevent task toggle
+                                        onClick={(e) => e.stopPropagation()}
                                         onKeyDown={(e) => e.stopPropagation()}
                                       >
                                         🔗
@@ -708,6 +773,7 @@ const TaskList = ({
                                       </span>
                                     )}
                                 </div>
+
                                 <span
                                   className="task-time-display"
                                   aria-label={`Scheduled time: ${formatTime12Hour(
@@ -737,7 +803,7 @@ const TaskList = ({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onViewTaskDetails(task.id);
+                                onViewTaskDetails(task);
                               }}
                               className="view-details-btn task-action-icon-btn"
                               aria-label={`View details for task "${task.text}"`}
@@ -788,7 +854,7 @@ const TaskList = ({
         onClose={cancelDeleteTask}
         title="Delete Task"
         isConfirmation={true}
-        confirmationMessage={`Are you sure you want to delete the task "${taskToDelete?.text}"? This action cannot be undone.`}
+        confirmationMessage={getDeleteConfirmationMessage(taskToDelete)}
         onConfirm={confirmDeleteTask}
         confirmText="Delete"
       />
@@ -801,7 +867,10 @@ TaskList.propTypes = {
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       text: PropTypes.string.isRequired,
-      completed: PropTypes.bool.isRequired,
+      isCompletedOnThisDay: PropTypes.bool.isRequired,
+      displayDate: PropTypes.string.isRequired,
+      date: PropTypes.string.isRequired, // Original start date of the task
+      endDate: PropTypes.string, // Expects YYYY-MM-DD
       time: PropTypes.string,
       description: PropTypes.string,
       link: PropTypes.string,
@@ -813,11 +882,12 @@ TaskList.propTypes = {
   onDeleteTask: PropTypes.func.isRequired,
   onUpdateTime: PropTypes.func.isRequired,
   onUpdateTaskText: PropTypes.func.isRequired,
-  onUpdateTaskLink: PropTypes.func,
   onViewTaskDetails: PropTypes.func.isRequired,
   currentTime: PropTypes.string,
   selectedDateForDisplay: PropTypes.string.isRequired,
-  onReorderTasks: PropTypes.func.isRequired, // <-- Now required
+  onReorderTasks: PropTypes.func.isRequired,
+  viewMode: PropTypes.oneOf(["date", "week", "month"]).isRequired,
+  onSetViewMode: PropTypes.func.isRequired,
 };
 
 export default React.memo(TaskList);

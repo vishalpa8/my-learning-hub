@@ -1,0 +1,160 @@
+/* Styles for CopyTaskModal */
+
+/*
+  This rule targets the inner content of the generic Modal component
+  when it has the 'copy-task-modal' class. This allows us to make this
+  specific modal wider than others.
+  You might need to adjust the selector based on your Modal component's structure.
+*/
+.modal-content.copy-task-modal .modal-content-inner {
+    max-width: 1100px; /* Increased width for more space */
+    width: 90vw;
+  }
+  
+  .copy-task-modal-content {
+    display: flex;
+    flex-direction: column; /* Keep as column to stack main area and action buttons */
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-xxl); /* Increased horizontal padding */
+    outline: none; /* Remove default focus outline */
+  }
+  
+  .copy-task-modal-main-area {
+    display: flex;
+    flex-direction: row; /* This correctly places calendar and list side-by-side */
+    gap: var(--spacing-xl);
+    min-height: 400px; /* Give the modal some default height */
+    align-items: flex-start; /* Align items to the top */
+  }
+  
+  .copy-task-modal-calendar {
+    flex: 0 0 400px; /* Fixed width for calendar, no shrinking/growing */
+    /* Removed max-width to allow it to be exactly 400px */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .copy-task-modal-calendar h4,
+  .copy-task-modal-list h4 {
+    font-size: var(--font-size-h4);
+    color: var(--primary-color-dark);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+  }
+  
+  .copy-task-modal-list {
+    flex: 1; /* Allow it to take all remaining space */
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Important for flex items to prevent overflow */
+  }
+  
+  .copy-task-select-all-action {
+    margin-bottom: var(--spacing-sm);
+    text-align: right;
+  }
+  
+  .copy-task-modal-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: transparent; /* No background color */
+    flex-grow: 1; /* Make the list take up available space */
+    padding: var(--spacing-xs); /* Padding around the list items */
+  }
+  
+  .copy-task-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: var(--spacing-xs); /* Reduced gap for closer alignment */
+    padding: var(--spacing-xs) var(--spacing-sm); /* Padding inside each item */
+    border-radius: var(--border-radius-sm);
+    background-color: var(--background-color); /* Background for each item */
+    border: 1px solid var(--border-color); /* Border for each item */
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
+      border-color 0.2s ease-in-out;
+  }
+  
+  /* Add space between list items */
+  .copy-task-modal-list li:not(:last-child) {
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .copy-task-item:hover {
+    background-color: var(--primary-color-xlight);
+    border-color: var(--primary-color-light);
+    box-shadow: var(--box-shadow-sm);
+  }
+  
+  .copy-task-item.selected {
+    background-color: var(--success-color-xlight);
+    border-color: var(--success-color-light);
+    box-shadow: inset 3px 0 0 0 var(--success-color);
+  }
+  
+  .copy-task-item input[type="checkbox"] {
+    transform: scale(1.1);
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0; /* Prevent checkbox from shrinking */
+  }
+  
+  .copy-task-label-text {
+    flex-grow: 1;
+    font-size: var(--font-size-base);
+    color: var(--text-color);
+    user-select: none; /* Prevent text selection on click */
+  }
+  
+  .copy-task-time {
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    font-weight: var(--font-weight-semibold);
+    margin-right: var(--spacing-xxs); /* Small space after time */
+  }
+  
+  /* New styles for the End Date section in CopyTaskModal */
+  .copy-task-options {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--spacing-md);
+  }
+  
+  .copy-task-end-date-section {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--background-color-subtle);
+  }
+  
+  .copy-task-end-date-section label {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted-color);
+    white-space: nowrap;
+  }
+  
+  .copy-task-end-date-input {
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+  /* Responsive adjustments for smaller screens */
+  @media (max-width: 820px) {
+    .copy-task-modal-main-area {
+      flex-direction: column;
+      min-height: auto;
+      gap: var(--spacing-lg);
+    }
+    .copy-task-modal-calendar {
+      max-width: 100%;
+    }
+  }
+  

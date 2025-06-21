@@ -1,5 +1,12 @@
 // TaskDetailsModal.jsx
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+} from "react";
+
 import PropTypes from "prop-types";
 import Modal from "../shared/Modal";
 import "./TaskDetailsModal.css";
@@ -7,6 +14,11 @@ import validator from "validator";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY } from "../../constants/localStorageKeys";
 import { useIndexedDb } from "../../hooks/useIndexedDb";
+import {
+  dateToDDMMYYYY,
+  parseYYYYMMDDToDateObj,
+  convertDDMMYYYYtoYYYYMMDD, // Import for minEndDateInput
+} from "../../utils/dateHelpers"; // Centralized date helpers
 
 const TaskDetailsModal = ({
   isOpen,
@@ -19,6 +31,7 @@ const TaskDetailsModal = ({
   onToggleTask,
   onMarkAllSubtasksComplete,
   onUpdateTaskLink,
+  onUpdateTaskEndDate, // New prop for end date editing
   userChoseToKeepParentOpen,
   onSetUserChoseToKeepParentOpen,
   onReorderSubtasks,
@@ -42,6 +55,10 @@ const TaskDetailsModal = ({
   const [subtaskError, setSubtaskError] = useState("");
   const [subtaskLoading, setSubtaskLoading] = useState(false);
 
+  // New states for End Date editing
+  const [editingEndDate, setEditingEndDate] = useState(false);
+  const [currentEndDate, setCurrentEndDate] = useState(task?.endDate || ""); // YYYY-MM-DD
+
   const [alreadyPromptedForComplete, setAlreadyPromptedForComplete] =
     useIndexedDb(ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY, {});
 
@@ -57,6 +74,7 @@ const TaskDetailsModal = ({
     setCurrentLink(task?.link || "");
     setEditingLink(false);
     setLinkError("");
+    setCurrentEndDate(task?.endDate || "");
     setEditingSubtask({ id: null, text: "" });
   }, [task]);
 
@@ -85,8 +103,9 @@ const TaskDetailsModal = ({
     setEditingDescription(false);
   };
   const handleClearDescription = () => {
+    // Enter edit mode with an empty description, allowing user to save or cancel.
+    setEditingDescription(true);
     setCurrentDescription("");
-    if (task) onUpdateDescription(task.id, "");
   };
   const handleDescriptionKeyDown = (e) => {
     if (e.key === "Escape") handleCancelDescriptionEdit();
@@ -113,6 +132,13 @@ const TaskDetailsModal = ({
     setLinkError("");
     setEditingLink(false);
   };
+  const handleClearLink = () => {
+    // Enter edit mode with an empty link, allowing user to save or cancel.
+    setEditingLink(true);
+    setCurrentLink("");
+    setLinkError(""); // Clear any previous validation errors
+  };
+
   const handleLinkKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -120,6 +146,26 @@ const TaskDetailsModal = ({
     } else if (e.key === "Escape") {
       handleCancelLinkEdit();
     }
+  };
+
+  // Handlers: End Date
+  const handleEndDateChange = (e) => setCurrentEndDate(e.target.value);
+  const handleSaveEndDate = () => {
+    if (task && onUpdateTaskEndDate) {
+      onUpdateTaskEndDate(task.id, currentEndDate || null);
+      setEditingEndDate(false);
+    }
+  };
+  const handleCancelEndDateEdit = () => {
+    setCurrentEndDate(task?.endDate || "");
+    setEditingEndDate(false);
+  };
+  const handleClearEndDate = () => {
+    setEditingEndDate(true); // Enter edit mode
+    setCurrentEndDate(""); // Clear the input
+  };
+  const handleEndDateKeyDown = (e) => {
+    if (e.key === "Escape") handleCancelEndDateEdit();
   };
 
   // Handlers: Subtasks
@@ -130,7 +176,7 @@ const TaskDetailsModal = ({
   const handleSubtaskInputBlur = () => {
     setNewSubtaskText((prev) => prev.trim());
   };
-  const handleAddSubtaskClick = async () => {
+  const handleAddSubtaskClick = () => {
     const trimmedText = newSubtaskText.trim();
     if (!trimmedText) return;
     // Prevent duplicate subtasks (case-insensitive)
@@ -145,7 +191,7 @@ const TaskDetailsModal = ({
     setSubtaskLoading(true);
     setSubtaskError("");
     try {
-      await onAddSubtask(task.id, trimmedText);
+      onAddSubtask(task.id, trimmedText);
       setNewSubtaskText("");
     } catch (err) {
       setSubtaskError("Failed to add subtask. Please try again.");
@@ -175,7 +221,7 @@ const TaskDetailsModal = ({
   const handleEditSubtaskBlur = () => {
     setEditingSubtask((prev) => ({ ...prev, text: prev.text.trim() }));
   };
-  const handleEditSubtaskSave = async () => {
+  const handleEditSubtaskSave = () => {
     const trimmedText = editingSubtask.text.trim();
     if (!trimmedText) return;
     // Prevent duplicate subtasks (case-insensitive, except for itself)
@@ -192,7 +238,7 @@ const TaskDetailsModal = ({
     setSubtaskLoading(true);
     setSubtaskError("");
     try {
-      await onUpdateSubtask(task.id, editingSubtask.id, { text: trimmedText });
+      onUpdateSubtask(task.id, editingSubtask.id, { text: trimmedText });
       setEditingSubtask({ id: null, text: "" });
     } catch (err) {
       setSubtaskError("Failed to update subtask. Please try again.");
@@ -234,13 +280,13 @@ const TaskDetailsModal = ({
   };
   const handleMarkParentTaskCompleteClick = () => {
     if (task && onToggleTask) {
-      onToggleTask(task.id);
-      if (onSetUserChoseToKeepParentOpen)
-        onSetUserChoseToKeepParentOpen(task.id, false);
+      onToggleTask(task.id, task.displayDate); // Pass the specific displayDate for completion
+      onSetUserChoseToKeepParentOpen(task.id, false);
     }
   };
   const confirmCompleteParentTask = () => {
-    if (task && onToggleTask) onToggleTask(task.id);
+    if (task && onToggleTask) onToggleTask(task.id, task.displayDate); // Pass the specific displayDate for completion
+
     setIsConfirmCompleteParentOpen(false);
     // Do NOT reset hasPromptedThisStreak here!
   };
@@ -251,32 +297,54 @@ const TaskDetailsModal = ({
       onSetUserChoseToKeepParentOpen(task.id, true);
   };
 
+  // Memoize values from `task` to stabilize the useEffect dependencies
+  const allSubtasksComplete = useMemo(() => {
+    if (!task?.subtasks || task.subtasks.length === 0) return false;
+    return task.subtasks.every((st) => st.completed);
+  }, [task?.subtasks]);
+
+  const isAlreadyPrompted = useMemo(
+    () => !!(task?.id && alreadyPromptedForComplete[task.id]),
+    [alreadyPromptedForComplete, task?.id]
+  );
+
   // Effect: Prompt to complete parent if all subtasks are done
   useEffect(() => {
-    if (
-      isOpen &&
-      task &&
-      task.subtasks &&
-      task.subtasks.length > 0 &&
-      !task.completed
-    ) {
-      const allSubtasksNowComplete = task.subtasks.every((st) => st.completed);
-
-      if (allSubtasksNowComplete && !hasPromptedThisStreak) {
+    if (isOpen && task?.id && task.subtasks?.length > 0) {
+      // Check if all subtasks are complete AND we haven't prompted for this task ID yet
+      // (either in this modal opening, or ever, if stored in IndexedDB)
+      if (
+        allSubtasksComplete &&
+        !hasPromptedThisStreak &&
+        !isAlreadyPrompted && // Check global prompt flag using memoized value
+        !task.isCompletedOnThisDay // Only prompt if not already completed on its displayDate
+      ) {
         setIsConfirmCompleteParentOpen(true);
         setHasPromptedThisStreak(true);
-      } else if (!allSubtasksNowComplete && hasPromptedThisStreak) {
+        // Record that we've prompted for this task ID
+        setAlreadyPromptedForComplete((prev) => ({
+          ...prev,
+          [task.id]: true,
+        }));
+      } else if (!allSubtasksComplete && hasPromptedThisStreak) {
         // Reset streak if any subtask is unmarked
         setHasPromptedThisStreak(false);
       }
     }
-  }, [isOpen, task, hasPromptedThisStreak]);
+  }, [
+    isOpen,
+    task?.id, // Use stable primitive
+    task?.isCompletedOnThisDay, // Use stable primitive
+    allSubtasksComplete, // Use memoized value
+    hasPromptedThisStreak,
+    isAlreadyPrompted, // Use memoized value
+    setAlreadyPromptedForComplete,
+  ]);
 
   // Do not render if not open or no task
   if (!isOpen || !task) return null;
 
   // Format date/time
-  const formattedDate = task.date;
   const formattedTime = task.time
     ? new Date(`1970-01-01T${task.time}`).toLocaleTimeString([], {
         hour: "2-digit",
@@ -284,6 +352,12 @@ const TaskDetailsModal = ({
         hour12: true,
       })
     : "--:--";
+  // Format YYYY-MM-DD to DD-MM-YYYY for display consistency
+  const formattedEndDate = task.endDate
+    ? dateToDDMMYYYY(parseYYYYMMDDToDateObj(task.endDate)) // Convert YYYY-MM-DD string to Date object, then to DD-MM-YYYY string
+    : null;
+  // Min date for end date input (should not be before task's start date, in YYYY-MM-DD format)
+  const minEndDateInput = convertDDMMYYYYtoYYYYMMDD(task.date); // task.date is DD-MM-YYYY string
 
   const handleSubtaskDragEnd = (result) => {
     if (!result.destination) return;
@@ -307,9 +381,20 @@ const TaskDetailsModal = ({
       >
         <div className="task-details-modal-content">
           <p className="task-details-meta">
-            <strong>Date:</strong> {formattedDate} | <strong>Time:</strong>{" "}
-            {formattedTime}
-            {task.completed && (
+            {task.endDate ? (
+              <>
+                <strong>From:</strong> {task.date}
+                <strong className="meta-separator">To:</strong>{" "}
+                {formattedEndDate}
+              </>
+            ) : (
+              <>
+                <strong>Date:</strong> {task.date}
+              </>
+            )}
+            <strong className="meta-separator">Time:</strong> {formattedTime}
+            {/* Display completion status based on the specific instance's completion status */}
+            {task.isCompletedOnThisDay && (
               <span className="task-details-completed-status">
                 {" "}
                 (Completed)
@@ -427,12 +512,20 @@ const TaskDetailsModal = ({
                     >
                       {currentLink}
                     </a>
-                    <button
-                      onClick={() => setEditingLink(true)}
-                      className="btn-link edit-link-btn"
-                    >
-                      Edit Link
-                    </button>
+                    <div className="description-view-actions">
+                      <button
+                        onClick={() => setEditingLink(true)}
+                        className="btn-link edit-link-btn"
+                      >
+                        Edit Link
+                      </button>
+                      <button
+                        onClick={handleClearLink}
+                        className="btn-link clear-description-btn"
+                      >
+                        Clear Link
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <button
@@ -440,6 +533,67 @@ const TaskDetailsModal = ({
                     className="btn-link add-link-btn"
                   >
                     + Add Link
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* End Date Section */}
+          <div className="task-details-section">
+            <h4>End Date</h4>
+            {editingEndDate ? (
+              <div className="end-date-edit-area">
+                <input
+                  type="date"
+                  value={currentEndDate}
+                  onChange={handleEndDateChange}
+                  onKeyDown={handleEndDateKeyDown}
+                  min={minEndDateInput}
+                  className="task-details-input"
+                  autoFocus
+                />
+                <div className="end-date-actions">
+                  <button
+                    onClick={handleSaveEndDate}
+                    className="btn-primary btn-small task-details-btn"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelEndDateEdit}
+                    className="btn-secondary btn-small task-details-btn"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="end-date-display-area">
+                {formattedEndDate ? (
+                  <>
+                    <p className="end-date-text">{formattedEndDate}</p>
+                    <div className="description-view-actions">
+                      <button
+                        onClick={() => setEditingEndDate(true)}
+                        className="btn-link edit-end-date-btn"
+                      >
+                        Edit End Date
+                      </button>
+                      <button
+                        onClick={handleClearEndDate}
+                        className="btn-link clear-end-date-btn"
+                      >
+                        Clear End Date
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setEditingEndDate(true)}
+                    className="btn-link add-end-date-btn"
+                  >
+                    + Add End Date
                   </button>
                 )}
               </div>
@@ -456,7 +610,7 @@ const TaskDetailsModal = ({
               if (
                 userChoseToKeepParentOpen &&
                 allSubtasksComplete &&
-                !task.completed
+                !task.isCompletedOnThisDay
               ) {
                 return (
                   <div className="subtasks-batch-actions">
@@ -688,6 +842,7 @@ TaskDetailsModal.propTypes = {
     date: PropTypes.string.isRequired,
     time: PropTypes.string,
     description: PropTypes.string,
+    endDate: PropTypes.string,
     subtasks: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
@@ -696,7 +851,9 @@ TaskDetailsModal.propTypes = {
         completed: PropTypes.bool.isRequired,
       })
     ),
-    completed: PropTypes.bool.isRequired,
+    completions: PropTypes.object, // The new per-day completion tracker
+    displayDate: PropTypes.string, // The specific date this instance represents
+    isCompletedOnThisDay: PropTypes.bool, // Whether this instance is complete
   }),
   onUpdateDescription: PropTypes.func.isRequired,
   onAddSubtask: PropTypes.func.isRequired,
@@ -705,6 +862,7 @@ TaskDetailsModal.propTypes = {
   onToggleTask: PropTypes.func.isRequired,
   onMarkAllSubtasksComplete: PropTypes.func.isRequired,
   onUpdateTaskLink: PropTypes.func.isRequired,
+  onUpdateTaskEndDate: PropTypes.func.isRequired,
   userChoseToKeepParentOpen: PropTypes.bool,
   onSetUserChoseToKeepParentOpen: PropTypes.func.isRequired,
   onReorderSubtasks: PropTypes.func.isRequired,
