@@ -1,10 +1,10 @@
 // CopyTaskModal.jsx
 import React, {
-  useState,
   useMemo,
   useCallback,
   useEffect,
   useRef,
+  useReducer,
 } from "react";
 import PropTypes from "prop-types";
 import Modal from "../shared/Modal";
@@ -16,89 +16,187 @@ import {
   parseDDMMYYYYToDateObj,
   parseYYYYMMDDToDateObj,
   convertDDMMYYYYtoYYYYMMDD,
-} from "../../utils/dateHelpers"; // Centralized date helpers
+} from "../../utils/dateHelpers";
 import { v4 as uuidv4 } from "uuid";
-import "./CopyTaskModal.css"; // Import the dedicated CSS file
+import "./CopyTaskModal.css";
+
+/**
+ * Calculates the end date for a copied task based on the original task's duration
+ * or an explicitly provided end date.
+ */
+const calculateCopiedTaskEndDate = (
+  originalTask,
+  newStartDate_DDMMYYYY,
+  explicitEndDate_YYYYMMDD
+) => {
+  if (explicitEndDate_YYYYMMDD) {
+    return explicitEndDate_YYYYMMDD;
+  }
+  if (originalTask.endDate) {
+    const originalStartDateObj = parseDDMMYYYYToDateObj(originalTask.date);
+    const originalEndDateObj = parseYYYYMMDDToDateObj(originalTask.endDate);
+    const durationInDays = differenceInDays(
+      originalEndDateObj,
+      originalStartDateObj
+    );
+    const newStartDateObj = parseDDMMYYYYToDateObj(newStartDate_DDMMYYYY);
+    const newEndDateObj = addDays(newStartDateObj, durationInDays);
+    return format(newEndDateObj, "yyyy-MM-dd");
+  }
+  return null;
+};
+
+// Centralized state management with useReducer
+const initialState = {
+  sourceDate: dateToDDMMYYYY(new Date()),
+  selectedTaskIds: new Set(),
+  displayDate: new Date(),
+  showEndDateInput: false,
+  copiedTaskEndDate: "",
+};
+
+function copyTaskReducer(state, action) {
+  switch (action.type) {
+    case "SET_SOURCE_DATE":
+      return {
+        ...state,
+        sourceDate: action.payload,
+        displayDate: parseDDMMYYYYToDateObj(action.payload),
+        selectedTaskIds: new Set(), // Reset selection on date change
+      };
+    case "SET_DISPLAY_DATE":
+      return { ...state, displayDate: action.payload };
+    case "TOGGLE_TASK_SELECTION": {
+      const newSelected = new Set(state.selectedTaskIds);
+      if (newSelected.has(action.payload)) {
+        newSelected.delete(action.payload);
+      } else {
+        newSelected.add(action.payload);
+      }
+      return { ...state, selectedTaskIds: newSelected };
+    }
+    case "SET_SELECTED_TASKS":
+      return { ...state, selectedTaskIds: action.payload };
+    case "SET_END_DATE_VISIBILITY":
+      return {
+        ...state,
+        showEndDateInput: action.payload,
+        // Clear date value when hiding the input
+        copiedTaskEndDate: action.payload ? state.copiedTaskEndDate : "",
+      };
+    case "SET_COPIED_END_DATE":
+      return { ...state, copiedTaskEndDate: action.payload };
+    case "RESET":
+      // When resetting, set display date and source date to today
+      return {
+        ...initialState,
+        displayDate: new Date(),
+        sourceDate: dateToDDMMYYYY(new Date()),
+      };
+    default:
+      return state;
+  }
+}
 
 const CopyTaskModal = ({
   isOpen,
   onClose,
-  allTasksByDate, // Renamed from 'tasks' to reflect new structure, keys are DD-MM-YYYY
-  targetDate, // DD-MM-YYYY
+  allTasksByDate,
+  targetDate,
   onCopyTasks,
-  activityData, // Keys are DD-MM-YYYY
+  activityData,
 }) => {
-  const [sourceDate, setSourceDate] = useState(dateToDDMMYYYY(new Date())); // DD-MM-YYYY
-  const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
-  const [displayDate, setDisplayDate] = useState(() => new Date()); // For the modal's calendar
+  const [state, dispatch] = useReducer(copyTaskReducer, initialState);
+  const {
+    sourceDate,
+    selectedTaskIds,
+    displayDate,
+    showEndDateInput,
+    copiedTaskEndDate,
+  } = state;
   const modalContentRef = useRef(null);
 
-  // New states for End Date
-  const [showEndDateInput, setShowEndDateInput] = useState(false);
-  const [copiedTaskEndDate, setCopiedTaskEndDate] = useState(""); // YYYY-MM-DD
+  // Memoized calculations for performance
+  const allTasks = useMemo(
+    () => Object.values(allTasksByDate).flat(),
+    [allTasksByDate]
+  );
 
-  // Filter tasks from the source date that are NOT already on the target date
+  const isTaskActiveOnDate = useCallback((task, dateObj) => {
+    const taskStart = parseDDMMYYYYToDateObj(task.date);
+    const taskEnd = task.endDate
+      ? parseYYYYMMDDToDateObj(task.endDate)
+      : taskStart;
+    return (
+      taskStart instanceof Date &&
+      !isNaN(taskStart) &&
+      taskEnd instanceof Date &&
+      !isNaN(taskEnd) &&
+      isWithinInterval(dateObj, { start: taskStart, end: taskEnd })
+    );
+  }, []);
+
+  const existingTaskTextsOnTargetDate = useMemo(() => {
+    const targetDateObj = parseDDMMYYYYToDateObj(targetDate);
+    return new Set(
+      allTasks
+        .filter((task) => isTaskActiveOnDate(task, targetDateObj))
+        .map((task) =>
+          typeof task.text === "string" ? task.text.trim().toLowerCase() : ""
+        )
+    );
+  }, [allTasks, targetDate, isTaskActiveOnDate]);
+
   const selectableTasks = useMemo(() => {
     const sourceDateObj = parseDDMMYYYYToDateObj(sourceDate);
-
-    const tasksOnSourceDate = Object.values(allTasksByDate)
-      .flat()
-      .filter((task) => {
-        const taskStart = parseDDMMYYYYToDateObj(task.date);
-        const taskEnd = task.endDate
-          ? parseYYYYMMDDToDateObj(task.endDate)
-          : taskStart;
-        return (
-          taskStart instanceof Date &&
-          !isNaN(taskStart) &&
-          taskEnd instanceof Date &&
-          !isNaN(taskEnd) &&
-          isWithinInterval(sourceDateObj, { start: taskStart, end: taskEnd })
-        );
-      });
-    // Get all tasks that are *active* on the targetDate, regardless of their start date
-    const targetDateObj = parseDDMMYYYYToDateObj(targetDate);
-    const tasksActiveOnTargetDate = Object.values(allTasksByDate)
-      .flat()
-      .filter((task) => {
-        const taskStart = parseDDMMYYYYToDateObj(task.date);
-        const taskEnd = task.endDate
-          ? parseYYYYMMDDToDateObj(task.endDate)
-          : taskStart;
-        // Ensure taskStart and taskEnd are valid Date objects before using isWithinInterval
-        return (
-          taskStart instanceof Date &&
-          !isNaN(taskStart) &&
-          taskEnd instanceof Date &&
-          !isNaN(taskEnd) &&
-          isWithinInterval(targetDateObj, { start: taskStart, end: taskEnd })
-        );
-      });
-
-    // Create a set of texts for tasks already active on the target date
-    const existingActiveTaskTextsOnTargetDate = new Set(
-      tasksActiveOnTargetDate.map((task) =>
-        typeof task.text === "string" ? task.text.trim().toLowerCase() : ""
-      )
+    const tasksOnSourceDate = allTasks.filter((task) =>
+      isTaskActiveOnDate(task, sourceDateObj)
     );
-
-    return tasksOnSourceDate.filter(
+    const filteredTasks = tasksOnSourceDate.filter(
       (task) =>
         typeof task.text === "string" &&
-        !existingActiveTaskTextsOnTargetDate.has(task.text.trim().toLowerCase())
+        !existingTaskTextsOnTargetDate.has(task.text.trim().toLowerCase())
     );
-  }, [allTasksByDate, sourceDate, targetDate]);
-
-  const handleToggleTaskSelection = useCallback((taskId) => {
-    setSelectedTaskIds((prevSelected) => {
-      const newSelected = new Set(prevSelected);
-      if (newSelected.has(taskId)) {
-        newSelected.delete(taskId);
-      } else {
-        newSelected.add(taskId);
-      }
-      return newSelected;
+    // Sort tasks for better readability in the UI
+    return filteredTasks.sort((a, b) => {
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.time) return -1;
+      if (b.time) return 1;
+      return a.text.localeCompare(b.text);
     });
+  }, [allTasks, sourceDate, existingTaskTextsOnTargetDate, isTaskActiveOnDate]);
+
+  const copyableDaysSet = useMemo(() => {
+    const days = new Set();
+    allTasks.forEach((task) => {
+      const isCopyable =
+        typeof task.text === "string" &&
+        !existingTaskTextsOnTargetDate.has(task.text.trim().toLowerCase());
+      if (isCopyable) {
+        const taskStart = parseDDMMYYYYToDateObj(task.date);
+        const taskEnd = task.endDate
+          ? parseYYYYMMDDToDateObj(task.endDate)
+          : taskStart;
+        if (
+          taskStart instanceof Date &&
+          !isNaN(taskStart) &&
+          taskEnd instanceof Date &&
+          !isNaN(taskEnd)
+        ) {
+          let currentDate = taskStart;
+          while (currentDate <= taskEnd) {
+            days.add(dateToDDMMYYYY(currentDate));
+            currentDate = addDays(currentDate, 1);
+          }
+        }
+      }
+    });
+    return days;
+  }, [allTasks, existingTaskTextsOnTargetDate]);
+
+  // Event Handlers
+  const handleToggleTaskSelection = useCallback((taskId) => {
+    dispatch({ type: "TOGGLE_TASK_SELECTION", payload: taskId });
   }, []);
 
   const areAllTasksSelected = useMemo(
@@ -110,168 +208,88 @@ const CopyTaskModal = ({
 
   const handleSelectAllToggle = useCallback(() => {
     if (selectableTasks.length === 0) return;
-
     const allSelectableIds = new Set(selectableTasks.map((task) => task.id));
     if (areAllTasksSelected) {
-      setSelectedTaskIds(new Set());
+      dispatch({ type: "SET_SELECTED_TASKS", payload: new Set() });
     } else {
-      setSelectedTaskIds(allSelectableIds);
+      dispatch({ type: "SET_SELECTED_TASKS", payload: allSelectableIds });
     }
   }, [selectableTasks, areAllTasksSelected]);
 
-  const copyableDaysSet = useMemo(() => {
-    // For each date in allTasksByDate, check if at least one task is copyable to targetDate
-    const days = new Set();
-    Object.entries(allTasksByDate).forEach(([dateKey, tasks]) => {
-      const dateObj = parseDDMMYYYYToDateObj(dateKey);
-
-      // For each task on this date, check if it's not already active on the target date
-      const hasCopyable = tasks.some((task) => {
-        // Check if this task is active on the source date (multi-day support)
-        const taskStart = parseDDMMYYYYToDateObj(task.date);
-        const taskEnd = task.endDate
-          ? parseYYYYMMDDToDateObj(task.endDate)
-          : taskStart;
-        if (
-          !(taskStart instanceof Date) ||
-          isNaN(taskStart) ||
-          !(taskEnd instanceof Date) ||
-          isNaN(taskEnd) ||
-          !isWithinInterval(dateObj, { start: taskStart, end: taskEnd })
-        ) {
-          return false;
-        }
-
-        // Now check if a task with the same text is already active on the target date
-        const targetDateObj = parseDDMMYYYYToDateObj(targetDate);
-        const isAlreadyOnTarget = Object.values(allTasksByDate)
-          .flat()
-          .some((t) => {
-            const tStart = parseDDMMYYYYToDateObj(t.date);
-            const tEnd = t.endDate ? parseYYYYMMDDToDateObj(t.endDate) : tStart;
-            return (
-              typeof t.text === "string" &&
-              t.text.trim().toLowerCase() === task.text.trim().toLowerCase() &&
-              tStart instanceof Date &&
-              !isNaN(tStart) &&
-              tEnd instanceof Date &&
-              !isNaN(tEnd) &&
-              isWithinInterval(targetDateObj, { start: tStart, end: tEnd })
-            );
-          });
-
-        return !isAlreadyOnTarget;
-      });
-
-      if (hasCopyable) {
-        days.add(dateKey);
-      }
-    });
-    return days;
-  }, [allTasksByDate, targetDate]);
-
   const handleCopyButtonClick = useCallback(() => {
     if (selectedTaskIds.size > 0) {
-      const tasksToCopyDetails = Array.from(selectedTaskIds)
-        .map((id) =>
-          (allTasksByDate[sourceDate] || []).find((task) => task.id === id)
-        ) // Get from sourceDate's tasks
-        .filter(Boolean)
-        .map((task) => ({
-          ...task,
-          id: uuidv4(), // Generate a new unique ID for the copied task
-          completions: {}, // Reset completions for the copied task
-          subtasks: (task.subtasks || []).map((st) => ({
-            ...st,
-            id: uuidv4(), // New unique ID for each copied subtask
-            completed: false, // Subtasks are always copied as incomplete
-          })),
-          endDate: (() => {
-            // If user explicitly sets an end date, use it.
-            if (showEndDateInput && copiedTaskEndDate) {
-              return copiedTaskEndDate;
-            }
-            // If the original task was multi-day, calculate the new end date based on duration.
-            if (task.endDate) {
-              const startDateObj = parseDDMMYYYYToDateObj(task.date);
-              const endDateObj = parseYYYYMMDDToDateObj(task.endDate);
-              const durationInDays = differenceInDays(endDateObj, startDateObj);
-              const newStartDateObj = parseDDMMYYYYToDateObj(targetDate);
-              const newEndDateObj = addDays(newStartDateObj, durationInDays);
-              return format(newEndDateObj, "yyyy-MM-dd");
-            }
-            // Otherwise, it's a single-day task with no end date.
-            return null;
-          })(),
-        }));
-      onCopyTasks(tasksToCopyDetails); // targetDate is already known by EngagementPage
-      setSelectedTaskIds(new Set());
+      const tasksToCopyDetails = allTasks
+        .filter((task) => selectedTaskIds.has(task.id))
+        .map((task) => {
+          const copiedTask = structuredClone(task);
+          const newEndDate = calculateCopiedTaskEndDate(
+            task,
+            targetDate,
+            showEndDateInput ? copiedTaskEndDate : null
+          );
+          copiedTask.id = uuidv4();
+          copiedTask.date = targetDate;
+          copiedTask.endDate = newEndDate;
+          copiedTask.completions = {};
+          copiedTask.subtasks = (copiedTask.subtasks || []).map((subtask) => ({
+            ...subtask,
+            id: uuidv4(),
+            date: targetDate,
+            completed: false,
+          }));
+          return copiedTask;
+        });
+      onCopyTasks(tasksToCopyDetails);
+      dispatch({ type: "RESET" });
       onClose();
     }
   }, [
     selectedTaskIds,
-    allTasksByDate,
-    sourceDate,
+    allTasks,
     onCopyTasks,
     onClose,
     showEndDateInput,
     copiedTaskEndDate,
+    targetDate,
   ]);
 
   const handleCancel = useCallback(() => {
-    setSelectedTaskIds(new Set());
-    setShowEndDateInput(false); // Reset end date visibility
-    setCopiedTaskEndDate(""); // Reset end date value
+    dispatch({ type: "RESET" });
     onClose();
   }, [onClose]);
 
+  // Effects
   useEffect(() => {
     if (isOpen) {
-      const todayDateObj = new Date();
-      setDisplayDate(todayDateObj); // Set calendar view to current month/year
-      setSourceDate(dateToDDMMYYYY(new Date())); // Set selected source day to today (DD-MM-YYYY)
-
-      setSelectedTaskIds(new Set());
-      setShowEndDateInput(false); // Reset end date visibility
-      setCopiedTaskEndDate(""); // Reset end date value
+      dispatch({ type: "RESET" });
       setTimeout(() => modalContentRef.current?.focus(), 0);
     }
   }, [isOpen]);
 
   const handlePreviousMonth = useCallback(() => {
-    setDisplayDate((date) => {
-      const d = new Date(date);
-      d.setMonth(d.getMonth() - 1);
-      return d;
-    });
-  }, []);
+    const newDate = new Date(displayDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    dispatch({ type: "SET_DISPLAY_DATE", payload: newDate });
+  }, [displayDate]);
 
   const handleNextMonth = useCallback(() => {
-    setDisplayDate((date) => {
-      const d = new Date(date);
-      d.setMonth(d.getMonth() + 1);
-      return d;
-    });
-  }, []);
+    const newDate = new Date(displayDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    dispatch({ type: "SET_DISPLAY_DATE", payload: newDate });
+  }, [displayDate]);
 
   const handleGoToToday = useCallback(() => {
-    const today = new Date();
-    setDisplayDate(today);
-    setSourceDate(dateToDDMMYYYY(new Date())); // DD-MM-YYYY
+    dispatch({ type: "SET_SOURCE_DATE", payload: dateToDDMMYYYY(new Date()) });
   }, []);
 
   const handleModalCalendarDayClick = useCallback((dateStr_DD_MM_YYYY) => {
-    setSourceDate(dateStr_DD_MM_YYYY);
-    // Update displayDate to reflect the month/year of the clicked date
-    setDisplayDate(parseDDMMYYYYToDateObj(dateStr_DD_MM_YYYY));
-    setSelectedTaskIds(new Set());
-  }, []); // State setters from useState are stable
+    dispatch({ type: "SET_SOURCE_DATE", payload: dateStr_DD_MM_YYYY });
+  }, []);
 
-  // Handle Enter key to copy if tasks are selected
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (isOpen && event.key === "Enter" && selectedTaskIds.size > 0) {
-        event.preventDefault(); // Prevent any default action if inside a form
+        event.preventDefault();
         handleCopyButtonClick();
       }
     };
@@ -284,20 +302,15 @@ const CopyTaskModal = ({
   }, [isOpen, selectedTaskIds, handleCopyButtonClick]);
 
   const minEndDateForCopiedTask = useMemo(() => {
-    // End date for copied task should not be before the target date it's copied to
     return convertDDMMYYYYtoYYYYMMDD(targetDate);
   }, [targetDate]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleCancel}
-      customClass="copy-task-modal" // Custom class for sizing
-    >
+    <Modal isOpen={isOpen} onClose={handleCancel} customClass="copy-task-modal">
       <div
         className="copy-task-modal-content"
         ref={modalContentRef}
-        tabIndex={-1} /* Make it focusable */
+        tabIndex={-1}
       >
         <div className="copy-task-modal-main-area">
           <div className="copy-task-modal-calendar">
@@ -315,10 +328,9 @@ const CopyTaskModal = ({
               showFooter={false}
               isCopyModeActive={true}
               aria-labelledby="source-date-calendar-label"
-              copyableDays={copyableDaysSet} // <-- pass this prop
+              copyableDays={copyableDaysSet}
             />
           </div>
-
           <div className="copy-task-modal-list">
             <h4>
               Tasks on {sourceDate} (Select to Copy to {targetDate})
@@ -342,45 +354,66 @@ const CopyTaskModal = ({
                 </p>
               ) : (
                 <ul>
-                  {selectableTasks.map((task) => (
-                    <li key={task.id}>
-                      <label
-                        className={`copy-task-item ${
-                          selectedTaskIds.has(task.id) ? "selected" : ""
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          id={`copy-task-${task.id}`}
-                          checked={selectedTaskIds.has(task.id)}
-                          onChange={() => handleToggleTaskSelection(task.id)}
-                          aria-labelledby={`copy-task-label-${task.id}`}
-                        />
-                        <span
-                          className="copy-task-label-text"
-                          id={`copy-task-label-${task.id}`}
-                        >
-                          {task.time && (
-                            <span className="copy-task-time">
-                              {task.time} -{" "}
+                  {selectableTasks.map((task, index) => {
+                    const isFirstUntimed =
+                      index > 0 &&
+                      !task.time &&
+                      selectableTasks[index - 1].time;
+                    return (
+                      <React.Fragment key={task.id}>
+                        {isFirstUntimed && (
+                          <li
+                            className="copy-task-separator"
+                            aria-hidden="true"
+                          >
+                            <hr />
+                            <span>All-day Tasks</span>
+                            <hr />
+                          </li>
+                        )}
+                        <li>
+                          <label
+                            className={`copy-task-item ${
+                              selectedTaskIds.has(task.id) ? "selected" : ""
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              id={`copy-task-${task.id}`}
+                              checked={selectedTaskIds.has(task.id)}
+                              onChange={() =>
+                                handleToggleTaskSelection(task.id)
+                              }
+                              aria-labelledby={`copy-task-label-${task.id}`}
+                            />
+                            <span
+                              className="copy-task-label-text"
+                              id={`copy-task-label-${task.id}`}
+                            >
+                              {task.time && (
+                                <span className="copy-task-time">
+                                  {task.time} -{" "}
+                                </span>
+                              )}
+                              {task.text}
                             </span>
-                          )}
-                          {task.text}
-                        </span>{" "}
-                      </label>
-                    </li>
-                  ))}
+                          </label>
+                        </li>
+                      </React.Fragment>
+                    );
+                  })}
                 </ul>
               )}
             </div>
           </div>
         </div>
-        {/* New End Date Section */}
         <div className="copy-task-options">
           {!showEndDateInput && (
             <button
               type="button"
-              onClick={() => setShowEndDateInput(true)}
+              onClick={() =>
+                dispatch({ type: "SET_END_DATE_VISIBILITY", payload: true })
+              }
               className="btn-outline btn-small"
             >
               + Add End Date for Copied Tasks
@@ -393,16 +426,20 @@ const CopyTaskModal = ({
                 id="copy-task-end-date"
                 type="date"
                 value={copiedTaskEndDate}
-                onChange={(e) => setCopiedTaskEndDate(e.target.value)}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_COPIED_END_DATE",
+                    payload: e.target.value,
+                  })
+                }
                 min={minEndDateForCopiedTask}
                 className="copy-task-end-date-input"
               />
               <button
                 type="button"
-                onClick={() => {
-                  setShowEndDateInput(false);
-                  setCopiedTaskEndDate("");
-                }} // Clear date when hiding
+                onClick={() =>
+                  dispatch({ type: "SET_END_DATE_VISIBILITY", payload: false })
+                }
                 className="btn-link btn-small"
               >
                 Clear
@@ -431,7 +468,7 @@ const CopyTaskModal = ({
 CopyTaskModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  allTasksByDate: PropTypes.object.isRequired, // Changed from tasks: PropTypes.array
+  allTasksByDate: PropTypes.object.isRequired,
   targetDate: PropTypes.string.isRequired,
   onCopyTasks: PropTypes.func.isRequired,
   activityData: PropTypes.object.isRequired,
