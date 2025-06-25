@@ -191,9 +191,13 @@ const ChatInterface = () => {
           if (content) {
             hasContent = true;
             setShowTypingIndicator(false);
-            updateMessage(placeholderId, {
-              text: (prev) => (prev.text || "") + content,
-            });
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === placeholderId
+                  ? { ...msg, text: (msg.text || "") + content }
+                  : msg
+              )
+            );
           }
         }
 

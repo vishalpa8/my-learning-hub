@@ -42,7 +42,7 @@
   border-radius: var(--border-radius-lg);
   word-wrap: break-word;
   font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
+  line-height: 1.4;
   animation: popIn 0.3s var(--easing-cubic) forwards;
 }
 
