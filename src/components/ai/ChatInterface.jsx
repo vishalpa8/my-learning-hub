@@ -16,7 +16,6 @@ import "./ChatInterface.css";
 const SYSTEM_PROMPT = "Please answer in English.";
 const MAX_TEXTAREA_HEIGHT = 150;
 const COPY_TIMEOUT = 2000;
-const TYPING_INDICATOR_DELAY = 500;
 
 // Utility functions
 const generateId = () => crypto.randomUUID();
@@ -71,7 +70,6 @@ const ChatInterface = () => {
   const abortControllerRef = useRef(null);
   const textareaRef = useRef(null);
   const copyTimeoutRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
 
   // Memoized calculations
   const { lastAiMessageIndex, lastUserMessageIndex } = useMemo(() => {
@@ -114,9 +112,7 @@ const ChatInterface = () => {
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
-      [copyTimeoutRef, typingTimeoutRef].forEach((ref) => {
-        if (ref.current) clearTimeout(ref.current);
-      });
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
     };
   }, []);
 
@@ -163,12 +159,8 @@ const ChatInterface = () => {
   const executeStream = useCallback(
     async (prompt, placeholderId) => {
       setIsLoading(true);
-      setShowTypingIndicator(false);
-
-      // Show typing indicator after delay
-      typingTimeoutRef.current = setTimeout(() => {
-        setShowTypingIndicator(true);
-      }, TYPING_INDICATOR_DELAY);
+      // Show typing indicator immediately for better perceived responsiveness
+      setShowTypingIndicator(true);
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -226,9 +218,6 @@ const ChatInterface = () => {
       } finally {
         setIsLoading(false);
         setShowTypingIndicator(false);
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
 
         // Clean up empty placeholder messages
         setMessages((prev) => {
