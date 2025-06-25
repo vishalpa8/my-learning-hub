@@ -64,6 +64,10 @@
   --scrollbar-thumb-color: rgba(var(--dark-color-rgb), 0.1);
   --shadow-base-color-rgb: 40, 60, 90; /* New variable for common shadow color */
 
+  /* **MISSING PROPERTIES FOR CHAT INTERFACE** */
+  --font-family-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Courier New', monospace; /* For code blocks */
+  --glass-bg-hover: rgba(255, 255, 255, 0.9); /* For card hover states */
+
   /* Chart Specific Dimensions */
   --chart-height: 250px;
   --chart-max-width: 350px;
@@ -87,6 +91,10 @@
   --font-weight-normal: 400;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+
+  --font-weight-medium: 500;
+  --text-color-dark: #1a202c;
+  --background-color-subtle-rgb: 234, 241, 251;
 
   /* Spacing & Layout */
   --spacing-xxxs: 0.125rem; /* ~2px */

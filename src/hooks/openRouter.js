@@ -28,14 +28,19 @@ export async function streamMessage(
   systemPrompt = "",
   options = {}
 ) {
+  // Fail fast on missing API key
+  if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
+    throw new Error(
+      "VITE_OPENROUTER_API_KEY environment variable is required. Please check your .env file."
+    );
+  }
+
   if (!userMessage || typeof userMessage !== "string" || !userMessage.trim()) {
     throw new Error("User message must be a non-empty string.");
   }
 
-  if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
-    throw new Error(
-      "VITE_OPENROUTER_API_KEY is not set in your environment variables."
-    );
+  if (options && typeof options !== 'object') {
+    throw new Error("Options must be an object.");
   }
 
   try {
@@ -60,12 +65,21 @@ export async function streamMessage(
 
     return stream.toReadableStream().getReader();
   } catch (error) {
+    // Handle user-initiated aborts silently (no error logging)
     if (error.name === "AbortError" || error.name === "APIUserAbortError") {
-      throw error; // Re-throw the original error to be handled gracefully by the caller
+      // Just re-throw the original error as-is to preserve error type
+      throw error;
     }
+    
+    // Log only actual system/network errors
     console.error("Error communicating directly with OpenRouter API:", error);
-    throw new Error(
-      `Failed to get response from OpenRouter. Original Error: ${error.message}`
-    );
+    
+    // Re-throw the original error with enhanced properties, preserving the original error type
+    const enhancedError = new Error(error.message);
+    enhancedError.name = error.name;
+    enhancedError.status = error.status;
+    enhancedError.code = error.code;
+    enhancedError.originalError = error; // Keep reference to original
+    throw enhancedError;
   }
 }

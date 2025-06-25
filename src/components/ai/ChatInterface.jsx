@@ -12,12 +12,41 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import "./ChatInterface.css";
 
-// Constants
-const SYSTEM_PROMPT = "Please answer in English.";
-const MAX_TEXTAREA_HEIGHT = 150;
-const COPY_TIMEOUT = 2000;
+/**
+ * @typedef {Object} Message
+ * @property {string} id - Unique message identifier
+ * @property {'user'|'ai'} sender - Message sender type
+ * @property {string} text - Message content
+ * @property {string} timestamp - Formatted timestamp
+ * @property {boolean} [isError] - Whether message is an error
+ * @property {boolean} [isEdited] - Whether message was edited
+ * @property {boolean} [isStoppedByUser] - Whether response was stopped by user
+ * @property {string} [originalPrompt] - Original prompt for retry functionality
+ * @property {boolean} [isStreaming] - Whether message is currently streaming
+ */
 
-// Utility functions
+// ===== CONSTANTS =====
+const CONSTANTS = {
+  RETRY_ATTEMPTS: 3,
+  RETRY_DELAY: 1000,
+  STREAM_TIMEOUT: 30000,
+  COPY_TIMEOUT: 2000,
+  MAX_INPUT_LENGTH: 4000,
+  MAX_MESSAGE_LENGTH: 50000,
+  MAX_TEXTAREA_HEIGHT: 200,
+  TYPING_DELAY: 30, // Delay between characters for typewriter effect
+  WORD_CHUNK_SIZE: 3, // Number of words to add at once
+  SYSTEM_PROMPT: "You are a helpful AI assistant focused on learning and education. Provide clear, accurate, and helpful responses.",
+  MESSAGES: {
+    TIMEOUT_ERROR: "Request timed out. Please check your connection and try again.",
+    NETWORK_ERROR: "Network error occurred. Please check your internet connection.",
+    SERVER_ERROR: "Server is currently unavailable. Please try again later.",
+    GENERIC_ERROR: "An unexpected error occurred. Please try again.",
+    USER_STOPPED: "You stopped the response.",
+  },
+};
+
+// ===== UTILITIES =====
 const generateId = () => crypto.randomUUID();
 
 const formatTime = (date) => {
@@ -30,25 +59,242 @@ const formatTime = (date) => {
     .toLowerCase();
 };
 
+// ===== ERROR HANDLING =====
+const isUserAbortError = (error) => {
+  return (
+    error.name === "AbortError" || 
+    error.name === "APIUserAbortError" ||
+    error.message?.includes("Request was aborted") ||
+    error.message?.includes("aborted") ||
+    error.code === "ABORT_ERR" ||
+    error.code === 20
+  );
+};
+
+const shouldAutoRetry = (error) => {
+  if (isUserAbortError(error)) return false;
+  
+  return (
+    error.message?.includes('timeout') || 
+    error.name === 'TimeoutError' ||
+    error.message?.includes('network') || 
+    error.code === 'NETWORK_ERROR' ||
+    error.status >= 500 ||
+    error.status === 429
+  );
+};
+
+const getErrorMessage = (error) => {
+  if (isUserAbortError(error)) return CONSTANTS.MESSAGES.USER_STOPPED;
+  if (error.message?.includes('timeout') || error.name === 'TimeoutError') return CONSTANTS.MESSAGES.TIMEOUT_ERROR;
+  if (error.message?.includes('network') || error.message?.includes('fetch')) return CONSTANTS.MESSAGES.NETWORK_ERROR;
+  if (error.status >= 500) return CONSTANTS.MESSAGES.SERVER_ERROR;
+  if (error.status === 429) return "Rate limit exceeded. Please wait a moment and try again.";
+  if (error.status === 401 || error.status === 403) return "Authentication failed. Please check your API key.";
+  if (error.message?.includes('API key')) return "API key configuration error. Please check your settings.";
+  
+  return CONSTANTS.MESSAGES.GENERIC_ERROR;
+};
+
+// ===== STREAM PARSING =====
 const parseStreamChunks = (chunk) => {
-  const chunks = chunk.split("\n").filter((line) => line.trim());
+  if (!chunk || typeof chunk !== 'string') return '';
+
+  const lines = chunk.split("\n").filter((line) => line.trim());
   const results = [];
 
-  for (const chunkLine of chunks) {
+  for (const line of lines) {
     try {
-      const json = JSON.parse(chunkLine);
+      const cleanLine = line.replace(/^data:\s*/, "");
+      if (!cleanLine || cleanLine === "[DONE]" || line.startsWith("event:")) continue;
+
+      const json = JSON.parse(cleanLine);
       const content = json.choices?.[0]?.delta?.content || "";
-      if (content) {
-        results.push(content);
-      }
+      if (content) results.push(content);
     } catch (e) {
-      console.warn("Failed to parse chunk:", chunkLine, e);
+      // Only warn for actual parsing issues, not expected stream markers
+      if (line.trim() && !line.startsWith("data:") && !line.startsWith("event:") && !line.includes(":")) {
+        console.warn("Failed to parse stream chunk:", line);
+      }
     }
   }
 
   return results.join("");
 };
 
+// ===== ENHANCED TYPEWRITER EFFECT =====
+const useTypewriterEffect = (fullText, isStreaming, speed = CONSTANTS.TYPING_DELAY) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (!isStreaming) {
+      // When streaming stops, show full text immediately
+      setDisplayedText(fullText);
+      setCurrentIndex(fullText.length);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    if (currentIndex < fullText.length) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIndex(prev => {
+          const newIndex = Math.min(prev + CONSTANTS.WORD_CHUNK_SIZE, fullText.length);
+          setDisplayedText(fullText.slice(0, newIndex));
+          
+          if (newIndex >= fullText.length) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          
+          return newIndex;
+        });
+      }, speed);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [fullText, currentIndex, isStreaming, speed]);
+
+  // Reset when fullText changes significantly (new content)
+  useEffect(() => {
+    if (fullText.length < displayedText.length) {
+      setDisplayedText("");
+      setCurrentIndex(0);
+    }
+  }, [fullText.length, displayedText.length]);
+
+  return displayedText;
+};
+
+// ===== COMPONENTS =====
+const LinkRenderer = ({ href, children }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer" title={href}>
+    {children}
+  </a>
+);
+
+const EnhancedTypingIndicator = ({ isVisible }) => (
+  <div className={`enhanced-typing-indicator ${isVisible ? 'visible' : 'hidden'}`}>
+    <span className="typing-dot"></span>
+    <span className="typing-dot"></span>
+    <span className="typing-dot"></span>
+    <span className="typing-text">AI is thinking...</span>
+  </div>
+);
+
+// Separate component for message bubble to avoid hook issues
+const MessageBubble = ({ message, index, isLastUser, isLastAi, isLastMessage, markdownComponents, retryCount, isLoading, onEditMessage, onRetryMessage }) => {
+  // Use typewriter effect only for streaming AI messages
+  const displayText = message.sender === "ai" && message.isStreaming 
+    ? useTypewriterEffect(message.text, message.isStreaming) 
+    : message.text;
+
+  // Don't render AI bubbles that are empty and streaming (thinking state)
+  if (message.sender === "ai" && message.isStreaming && !displayText.trim()) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`message-bubble ${message.sender} ${message.isError ? 'error-message' : ''} ${isLastMessage ? 'last-message' : ''}`}
+      data-stopped={message.isStoppedByUser}
+    >
+      <div className="message-text">
+        {message.sender === "ai" ? (
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+            components={markdownComponents}
+          >
+            {displayText}
+          </ReactMarkdown>
+        ) : (
+          displayText
+        )}
+      </div>
+
+      <div className="message-footer">
+        <div className="message-meta-container">
+          
+          {/* Show edited indicator for edited messages */}
+          {message.isEdited && (
+            <span className="edited-indicator">edited</span>
+          )}
+          
+          {/* Show retry indicator for retried messages */}
+          {retryCount > 0 && message.sender === "ai" && isLastAi && (
+            <span className="retry-indicator">retry {retryCount}</span>
+          )}
+          {/* Always show timestamp for both AI and user */}
+          {message.timestamp && (
+              <span className="timestamp">{message.timestamp}</span>
+          )}
+        </div>
+
+        <div className="message-actions-container">
+          {/* Edit button only for last user message on hover */}
+          {isLastUser && !isLoading && (
+            <button
+              className="action-button edit-button"
+              onClick={onEditMessage}
+              title="Edit message"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m18 2 4 4-14 14H4v-4L18 2z"/>
+                <path d="M14.5 5.5 18.5 9.5"/>
+              </svg>
+            </button>
+          )}
+
+          {/* Retry button only for last AI message after generation, on hover */}
+          {isLastAi && !isLoading && !message.isStreaming && message.originalPrompt && (
+            <button
+              className="action-button retry-button"
+              onClick={() => onRetryMessage(message.id)}
+              title="Retry message"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M3 21v-5h5"/>
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===== MAIN COMPONENT =====
 const ChatInterface = () => {
   // State
   const [messages, setMessages] = useState([
@@ -58,195 +304,355 @@ const ChatInterface = () => {
       text: "Hello! How can I help you with your learning today?",
       timestamp: formatTime(new Date()),
       isError: false,
+      isStreaming: false,
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [copiedBlockId, setCopiedBlockId] = useState(null);
   const [showTypingIndicator, setShowTypingIndicator] = useState(false);
+  const [isEditingLastMessage, setIsEditingLastMessage] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Refs
   const messagesEndRef = useRef(null);
   const abortControllerRef = useRef(null);
   const textareaRef = useRef(null);
   const copyTimeoutRef = useRef(null);
+  const streamTimeoutRef = useRef(null);
 
-  // Memoized calculations
-  const { lastAiMessageIndex, lastUserMessageIndex } = useMemo(() => {
-    let lastAi = -1;
-    let lastUser = -1;
+  // Find last messages - Updated to identify actual last messages
+  const { lastUserMessage, lastAiMessage, lastUserMessageIndex, lastAiMessageIndex, isLastUserMessage, isLastAiMessage } = useMemo(() => {
+    let lastUser = null, lastAi = null, lastUserIndex = -1, lastAiIndex = -1;
 
     for (let i = messages.length - 1; i >= 0; i--) {
-      if (lastAi === -1 && messages[i].sender === "ai") {
-        lastAi = i;
+      if (!lastAi && messages[i].sender === "ai") {
+        lastAi = messages[i];
+        lastAiIndex = i;
       }
-      if (lastUser === -1 && messages[i].sender === "user") {
-        lastUser = i;
+      if (!lastUser && messages[i].sender === "user") {
+        lastUser = messages[i];
+        lastUserIndex = i;
       }
-      if (lastAi !== -1 && lastUser !== -1) {
-        break;
-      }
+      if (lastAi && lastUser) break;
     }
 
-    return { lastAiMessageIndex: lastAi, lastUserMessageIndex: lastUser };
+    // Create lookup functions for determining last messages
+    const isLastUserMessage = (index) => index === lastUserIndex;
+    const isLastAiMessage = (index) => index === lastAiIndex;
+
+    return { 
+      lastUserMessage: lastUser, 
+      lastAiMessage: lastAi, 
+      lastUserMessageIndex: lastUserIndex, 
+      lastAiMessageIndex: lastAiIndex,
+      isLastUserMessage,
+      isLastAiMessage
+    };
   }, [messages]);
 
-  // Scroll to bottom on new message
+  // ===== EFFECTS =====
+  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, showTypingIndicator]);
 
-  // Auto-resize textarea with max height
+  // Auto-resize textarea and input validation
   useEffect(() => {
     if (textareaRef.current) {
+      if (input.length > CONSTANTS.MAX_INPUT_LENGTH) {
+        setInput(input.substring(0, CONSTANTS.MAX_INPUT_LENGTH));
+        return;
+      }
+
       textareaRef.current.style.height = "auto";
-      const newHeight = Math.min(
-        textareaRef.current.scrollHeight,
-        MAX_TEXTAREA_HEIGHT
-      );
+      const newHeight = Math.min(textareaRef.current.scrollHeight, CONSTANTS.MAX_TEXTAREA_HEIGHT);
       textareaRef.current.style.height = `${newHeight}px`;
     }
   }, [input]);
 
-  // Cleanup on unmount
+  // Reset edit mode if input is cleared
+  useEffect(() => {
+    if (input.trim() === "" && isEditingLastMessage) {
+      setIsEditingLastMessage(false);
+    }
+  }, [input, isEditingLastMessage]);
+
+  // Cleanup
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
-      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      [copyTimeoutRef, streamTimeoutRef].forEach(ref => {
+        if (ref.current) clearTimeout(ref.current);
+      });
     };
   }, []);
 
-  // Optimized message update function
+  // ===== HANDLERS =====
   const updateMessage = useCallback((messageId, updates) => {
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === messageId ? { ...msg, ...updates } : msg))
-    );
+    setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, ...updates } : msg)));
   }, []);
 
-  // Copy code block handler
-  const handleCopyCode = useCallback((code, blockId) => {
-    navigator.clipboard
-      .writeText(code)
-      .then(() => {
+  const handleCopyCode = useCallback(async (code, blockId) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedBlockId(blockId);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopiedBlockId(null), CONSTANTS.COPY_TIMEOUT);
+    } catch (err) {
+      // Fallback for older browsers
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = code;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
         setCopiedBlockId(blockId);
-        if (copyTimeoutRef.current) {
-          clearTimeout(copyTimeoutRef.current);
-        }
-        copyTimeoutRef.current = setTimeout(
-          () => setCopiedBlockId(null),
-          COPY_TIMEOUT
-        );
-      })
-      .catch((err) => {
-        console.error("Failed to copy code:", err);
-      });
-  }, []);
-
-  // Stop generation handler
-  const handleStopGeneration = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+        copyTimeoutRef.current = setTimeout(() => setCopiedBlockId(null), CONSTANTS.COPY_TIMEOUT);
+      } catch (fallbackErr) {
+        console.error("Failed to copy code:", fallbackErr);
+      }
     }
   }, []);
 
-  // Rewrite user message handler
-  const handleRewriteUserMessage = useCallback((text) => {
-    setInput(text);
-    textareaRef.current?.focus();
+  const handleStopGeneration = useCallback(() => {
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
+
+    // Stop streaming on current message
+    setMessages(prev => prev.map(msg => 
+      msg.isStreaming ? { ...msg, isStreaming: false } : msg
+    ));
+
+    setIsLoading(false);
+    setShowTypingIndicator(false);
+    setRetryCount(0);
   }, []);
 
-  // Core streaming logic
-  const executeStream = useCallback(
-    async (prompt, placeholderId) => {
-      setIsLoading(true);
-      // Show typing indicator immediately for better perceived responsiveness
-      setShowTypingIndicator(true);
+  const handleEditLastMessage = useCallback(() => {
+    if (isLoading || !lastUserMessage) return;
 
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+    setInput(lastUserMessage.text);
+    setIsEditingLastMessage(true);
+    textareaRef.current?.focus();
+  }, [isLoading, lastUserMessage]);
 
-      try {
-        const reader = await streamMessage(prompt, SYSTEM_PROMPT, {
-          signal: controller.signal,
-        });
+  const handleRetryMessage = useCallback(async (messageId) => {
+    if (isLoading) return;
 
-        const decoder = new TextDecoder();
-        let hasContent = false;
+    const messageToRetry = messages.find(msg => msg.id === messageId);
+    if (!messageToRetry || !messageToRetry.originalPrompt) return;
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+    updateMessage(messageId, {
+      text: "",
+      timestamp: "",
+      isError: false,
+      isStoppedByUser: false,
+      isStreaming: true,
+      originalPrompt: messageToRetry.originalPrompt
+    });
 
-          const chunk = decoder.decode(value, { stream: true });
-          const content = parseStreamChunks(chunk);
+    executeStream(messageToRetry.originalPrompt, messageId);
+  }, [isLoading, messages, updateMessage]);
 
-          if (content) {
-            hasContent = true;
+  // ===== ENHANCED STREAMING LOGIC =====
+  const executeStream = useCallback(async (prompt, placeholderId, attempt = 0) => {
+    setIsLoading(true);
+    setShowTypingIndicator(true);
+    setRetryCount(attempt);
+
+    // Mark message as streaming
+    updateMessage(placeholderId, { isStreaming: true });
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    // Set timeout
+    if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
+    streamTimeoutRef.current = setTimeout(() => {
+      controller.abort();
+    }, CONSTANTS.STREAM_TIMEOUT);
+
+    let hasReceivedAnyContent = false;
+    let accumulatedContent = "";
+
+    try {
+      const reader = await streamMessage(prompt, CONSTANTS.SYSTEM_PROMPT, { signal: controller.signal });
+      const decoder = new TextDecoder();
+      let messageLength = 0;
+
+      // Hide typing indicator once we start receiving content
+      let hasHiddenTyping = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const content = parseStreamChunks(chunk);
+
+        if (content) {
+          hasReceivedAnyContent = true;
+          accumulatedContent += content;
+          
+          // Hide typing indicator on first content
+          if (!hasHiddenTyping) {
             setShowTypingIndicator(false);
-            setMessages((prevMessages) =>
-              prevMessages.map((msg) =>
-                msg.id === placeholderId
-                  ? { ...msg, text: (msg.text || "") + content }
-                  : msg
-              )
-            );
+            hasHiddenTyping = true;
           }
-        }
 
-        // Finalize message on successful completion
-        if (hasContent) {
-          updateMessage(placeholderId, {
-            timestamp: formatTime(new Date()),
-            isError: false,
-          });
-        }
-      } catch (error) {
-        let errorText;
-        if (error.name === "AbortError") {
-          console.log("Stream cancelled by user.");
-          errorText = "Response generation stopped.";
-        } else {
-          errorText = `Sorry, I encountered an error: ${error.message}`;
-          console.error("Error streaming message:", error);
-        }
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) => {
+              if (msg.id === placeholderId) {
+                const currentText = accumulatedContent;
+                messageLength = currentText.length;
 
+                if (messageLength > CONSTANTS.MAX_MESSAGE_LENGTH) {
+                  const truncatedText = currentText.substring(0, CONSTANTS.MAX_MESSAGE_LENGTH) + 
+                    "\n\n... [Message truncated due to length]";
+                  return { ...msg, text: truncatedText, isStreaming: true };
+                }
+
+                return { ...msg, text: currentText, isStreaming: true };
+              }
+              return msg;
+            })
+          );
+        }
+      }
+
+      if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
+
+      if (hasReceivedAnyContent) {
         updateMessage(placeholderId, {
-          text: errorText,
           timestamp: formatTime(new Date()),
-          isError: true,
+          isError: false,
+          isStreaming: false,
+          originalPrompt: prompt
         });
-      } finally {
+        
+        // Reset states
         setIsLoading(false);
         setShowTypingIndicator(false);
-
-        // Clean up empty placeholder messages
-        setMessages((prev) => {
-          const targetMsg = prev.find((m) => m.id === placeholderId);
-          if (
-            targetMsg &&
-            !targetMsg.text?.trim() &&
-            !targetMsg.timestamp &&
-            !targetMsg.isError
-          ) {
-            return prev.filter((m) => m.id !== placeholderId);
-          }
-          return prev;
-        });
-
+        setRetryCount(0);
         abortControllerRef.current = null;
+        return;
+      } else {
+        throw new Error("No content received from stream");
       }
-    },
-    [updateMessage]
-  );
 
-  // Submit input handler
+    } catch (error) {
+      // Essential error logging for debugging
+      console.error("Stream error:", error.name, error.message);
+      
+      if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
+
+      // If we received content before error, treat as success
+      if (hasReceivedAnyContent) {
+        updateMessage(placeholderId, {
+          timestamp: formatTime(new Date()),
+          isError: false,
+          isStreaming: false,
+          originalPrompt: prompt
+        });
+        
+        setIsLoading(false);
+        setShowTypingIndicator(false);
+        setRetryCount(0);
+        abortControllerRef.current = null;
+        return;
+      }
+
+      // Handle user abort
+      if (isUserAbortError(error)) {
+        updateMessage(placeholderId, {
+          text: CONSTANTS.MESSAGES.USER_STOPPED,
+          timestamp: formatTime(new Date()),
+          isError: true,
+          isStoppedByUser: true,
+          isStreaming: false,
+          originalPrompt: prompt
+        });
+        
+        setIsLoading(false);
+        setShowTypingIndicator(false);
+        setRetryCount(0);
+        abortControllerRef.current = null;
+        return;
+      } 
+      
+      // Handle retryable errors
+      if (shouldAutoRetry(error) && attempt < CONSTANTS.RETRY_ATTEMPTS - 1) {
+        await new Promise(resolve => setTimeout(resolve, CONSTANTS.RETRY_DELAY * (attempt + 1)));
+        
+        if (abortControllerRef.current === controller) {
+          executeStream(prompt, placeholderId, attempt + 1);
+        }
+        return;
+      }
+      
+      // Final error
+      const errorMessage = getErrorMessage(error);
+      
+      updateMessage(placeholderId, {
+        text: errorMessage,
+        timestamp: formatTime(new Date()),
+        isError: true,
+        isStoppedByUser: false,
+        isStreaming: false,
+        originalPrompt: prompt
+      });
+      
+      setIsLoading(false);
+      setShowTypingIndicator(false);
+      setRetryCount(0);
+      abortControllerRef.current = null;
+    }
+  }, [updateMessage]);
+
   const submitInput = useCallback(() => {
     const trimmedInput = input.trim();
-    if (!trimmedInput || isLoading) return;
+    if (!trimmedInput || isLoading || trimmedInput.length > CONSTANTS.MAX_INPUT_LENGTH || abortControllerRef.current) return;
 
     const currentInput = trimmedInput;
     setInput("");
 
+    // Handle editing last message
+    if (isEditingLastMessage && lastUserMessage) {
+      const updatedUserMessage = {
+        ...lastUserMessage,
+        text: currentInput,
+        isEdited: true,
+        timestamp: formatTime(new Date())
+      };
+
+      const newMessages = [...messages];
+      newMessages[lastUserMessageIndex] = updatedUserMessage;
+      
+      if (lastAiMessageIndex > lastUserMessageIndex) {
+        newMessages.splice(lastAiMessageIndex, 1);
+      }
+
+      const aiMessagePlaceholder = {
+        id: generateId(),
+        sender: "ai",
+        text: "",
+        timestamp: "",
+        isError: false,
+        isStreaming: false,
+        originalPrompt: currentInput
+      };
+
+      setMessages([...newMessages, aiMessagePlaceholder]);
+      setIsEditingLastMessage(false);
+      executeStream(currentInput, aiMessagePlaceholder.id);
+      return;
+    }
+
+    // Handle new message
     const userMessage = {
       id: generateId(),
       sender: "user",
@@ -261,185 +667,122 @@ const ChatInterface = () => {
       text: "",
       timestamp: "",
       isError: false,
+      isStreaming: false,
+      originalPrompt: currentInput
     };
 
-    setMessages((prev) => [...prev, userMessage, aiMessagePlaceholder]);
+    setMessages(prev => [...prev, userMessage, aiMessagePlaceholder]);
     executeStream(currentInput, aiMessagePlaceholder.id);
-  }, [input, isLoading, executeStream]);
+  }, [input, isLoading, isEditingLastMessage, lastUserMessage, lastUserMessageIndex, lastAiMessageIndex, messages, executeStream]);
 
-  // Handle key presses
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        submitInput();
-      }
-    },
-    [submitInput]
-  );
+  const handleInputKeyDown = useCallback((e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitInput();
+    }
+  }, [submitInput]);
 
-  // Regenerate response handler
-  const handleRegenerateResponse = useCallback(() => {
-    if (isLoading || lastUserMessageIndex === -1) return;
+  // Markdown components
+  const markdownComponents = useMemo(() => ({
+    a: LinkRenderer,
+    code: ({ node, inline, className, children, ...props }) => {
+      const match = /language-(\w+)/.exec(className || "");
+      const language = match ? match[1] : "";
+      const codeContent = String(children).replace(/\n$/, "");
+      const blockId = generateId();
 
-    const lastUserMessage = messages[lastUserMessageIndex];
-    const newPlaceholder = {
-      id: generateId(),
-      sender: "ai",
-      text: "",
-      timestamp: "",
-      isError: false,
-    };
-
-    setMessages((prev) => [...prev.slice(0, -1), newPlaceholder]);
-    executeStream(lastUserMessage.text, newPlaceholder.id);
-  }, [isLoading, lastUserMessageIndex, messages, executeStream]);
-
-  // Render code block component
-  const renderCodeBlock = useCallback(
-    ({ node, inline, className, children, ...props }) => {
-      if (inline) {
+      if (!inline && language) {
         return (
-          <code className={className} {...props}>
-            {children}
-          </code>
+          <div className="ai-code-container">
+            <div className="ai-code-header">
+              <span className="ai-code-lang">{language}</span>
+              <button
+                className="copy-button"
+                onClick={() => handleCopyCode(codeContent, blockId)}
+                title="Copy code"
+              >
+                {copiedBlockId === blockId ? (
+                  <>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="m5,9v-2a2,2 0 0,1 2,-2h13a2,2 0 0,1 2,2v13a2,2 0 0,1 -2,2h-2"></path>
+                    </svg>
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
+            <pre className="ai-code-block">
+              <code className={className} {...props}>
+                {children}
+              </code>
+            </pre>
+          </div>
         );
       }
 
-      const match = /language-(\w+)/.exec(className || "");
-      const lang = match ? match[1] : "code";
-      const codeContent = Array.isArray(children)
-        ? children.join("")
-        : children;
-      const blockId = `code-${generateId()}`;
-
       return (
-        <div className="ai-code-container">
-          <div className="ai-code-header">
-            <span className="ai-code-lang">{lang}</span>
-            <button
-              type="button"
-              className="copy-button"
-              aria-label={`Copy ${lang} code`}
-              onClick={() => handleCopyCode(codeContent, blockId)}
-            >
-              {copiedBlockId === blockId ? "Copied!" : "Copy"}
-            </button>
-          </div>
-          <pre className="ai-code-block">
-            <code className={className} {...props}>
-              {children}
-            </code>
-          </pre>
-        </div>
+        <code className="inline-code" {...props}>
+          {children}
+        </code>
       );
-    },
-    [handleCopyCode, copiedBlockId]
-  );
+    }
+  }), [handleCopyCode, copiedBlockId]);
 
   return (
-    <section className="chat-interface" aria-label="AI Chat Interface">
-      <main className="chat-messages" aria-live="polite">
-        {messages.map((msg, index) => {
-          const isStreaming =
-            msg.sender === "ai" && !msg.timestamp && isLoading;
-          const isLastAiMessage =
-            msg.sender === "ai" && index === lastAiMessageIndex;
-          const isLastUserMessage =
-            msg.sender === "user" && index === lastUserMessageIndex;
+    <div className="chat-interface">
+      <div className="chat-messages">
+        {messages.map((message, index) => {
+          // Fixed: Use the actual last message functions
+          const isLastUser = isLastUserMessage(index);
+          const isLastAi = isLastAiMessage(index);
+          const isLastMessage = isLastUser || isLastAi;
 
           return (
-            <article key={msg.id} className={`message-bubble ${msg.sender}`}>
-              <div className="message-content">
-                {msg.sender === "user" ? (
-                  <div className="message-text">{msg.text}</div>
-                ) : isStreaming && !msg.text && showTypingIndicator ? (
-                  <span className="typing-indicator" aria-label="AI is typing">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </span>
-                ) : (
-                  <div className={isStreaming ? "streaming-markdown" : ""}>
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeHighlight]}
-                      components={{ code: renderCodeBlock }}
-                    >
-                      {msg.text}
-                    </ReactMarkdown>
-                  </div>
-                )}
-              </div>
-
-              <div className="message-footer">
-                <div className="message-actions-container">
-                  {isLastUserMessage && !isLoading && (
-                    <button
-                      className="action-button"
-                      onClick={() => handleRewriteUserMessage(msg.text)}
-                      aria-label="Edit message"
-                      title="Edit this message"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                      </svg>
-                    </button>
-                  )}
-                  {isLastAiMessage && msg.timestamp && !isLoading && (
-                    <button
-                      className="action-button"
-                      onClick={handleRegenerateResponse}
-                      aria-label={
-                        msg.isError ? "Retry response" : "Regenerate response"
-                      }
-                      title={
-                        msg.isError
-                          ? "Retry generating response"
-                          : "Generate new response"
-                      }
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
-                        <path d="M21 3v5h-5"></path>
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                {msg.timestamp && (
-                  <span
-                    className="timestamp"
-                    title={new Date().toLocaleString()}
-                  >
-                    {msg.timestamp}
-                  </span>
-                )}
-              </div>
-            </article>
+            <MessageBubble
+              key={message.id}
+              message={message}
+              index={index}
+              isLastUser={isLastUser}
+              isLastAi={isLastAi}
+              isLastMessage={isLastMessage}
+              markdownComponents={markdownComponents}
+              retryCount={retryCount}
+              isLoading={isLoading}
+              onEditMessage={handleEditLastMessage}
+              onRetryMessage={handleRetryMessage}
+            />
           );
         })}
+
+        {showTypingIndicator && <EnhancedTypingIndicator isVisible={true} />}
         <div ref={messagesEndRef} />
-      </main>
+      </div>
 
       <form
         className="chat-input-form"
@@ -447,57 +790,66 @@ const ChatInterface = () => {
           e.preventDefault();
           submitInput();
         }}
-        autoComplete="off"
       >
         <textarea
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about a data structure, chess opening, etc..."
-          aria-label="Your message"
-          disabled={isLoading}
-          rows={1}
-          onKeyDown={handleKeyDown}
-          style={{ resize: "none" }}
+          onKeyDown={handleInputKeyDown}
+          placeholder={
+            isEditingLastMessage
+              ? "Edit your message..."
+              : isLoading
+              ? "AI is responding..."
+              : "Type your message here..."
+          }
+          disabled={isLoading && !isEditingLastMessage}
+          className={isEditingLastMessage ? "editing-mode" : ""}
+          maxLength={CONSTANTS.MAX_INPUT_LENGTH}
         />
+
         {isLoading ? (
           <button
             type="button"
-            className="stop-button"
             onClick={handleStopGeneration}
-            aria-label="Stop generation"
-            title="Stop generating response"
+            title="Stop generation"
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
-              fill="currentColor"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+              <rect x="6" y="6" width="12" height="12"></rect>
             </svg>
           </button>
         ) : (
           <button
             type="submit"
-            disabled={!input.trim()}
-            aria-label="Send message"
-            title="Send message (Enter)"
+            disabled={!input.trim() || input.length > CONSTANTS.MAX_INPUT_LENGTH}
+            title={isEditingLastMessage ? "Update message" : "Send message"}
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
-              fill="currentColor"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
             </svg>
           </button>
         )}
       </form>
-    </section>
+    </div>
   );
 };
 
