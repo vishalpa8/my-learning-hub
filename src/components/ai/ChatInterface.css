@@ -48,7 +48,7 @@
 
 .message-bubble {
   max-width: 70%;
-  padding: var(--spacing-xs) var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius-lg);
   position: relative;
   word-wrap: break-word;
