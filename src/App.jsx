@@ -1,18 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense, lazy } from "react"; // Import Suspense and lazy
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
 } from "react-router-dom";
+
 import Navbar from "./components/shared/Navbar";
 import ErrorBoundary from "./components/shared/ErrorBoundary"; // Import ErrorBoundary
 import Footer from "./components/shared/Footer";
-import HomePage from "./pages/HomePage";
-import DsaPage from "./pages/DsaPage";
-import ChessPage from "./pages/ChessPage";
+
+// Lazy load page components
+const HomePage = lazy(() => import("./pages/HomePage"));
+const DsaPage = lazy(() => import("./pages/DsaPage"));
+const ChessPage = lazy(() => import("./pages/ChessPage"));
 import { RewardProvider } from "./contexts/RewardContext";
-import EngagementPage from "./pages/EngagementPage"; // Import the new EngagementPage
+import EngagementPage from "./pages/EngagementPage";
+import AIAssistantPage from "./pages/AIAssistantPage";
 
 /**
  * Component to handle scrolling to the top of the page on route changes.
@@ -28,22 +32,22 @@ function ScrollToTop() {
 function AppContent() {
   return (
     <ErrorBoundary>
-      {" "}
-      {/* Wrap the main content area */}
-      {/* Accessibility: Skip to main content link */}
       <a href="#main-content" className="sr-only sr-only-focusable">
         Skip to main content
       </a>
       <Navbar />
       <main id="main-content" className="main-content" tabIndex={-1}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/dsa" element={<DsaPage />} />
-          <Route path="/chess" element={<ChessPage />} />          
-          <Route path="/Progress" element={<EngagementPage />} /> {/* Use the imported EngagementPage component */}
-          {/* Add route for EngagementPage */}
-          {/* Add other routes here */}
-        </Routes>
+        <Suspense fallback={<div>Loading...</div>}>
+          {" "}
+          {/* Add Suspense boundary */}
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/ai-assistant" element={<AIAssistantPage />} />
+            <Route path="/dsa" element={<DsaPage />} />
+            <Route path="/chess" element={<ChessPage />} />
+            <Route path="/progress" element={<EngagementPage />} />
+          </Routes>
+        </Suspense>
       </main>
       <Footer />
     </ErrorBoundary>
@@ -56,12 +60,16 @@ function AppContent() {
  */
 function App() {
   return (
-    <Router>
-      <ScrollToTop/>
-      <RewardProvider>
-        <AppContent />
-      </RewardProvider>
-    </Router>
+    <React.StrictMode>
+      {" "}
+      {/* Optional: Add StrictMode for development */}
+      <Router>
+        <ScrollToTop />
+        <RewardProvider>
+          <AppContent />
+        </RewardProvider>
+      </Router>
+    </React.StrictMode>
   );
 }
 

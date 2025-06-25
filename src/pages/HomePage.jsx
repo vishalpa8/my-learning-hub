@@ -149,13 +149,19 @@ const HomePage = () => {
             Visualize your journey, unlock achievements, and stay motivated!
           </p>
           <div className="home-hero-actions">
-            <Link to="/dsa" className="home-btn-primary">
+            <Link to="/ai-assistant" className="home-btn-primary">
+              <span role="img" aria-label="robot">
+                🤖
+              </span>{" "}
+              Ask AI Assistant
+            </Link>
+            <Link to="/dsa" className="home-btn-secondary">
               Start DSA Journey
             </Link>
             <Link to="/chess" className="home-btn-secondary">
-              Explore Chess
+              Learn Chess
             </Link>
-            <Link to="/Progress" className="home-btn-secondary">
+            <Link to="/progress" className="home-btn-secondary">
               Daily Routine
             </Link>
           </div>
@@ -196,13 +202,21 @@ const HomePage = () => {
             icon="📅"
             title="Daily Routine"
             {...engagementCardData} // Spread the prepared data
-            link="/Progress"
+            link="/progress"
           />
         </div>
       </section>
 
       {/* Quick Links */}
       <section className="home-quick-links">
+        <QuickLinkCard
+          title="AI Learning Assistant"
+          description="Get hints, code explanations, or ask questions about any topic. Powered by OpenRouter."
+          href="/ai-assistant"
+          icon="🤖"
+          cta="Go to AI Assistant"
+        />
+
         <QuickLinkCard
           title="DSA & CP Pathway"
           description="Practice curated DSA and CP problems, filter by topic/difficulty, and earn rewards as you progress."
@@ -220,7 +234,7 @@ const HomePage = () => {
         <QuickLinkCard
           title="Daily Learning Routine"
           description="Manage daily tasks, track your activity on the calendar, and build consistent learning habits."
-          href="/Progress"
+          href="/progress"
           icon="📅"
           cta="View Routine"
         />

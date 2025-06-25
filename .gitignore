@@ -7,6 +7,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Environment variables
+# Keep local secrets out of version control
+.env
+
+# Dependencies
 node_modules
 dist
 dist-ssr

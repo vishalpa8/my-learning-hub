@@ -1,0 +1,346 @@
+/* --- Main Chat Layout --- */
+.chat-interface {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for a modern look */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(var(--dark-color-rgb), 0.15);
+  border-radius: var(--border-radius-pill);
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--dark-color-rgb), 0.25);
+}
+
+/* --- Message Bubbles --- */
+.message-bubble {
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  /* MODIFIED: Reduced top/bottom padding to decrease height */
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+  word-wrap: break-word;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  animation: popIn 0.3s var(--easing-cubic) forwards;
+}
+
+/* Animation for message bubbles appearing */
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.message-bubble.user {
+  background-color: var(--primary-color);
+  color: #fff;
+  margin-left: auto;
+  border-bottom-right-radius: var(--border-radius-sm);
+}
+
+.message-bubble.ai {
+  background-color: var(--background-color-subtle);
+  color: var(--text-color);
+  margin-right: auto;
+  border-bottom-left-radius: var(--border-radius-sm);
+}
+
+/* Style for errored AI messages */
+.message-bubble.ai.error-message {
+  background-color: var(--danger-color-xlight);
+  border: 1px solid var(--danger-color-border);
+  color: var(--danger-color-dark);
+}
+
+/* --- Message Content --- */
+.message-bubble .message-text {
+  white-space: pre-wrap;
+}
+
+/* --- Message Footer (Actions & Timestamp) --- */
+.message-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-xs);
+  opacity: 0.6;
+  transition: opacity 0.2s var(--easing-cubic);
+}
+
+/* Show actions when the user hovers over the message bubble */
+.message-bubble:hover .message-footer,
+.message-bubble:focus-within .message-footer {
+  opacity: 1;
+}
+
+.timestamp {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted-color);
+}
+
+.message-bubble.user .timestamp {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.message-actions-container {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+/* --- Action Buttons (Edit, Regenerate) --- */
+.action-button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted-color);
+  padding: 0;
+  width: 28px; /* Adjusted for a tighter look with smaller bubbles */
+  height: 28px; /* Adjusted for a tighter look with smaller bubbles */
+  border-radius: var(--border-radius-pill);
+  transition: var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: all 0.2s var(--easing-cubic);
+}
+
+/* Animate buttons in when footer becomes visible */
+.message-bubble:hover .action-button,
+.message-bubble:focus-within .action-button {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.action-button:hover {
+  background-color: rgba(var(--dark-color-rgb), 0.08);
+  color: var(--primary-color);
+}
+
+.message-bubble.user .action-button {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.message-bubble.user .action-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* --- AI Code Block Styling --- */
+.ai-code-container {
+  margin: var(--spacing-sm) 0;
+  background: var(--code-bg-dark);
+  border-radius: var(--border-radius);
+  font-family: var(--font-family-mono);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ai-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.ai-code-lang {
+  font-size: var(--font-size-sm);
+  color: #d1d5db;
+  text-transform: lowercase;
+  font-weight: var(--font-weight-semibold);
+}
+
+.copy-button {
+  all: unset;
+  box-sizing: border-box;
+  background: transparent;
+  color: #d1d5db;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: var(--transition-color);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.copy-button:hover,
+.copy-button:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+pre.ai-code-block {
+  color: var(--code-fg-light);
+  padding: var(--spacing-sm);
+  margin: 0 !important;
+  overflow-x: auto;
+  font-size: 0.9em;
+  white-space: pre;
+}
+
+/* --- Chat Input Form --- */
+.chat-input-form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border-top: var(--border-width-thin) solid var(--border-color);
+  background-color: var(--background-color);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.chat-input-form textarea {
+  flex-grow: 1;
+  padding: 10px var(--spacing-sm);
+  border: var(--border-width-thin) solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  font-family: inherit;
+  resize: none;
+  overflow-y: hidden;
+  box-sizing: border-box;
+  min-height: 44px;
+  max-height: 200px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, height 0.1s ease;
+}
+
+.chat-input-form textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-ring);
+}
+
+/* --- Input Form Buttons (Submit, Stop) --- */
+.chat-input-form button {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border-radius: var(--border-radius-pill);
+  color: var(--text-muted-color);
+  transition: var(--transition-base);
+}
+
+.chat-input-form button:hover:not(:disabled) {
+  background-color: var(--background-color-subtle);
+  color: var(--primary-color);
+}
+
+.chat-input-form button:disabled {
+  color: var(--border-color);
+  cursor: not-allowed;
+  transform: scale(1);
+}
+
+.chat-input-form button[type="submit"]:not(:disabled) {
+  background-color: var(--primary-color);
+  color: #fff;
+  animation: popIn 0.2s var(--easing-cubic) forwards;
+}
+
+.chat-input-form button[type="submit"]:not(:disabled):hover {
+  background-color: var(--primary-color-dark);
+}
+
+.chat-input-form .stop-button {
+  background-color: var(--danger-color);
+  color: #fff;
+  animation: popIn 0.2s var(--easing-cubic) forwards;
+}
+
+.chat-input-form .stop-button:hover {
+  background-color: var(--danger-color-dark);
+}
+
+/* --- Indicators & Animations --- */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  /* MODIFIED: Adjusted padding to match new bubble padding */
+  padding: var(--spacing-xs) 0;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  background-color: var(--text-muted-color);
+  border-radius: var(--border-radius-pill);
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.typing-indicator span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.streaming-markdown p:last-of-type::after,
+.streaming-markdown li:last-of-type::after,
+.streaming-markdown pre:last-of-type::after {
+  content: "▋";
+  animation: blink 1s step-end infinite;
+  margin-left: 0.25em;
+  color: var(--primary-color);
+  font-weight: var(--font-weight-bold);
+}
+
+@keyframes blink {
+  from,
+  to {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}

@@ -52,10 +52,11 @@
   --border-color-soft: #e3eaf5; /* Added for DSA card */
   --border-color-muted: #e0e0e0; /* Added for DSA N/A difficulty */
   --background-color-offset: #e6f7ff;
-  --primary-color-xxlight: rgba(
-    var(--primary-color-rgb),
-    0.075
-  ); /* Added for Modal item hover */
+  --primary-color-xxlight: rgba(var(--primary-color-rgb), 0.075);
+  /* Added for Modal item hover */
+
+  --code-bg-dark: #2d2d2d; /* dark code block */
+  --code-fg-light: #f8f8f2; /* light code block */
 
   --background-color-subtle: #eaf1fb; /* Added for DSA progress/tags */
   --background-color-muted: #f0f0f0; /* Added for DSA N/A difficulty */

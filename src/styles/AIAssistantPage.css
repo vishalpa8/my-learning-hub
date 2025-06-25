@@ -1,0 +1,46 @@
+/* src/styles/AIAssistantPage.css */
+.ai-assistant-container {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--navbar-height));
+}
+
+.ai-assistant-header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  flex-shrink: 0;
+}
+
+.ai-assistant-header h1 {
+  color: var(--primary-color-dark);
+}
+
+.ai-assistant-header p {
+  font-size: var(--font-size-lg);
+  color: var(--text-muted-color);
+  max-width: 600px;
+  margin: var(--spacing-xs) auto 0;
+}
+
+.ai-chat-section {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent chat from overflowing container */
+  background-color: var(--background-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow-md);
+  border: 1px solid var(--border-color);
+  min-height: 400px;
+}
+
+.ai-assistant-footer {
+  text-align: center;
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted-color);
+  flex-shrink: 0;
+}

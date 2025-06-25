@@ -32,6 +32,17 @@ const Navbar = () => (
         </li>
         <li className="nav-item">
           <NavLink
+            to="/ai-assistant"
+            className={({ isActive }) =>
+              "nav-links" + (isActive ? " active" : "")
+            }
+            aria-current={({ isActive }) => (isActive ? "page" : undefined)}
+          >
+            AI Assistant
+          </NavLink>
+        </li>
+        <li className="nav-item">
+          <NavLink
             to="/dsa"
             className={({ isActive }) =>
               "nav-links" + (isActive ? " active" : "")
