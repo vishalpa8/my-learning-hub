@@ -604,8 +604,8 @@ pre.ai-code-block code {
 }
 
 .chat-input-form textarea.editing-mode {
-  border-color: var(--warning-color);
-  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
 }
 
 /* ===== INPUT FORM BUTTONS - UPDATED FOR SVG ICONS ===== */
