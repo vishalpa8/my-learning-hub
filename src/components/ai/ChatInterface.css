@@ -1,3 +1,12 @@
+/* ===== CHAT SECTION CONTAINER ===== */
+.ai-chat-section {
+  height: 70vh; /* Full viewport height */
+  max-height: 70vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Chat Interface Styles */
 .chat-interface {
   display: flex;
@@ -5,15 +14,17 @@
   height: 100%;
   width: 100%;
   background-color: var(--background-color);
+  overflow: hidden; /* Prevent overflow from container */
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  min-height: 0; /* Allow flex item to shrink below content size */
 }
 
 /* Custom scrollbar */
@@ -37,7 +48,7 @@
 
 .message-bubble {
   max-width: 70%;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-xs);
   border-radius: var(--border-radius-lg);
   position: relative;
   word-wrap: break-word;
@@ -85,7 +96,7 @@
 
 .message-text {
   line-height: var(--line-height-base);
-  margin-bottom: var(--spacing-xxs);
+  margin-bottom: var(--spacing-xxxs);
 }
 
 .message-text p{
@@ -259,7 +270,6 @@
   justify-content: space-evenly;
   flex-direction: row-reverse;
   align-items: flex-end;
-  margin-top: var(--spacing-xs);
   gap: var(--spacing-sm);
   min-height: 20px;
 }
@@ -570,7 +580,7 @@ pre.ai-code-block code {
 .chat-input-form {
   display: flex;
   align-items: flex-end;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   padding: var(--spacing-sm);
   background-color: var(--background-color);
   border-top: 1px solid var(--border-color);
@@ -624,7 +634,7 @@ pre.ai-code-block code {
   transition: all 0.2s ease;
   flex-shrink: 0;
   box-sizing: border-box;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .chat-input-form button svg {
@@ -807,7 +817,7 @@ pre.ai-code-block code {
 /* Message streaming state */
 .message-bubble .message-text .streaming-markdown {
   border-left: 3px solid var(--primary-color);
-  padding-left: var(--spacing-sm);
+  padding-left: var(--spacing-xs);
   background: linear-gradient(90deg, 
     rgba(var(--primary-color-rgb), 0.1) 0%, 
     rgba(var(--primary-color-rgb), 0.05) 50%, 
