@@ -117,7 +117,7 @@ export async function streamGeminiMessage(
 
         try {
           // The result from the SDK contains a `stream` which is an async generator.
-          for await (const chunk of streamResult) {
+          for await (const chunk of streamResult.stream) {
             const text = chunk.text();
             if (text) {
               // Format the chunk to match the structure expected by the UI.
