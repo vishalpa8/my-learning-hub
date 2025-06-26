@@ -65,8 +65,17 @@ export async function streamMessage(
 
     return stream.toReadableStream().getReader();
   } catch (error) {
-    // Handle user-initiated aborts silently (no error logging)
-    if (error.name === "AbortError" || error.name === "APIUserAbortError") {
+    // Enhanced abort error detection
+    const isAbortError = (
+      error.name === "AbortError" || 
+      error.name === "APIUserAbortError" || 
+      error.message?.includes("Request was aborted") ||
+      error.message?.includes("aborted") ||
+      error.message?.includes("abort") ||
+      error.code === "ABORT_ERR"
+    );
+
+    if (isAbortError) {
       // Just re-throw the original error as-is to preserve error type
       throw error;
     }
