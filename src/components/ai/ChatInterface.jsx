@@ -1,17 +1,29 @@
 import React, {
   useState,
+  memo,
   useRef,
   useEffect,
   useMemo,
   useCallback,
+  useReducer,
 } from "react";
 import { streamMessage } from "../../hooks/openRouter";
 import { streamGeminiMessage } from "../../hooks/gemini";
+import PropTypes from "prop-types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import "./ChatInterface.css";
+import {
+  CONSTANTS,
+  generateId,
+  formatTime,
+  isUserAbortError,
+  shouldAutoRetry,
+  getErrorMessage,
+  parseStreamChunks,
+} from "./chatUtils";
 
 /**
  * @typedef {Object} Message
@@ -25,121 +37,6 @@ import "./ChatInterface.css";
  * @property {string} [originalPrompt] - Original prompt for retry functionality
  * @property {boolean} [isStreaming] - Whether message is currently streaming
  */
-
-// ===== CONSTANTS =====
-const CONSTANTS = {
-  RETRY_ATTEMPTS: 3,
-  RETRY_DELAY: 1000,
-  STREAM_TIMEOUT: 300000,
-  COPY_TIMEOUT: 2000,
-  MAX_INPUT_LENGTH: 40000,
-  MAX_MESSAGE_LENGTH: 50000,
-  MAX_TEXTAREA_HEIGHT: 200,
-  TYPING_DELAY: 30, // Delay between characters for typewriter effect
-  WORD_CHUNK_SIZE: 3, // Number of words to add at once
-  SYSTEM_PROMPT:
-    "You are a helpful AI assistant focused on learning and education. Provide clear, accurate, and helpful responses.",
-  MESSAGES: {
-    TIMEOUT_ERROR:
-      "Request timed out. Please check your connection and try again.",
-    NETWORK_ERROR:
-      "Network error occurred. Please check your internet connection.",
-    SERVER_ERROR: "Server is currently unavailable. Please try again later.",
-    GENERIC_ERROR: "An unexpected error occurred. Please try again.",
-    USER_STOPPED: "You stopped the response.",
-  },
-  MODELS: {
-    OPENROUTER: "deepseek/deepseek-chat-v3-0324:free",
-    GEMINI: "gemini-1.5-flash-latest", // Corrected to a valid model name
-  },
-};
-
-// ===== UTILITIES =====
-const generateId = () => crypto.randomUUID();
-
-const formatTime = (date) => {
-  return date
-    .toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    })
-    .toLowerCase();
-};
-
-// ===== ERROR HANDLING =====
-const isUserAbortError = (error) => {
-  return (
-    error.name === "AbortError" ||
-    error.name === "APIUserAbortError" ||
-    error.message?.includes("Request was aborted") ||
-    error.message?.includes("aborted") ||
-    error.code === "ABORT_ERR" ||
-    error.code === 20
-  );
-};
-
-const shouldAutoRetry = (error) => {
-  if (isUserAbortError(error)) return false;
-
-  return (
-    error.message?.includes("timeout") ||
-    error.name === "TimeoutError" ||
-    error.message?.includes("network") ||
-    error.code === "NETWORK_ERROR" ||
-    error.status >= 500 ||
-    error.status === 429
-  );
-};
-
-const getErrorMessage = (error) => {
-  if (isUserAbortError(error)) return CONSTANTS.MESSAGES.USER_STOPPED;
-  if (error.message?.includes("timeout") || error.name === "TimeoutError")
-    return CONSTANTS.MESSAGES.TIMEOUT_ERROR;
-  if (error.message?.includes("network") || error.message?.includes("fetch"))
-    return CONSTANTS.MESSAGES.NETWORK_ERROR;
-  if (error.status >= 500) return CONSTANTS.MESSAGES.SERVER_ERROR;
-  if (error.status === 429)
-    return "Rate limit exceeded. Please wait a moment and try again.";
-  if (error.status === 401 || error.status === 403)
-    return "Authentication failed. Please check your API key.";
-  if (error.message?.includes("API key"))
-    return "API key configuration error. Please check your settings.";
-
-  return CONSTANTS.MESSAGES.GENERIC_ERROR;
-};
-
-// ===== STREAM PARSING =====
-const parseStreamChunks = (chunk) => {
-  if (!chunk || typeof chunk !== "string") return "";
-
-  const lines = chunk.split("\n").filter((line) => line.trim());
-  const results = [];
-
-  for (const line of lines) {
-    try {
-      const cleanLine = line.replace(/^data:\s*/, "");
-      if (!cleanLine || cleanLine === "[DONE]" || line.startsWith("event:"))
-        continue;
-
-      const json = JSON.parse(cleanLine);
-      const content = json.choices?.[0]?.delta?.content || "";
-      if (content) results.push(content);
-    } catch (e) {
-      // Only warn for actual parsing issues, not expected stream markers
-      if (
-        line.trim() &&
-        !line.startsWith("data:") &&
-        !line.startsWith("event:") &&
-        !line.includes(":")
-      ) {
-        console.warn("Failed to parse stream chunk:", line);
-      }
-    }
-  }
-
-  return results.join("");
-};
 
 // ===== ENHANCED TYPEWRITER EFFECT =====
 const useTypewriterEffect = (
@@ -211,6 +108,40 @@ const LinkRenderer = ({ href, children }) => (
     {children}
   </a>
 );
+LinkRenderer.propTypes = {
+  href: PropTypes.string,
+  children: PropTypes.node.isRequired,
+};
+
+const ImageRenderer = ({ src, alt }) => (
+  <img
+    src={src}
+    alt={alt}
+    style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }}
+    loading="lazy"
+  />
+);
+ImageRenderer.propTypes = {
+  src: PropTypes.string,
+  alt: PropTypes.string,
+};
+
+const TableRenderer = ({ children }) => (
+  <div className="table-wrapper" style={{ overflowX: "auto", margin: "1em 0" }}>
+    <table>{children}</table>
+  </div>
+);
+TableRenderer.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+const BlockquoteRenderer = ({ children }) => (
+  <blockquote className="blockquote-wrapper">{children}</blockquote>
+);
+
+BlockquoteRenderer.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 const EnhancedTypingIndicator = ({ isVisible }) => (
   <div
@@ -222,11 +153,15 @@ const EnhancedTypingIndicator = ({ isVisible }) => (
     <span className="typing-text">AI is thinking...</span>
   </div>
 );
+EnhancedTypingIndicator.propTypes = {
+  isVisible: PropTypes.bool.isRequired,
+};
 
 // Model selector component
 const ModelSelector = ({ selectedModel, onModelChange, disabled }) => (
   <div className="model-selector">
     <select
+      id="model-select"
       value={selectedModel}
       onChange={(e) => onModelChange(e.target.value)}
       disabled={disabled}
@@ -236,11 +171,15 @@ const ModelSelector = ({ selectedModel, onModelChange, disabled }) => (
     </select>
   </div>
 );
+ModelSelector.propTypes = {
+  selectedModel: PropTypes.string.isRequired,
+  onModelChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+};
 
 // Separate component for message bubble to avoid hook issues
-const MessageBubble = ({
+const MessageBubble = memo(function MessageBubble({
   message,
-  index,
   isLastUser,
   isLastAi,
   isLastMessage,
@@ -250,7 +189,7 @@ const MessageBubble = ({
   onRetryMessage,
   handleCopyCode,
   copiedBlockId,
-}) => {
+}) {
   // To adhere to the Rules of Hooks, call useTypewriterEffect unconditionally.
   const typewriterText = useTypewriterEffect(
     message.text,
@@ -267,10 +206,31 @@ const MessageBubble = ({
   const markdownComponents = useMemo(
     () => ({
       a: LinkRenderer,
+      img: ImageRenderer,
+      table: TableRenderer,
+      blockquote: BlockquoteRenderer,
+      // Down-level headings for better visual hierarchy within the chat bubble.
+      // All styling is now handled by ChatInterface.css.
+      h1: "h3",
+      h2: "h4",
+      h3: "h5",
+      h4: "h6",
       code: ({ node, inline, className, children, ...props }) => {
         const match = /language-(\w+)/.exec(className || "");
         const language = match ? match[1] : "";
-        const codeContent = String(children).replace(/\n$/, "");
+        const extractText = (els) => {
+          if (typeof els === "string") {
+            return els;
+          }
+          if (Array.isArray(els)) {
+            return els.map(extractText).join("");
+          }
+          if (els && els.props && els.props.children) {
+            return extractText(els.props.children);
+          }
+          return "";
+        };
+        const codeContent = extractText(children).replace(/\n$/, "");
         // Create a stable, unique ID for the code block.
 
         const blockId = `${message.id}-${node.position.start.line}`;
@@ -284,6 +244,7 @@ const MessageBubble = ({
                   className="copy-button"
                   onClick={() => handleCopyCode(codeContent, blockId)}
                   title="Copy code"
+                  aria-label="Copy code to clipboard"
                 >
                   {copiedBlockId === blockId ? (
                     <>
@@ -386,13 +347,6 @@ const MessageBubble = ({
           {/* Show edited indicator for edited messages */}
           {message.isEdited && <span className="edited-indicator">edited</span>}
 
-          {/* Show model used if available */}
-          {message.modelUsed && message.sender === "ai" && (
-            <span className="model-indicator">
-              {message.modelUsed === "gemini" ? "gemini" : "deepseek"}
-            </span>
-          )}
-
           {/* Show retry indicator for retried messages */}
           {retryCount > 0 && message.sender === "ai" && isLastAi && (
             <span className="retry-indicator">retry {retryCount}</span>
@@ -410,6 +364,7 @@ const MessageBubble = ({
               className="action-button edit-button"
               onClick={onEditMessage}
               title="Edit message"
+              aria-label="Edit message"
             >
               <svg
                 width="16"
@@ -436,6 +391,7 @@ const MessageBubble = ({
                 className="action-button retry-button"
                 onClick={() => onRetryMessage(message.id)}
                 title="Retry message"
+                aria-label="Retry generating this response"
               >
                 <svg
                   width="16"
@@ -458,12 +414,35 @@ const MessageBubble = ({
       </div>
     </div>
   );
+});
+
+MessageBubble.propTypes = {
+  message: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    sender: PropTypes.oneOf(["user", "ai"]).isRequired,
+    text: PropTypes.string.isRequired,
+    timestamp: PropTypes.string.isRequired,
+    isError: PropTypes.bool,
+    isEdited: PropTypes.bool,
+    isStoppedByUser: PropTypes.bool,
+    originalPrompt: PropTypes.string,
+    isStreaming: PropTypes.bool,
+    modelUsed: PropTypes.string,
+  }).isRequired,
+  isLastUser: PropTypes.bool.isRequired,
+  isLastAi: PropTypes.bool.isRequired,
+  isLastMessage: PropTypes.bool.isRequired,
+  retryCount: PropTypes.number.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  onEditMessage: PropTypes.func.isRequired,
+  onRetryMessage: PropTypes.func.isRequired,
+  handleCopyCode: PropTypes.func.isRequired,
+  copiedBlockId: PropTypes.string,
 };
 
-// ===== MAIN COMPONENT =====
-const ChatInterface = () => {
-  // State
-  const [messages, setMessages] = useState([
+// ===== REDUCER FOR STATE MANAGEMENT =====
+const initialState = {
+  messages: [
     {
       id: generateId(),
       sender: "ai",
@@ -472,14 +451,102 @@ const ChatInterface = () => {
       isError: false,
       isStreaming: false,
     },
-  ]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [copiedBlockId, setCopiedBlockId] = useState(null);
-  const [showTypingIndicator, setShowTypingIndicator] = useState(false);
-  const [isEditingLastMessage, setIsEditingLastMessage] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [selectedModel, setSelectedModel] = useState("openrouter"); // Default to OpenRouter
+  ],
+  input: "",
+  isLoading: false,
+  isEditingLastMessage: false,
+  retryCount: 0,
+  selectedModel: "openrouter",
+  copiedBlockId: null,
+  showTypingIndicator: false,
+};
+
+function chatReducer(state, action) {
+  switch (action.type) {
+    case "SET_INPUT":
+      return { ...state, input: action.payload };
+    case "START_EDIT": {
+      const lastUserMessage = state.messages
+        .slice()
+        .reverse()
+        .find((m) => m.sender === "user");
+      if (!lastUserMessage || state.isLoading) return state;
+      return {
+        ...state,
+        input: lastUserMessage.text,
+        isEditingLastMessage: true,
+      };
+    }
+    case "CANCEL_EDIT":
+      return { ...state, isEditingLastMessage: false, input: "" };
+    case "ADD_MESSAGES":
+      return { ...state, messages: [...state.messages, ...action.payload] };
+    case "UPDATE_MESSAGE":
+      return {
+        ...state,
+        messages: state.messages.map((msg) =>
+          msg.id === action.payload.id
+            ? { ...msg, ...action.payload.updates }
+            : msg
+        ),
+      };
+    case "REPLACE_MESSAGES":
+      return { ...state, messages: action.payload };
+    case "STREAM_START":
+      return {
+        ...state,
+        isLoading: true,
+        showTypingIndicator: true,
+        retryCount: action.payload.attempt,
+        messages: state.messages.map((msg) =>
+          msg.id === action.payload.id
+            ? { ...msg, isStreaming: true, modelUsed: action.payload.modelUsed }
+            : msg
+        ),
+      };
+    case "STREAM_DATA_RECEIVED":
+      return {
+        ...state,
+        showTypingIndicator: false, // Hide indicator on first data
+        messages: state.messages.map((msg) =>
+          msg.id === action.payload.id
+            ? { ...msg, text: action.payload.text, isStreaming: true }
+            : msg
+        ),
+      };
+    case "STREAM_END":
+      return {
+        ...state,
+        isLoading: false,
+        showTypingIndicator: false,
+        retryCount: 0,
+        messages: state.messages.map((msg) =>
+          msg.isStreaming ? { ...msg, isStreaming: false } : msg
+        ),
+      };
+    case "SET_COPIED_ID":
+      return { ...state, copiedBlockId: action.payload };
+    case "SET_MODEL":
+      return { ...state, selectedModel: action.payload };
+    default:
+      return state;
+  }
+}
+
+// ===== MAIN COMPONENT =====
+const ChatInterface = () => {
+  // State
+  const [state, dispatch] = useReducer(chatReducer, initialState);
+  const {
+    messages,
+    input,
+    isLoading,
+    copiedBlockId,
+    showTypingIndicator,
+    isEditingLastMessage,
+    retryCount,
+    selectedModel,
+  } = state;
 
   // Refs
   const messagesEndRef = useRef(null);
@@ -538,7 +605,11 @@ const ChatInterface = () => {
   useEffect(() => {
     if (textareaRef.current) {
       if (input.length > CONSTANTS.MAX_INPUT_LENGTH) {
-        setInput(input.substring(0, CONSTANTS.MAX_INPUT_LENGTH));
+        // Keep validation
+        dispatch({
+          type: "SET_INPUT",
+          payload: input.substring(0, CONSTANTS.MAX_INPUT_LENGTH),
+        });
         return;
       }
 
@@ -554,7 +625,7 @@ const ChatInterface = () => {
   // Reset edit mode if input is cleared
   useEffect(() => {
     if (input.trim() === "" && isEditingLastMessage) {
-      setIsEditingLastMessage(false);
+      dispatch({ type: "CANCEL_EDIT" });
     }
   }, [input, isEditingLastMessage]);
 
@@ -569,104 +640,89 @@ const ChatInterface = () => {
   }, []);
 
   // ===== HANDLERS =====
-  const updateMessage = useCallback((messageId, updates) => {
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === messageId ? { ...msg, ...updates } : msg))
-    );
-  }, []);
-
   const handleCopyCode = useCallback(async (code, blockId) => {
     try {
       await navigator.clipboard.writeText(code);
-      setCopiedBlockId(blockId);
+      dispatch({ type: "SET_COPIED_ID", payload: blockId });
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(
-        () => setCopiedBlockId(null),
+        () => dispatch({ type: "SET_COPIED_ID", payload: null }),
         CONSTANTS.COPY_TIMEOUT
       );
     } catch (err) {
-      // Fallback for older browsers
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = code;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-        setCopiedBlockId(blockId);
-        copyTimeoutRef.current = setTimeout(
-          () => setCopiedBlockId(null),
-          CONSTANTS.COPY_TIMEOUT
-        );
-      } catch (fallbackErr) {
-        console.error("Failed to copy code:", fallbackErr);
-      }
+      console.error("Failed to copy code:", err);
     }
   }, []);
 
   const handleStopGeneration = useCallback(() => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
     if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
-
-    // Stop streaming on current message
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.isStreaming ? { ...msg, isStreaming: false } : msg
-      )
-    );
-
-    setIsLoading(false);
-    setShowTypingIndicator(false);
-    setRetryCount(0);
+    dispatch({ type: "STREAM_END" });
   }, []);
 
   const handleEditLastMessage = useCallback(() => {
-    if (isLoading || !lastUserMessage) return;
-
-    setInput(lastUserMessage.text);
-    setIsEditingLastMessage(true);
+    dispatch({ type: "START_EDIT" });
     textareaRef.current?.focus();
-  }, [isLoading, lastUserMessage]);
+  }, []);
 
   const handleRetryMessage = useCallback(
     async (messageId) => {
       if (isLoading) return;
 
-      const messageToRetry = messages.find((msg) => msg.id === messageId);
+      const messageToRetryIndex = messages.findIndex(
+        (msg) => msg.id === messageId
+      );
+      if (messageToRetryIndex === -1) return;
+
+      const messageToRetry = messages[messageToRetryIndex];
       if (!messageToRetry || !messageToRetry.originalPrompt) return;
 
-      updateMessage(messageId, {
+      // Create a new placeholder to replace the old message.
+      // This ensures a clean state and consistent behavior with new messages.
+      const newAiPlaceholder = {
+        id: generateId(),
+        sender: "ai",
         text: "",
         timestamp: "",
         isError: false,
-        isStoppedByUser: false,
-        isStreaming: true,
+        isStreaming: false, // Will be set to true by executeStream
         originalPrompt: messageToRetry.originalPrompt,
-        modelUsed: selectedModel, // Use current selected model for retry
-      });
+        modelUsed: selectedModel,
+      };
 
-      executeStream(messageToRetry.originalPrompt, messageId, selectedModel);
+      const newMessages = [...messages];
+      newMessages[messageToRetryIndex] = newAiPlaceholder;
+
+      dispatch({ type: "REPLACE_MESSAGES", payload: newMessages });
+
+      // Execute the stream with the new placeholder's ID
+      dispatch({
+        type: "STREAM_START",
+        payload: {
+          id: newAiPlaceholder.id,
+          attempt: 0,
+          modelUsed: selectedModel,
+        },
+      });
+      executeStream(
+        messageToRetry.originalPrompt,
+        newAiPlaceholder.id,
+        selectedModel
+      );
     },
-    [isLoading, messages, updateMessage, selectedModel]
+    [isLoading, messages, selectedModel]
   );
 
   const handleModelChange = useCallback((model) => {
-    setSelectedModel(model);
+    dispatch({ type: "SET_MODEL", payload: model });
   }, []);
 
   // ===== ENHANCED STREAMING LOGIC =====
   const executeStream = useCallback(
     async (prompt, placeholderId, modelToUse = selectedModel, attempt = 0) => {
-      setIsLoading(true);
-      setShowTypingIndicator(true);
-      setRetryCount(attempt);
-
-      // Mark message as streaming
-      updateMessage(placeholderId, {
-        isStreaming: true,
-        modelUsed: modelToUse,
+      dispatch({
+        type: "STREAM_START",
+        payload: { id: placeholderId, attempt, modelUsed: modelToUse },
       });
 
       const controller = new AbortController();
@@ -712,48 +768,38 @@ const ChatInterface = () => {
             hasReceivedAnyContent = true;
             accumulatedContent += content;
 
-            // Hide typing indicator on first content
-            if (!hasHiddenTyping) {
-              setShowTypingIndicator(false);
-              hasHiddenTyping = true;
+            let currentText = accumulatedContent;
+            if (currentText.length > CONSTANTS.MAX_MESSAGE_LENGTH) {
+              currentText =
+                currentText.substring(0, CONSTANTS.MAX_MESSAGE_LENGTH) +
+                "\n\n... [Message truncated due to length]";
             }
 
-            setMessages((prevMessages) =>
-              prevMessages.map((msg) => {
-                if (msg.id === placeholderId) {
-                  const currentText = accumulatedContent;
-                  messageLength = currentText.length;
+            dispatch({
+              type: "STREAM_DATA_RECEIVED",
+              payload: { id: placeholderId, text: currentText },
+            });
 
-                  if (messageLength > CONSTANTS.MAX_MESSAGE_LENGTH) {
-                    const truncatedText =
-                      currentText.substring(0, CONSTANTS.MAX_MESSAGE_LENGTH) +
-                      "\n\n... [Message truncated due to length]";
-                    return { ...msg, text: truncatedText, isStreaming: true };
-                  }
-
-                  return { ...msg, text: currentText, isStreaming: true };
-                }
-                return msg;
-              })
-            );
+            if (currentText.length >= CONSTANTS.MAX_MESSAGE_LENGTH) {
+              break; // Stop reading stream if truncated
+            }
           }
         }
 
         if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
 
         if (hasReceivedAnyContent) {
-          updateMessage(placeholderId, {
-            timestamp: formatTime(new Date()),
-            isError: false,
-            isStreaming: false,
-            originalPrompt: prompt,
-            modelUsed: modelToUse,
+          dispatch({
+            type: "UPDATE_MESSAGE",
+            payload: {
+              id: placeholderId,
+              updates: {
+                timestamp: formatTime(new Date()),
+                originalPrompt: prompt,
+              },
+            },
           });
-
-          // Reset states
-          setIsLoading(false);
-          setShowTypingIndicator(false);
-          setRetryCount(0);
+          dispatch({ type: "STREAM_END" });
           abortControllerRef.current = null;
           return;
         } else {
@@ -767,36 +813,37 @@ const ChatInterface = () => {
 
         // If we received content before error, treat as success
         if (hasReceivedAnyContent) {
-          updateMessage(placeholderId, {
-            timestamp: formatTime(new Date()),
-            isError: false,
-            isStreaming: false,
-            originalPrompt: prompt,
-            modelUsed: modelToUse,
+          dispatch({
+            type: "UPDATE_MESSAGE",
+            payload: {
+              id: placeholderId,
+              updates: {
+                timestamp: formatTime(new Date()),
+                originalPrompt: prompt,
+              },
+            },
           });
-
-          setIsLoading(false);
-          setShowTypingIndicator(false);
-          setRetryCount(0);
+          dispatch({ type: "STREAM_END" });
           abortControllerRef.current = null;
           return;
         }
 
         // Handle user abort
         if (isUserAbortError(error)) {
-          updateMessage(placeholderId, {
-            text: CONSTANTS.MESSAGES.USER_STOPPED,
-            timestamp: formatTime(new Date()),
-            isError: true,
-            isStoppedByUser: true,
-            isStreaming: false,
-            originalPrompt: prompt,
-            modelUsed: modelToUse,
+          dispatch({
+            type: "UPDATE_MESSAGE",
+            payload: {
+              id: placeholderId,
+              updates: {
+                text: CONSTANTS.MESSAGES.USER_STOPPED,
+                timestamp: formatTime(new Date()),
+                isError: true,
+                isStoppedByUser: true,
+                originalPrompt: prompt,
+              },
+            },
           });
-
-          setIsLoading(false);
-          setShowTypingIndicator(false);
-          setRetryCount(0);
+          dispatch({ type: "STREAM_END" });
           abortControllerRef.current = null;
           return;
         }
@@ -816,23 +863,23 @@ const ChatInterface = () => {
         // Final error
         const errorMessage = getErrorMessage(error);
 
-        updateMessage(placeholderId, {
-          text: errorMessage,
-          timestamp: formatTime(new Date()),
-          isError: true,
-          isStoppedByUser: false,
-          isStreaming: false,
-          originalPrompt: prompt,
-          modelUsed: modelToUse,
+        dispatch({
+          type: "UPDATE_MESSAGE",
+          payload: {
+            id: placeholderId,
+            updates: {
+              text: errorMessage,
+              timestamp: formatTime(new Date()),
+              isError: true,
+              originalPrompt: prompt,
+            },
+          },
         });
-
-        setIsLoading(false);
-        setShowTypingIndicator(false);
-        setRetryCount(0);
+        dispatch({ type: "STREAM_END" });
         abortControllerRef.current = null;
       }
     },
-    [updateMessage, selectedModel]
+    [selectedModel] // Dependencies are stable
   );
 
   const submitInput = useCallback(() => {
@@ -846,23 +893,24 @@ const ChatInterface = () => {
       return;
 
     const currentInput = trimmedInput;
-    setInput("");
+    dispatch({ type: "SET_INPUT", payload: "" });
 
     // Handle editing last message
     if (isEditingLastMessage && lastUserMessage) {
-      const updatedUserMessage = {
-        ...lastUserMessage,
+      const newMessages = [...messages];
+      newMessages[lastUserMessageIndex] = {
+        ...newMessages[lastUserMessageIndex],
         text: currentInput,
         isEdited: true,
         timestamp: formatTime(new Date()),
       };
 
-      const newMessages = [...messages];
-      newMessages[lastUserMessageIndex] = updatedUserMessage;
-
       if (lastAiMessageIndex > lastUserMessageIndex) {
         newMessages.splice(lastAiMessageIndex, 1);
       }
+
+      dispatch({ type: "REPLACE_MESSAGES", payload: newMessages });
+      dispatch({ type: "CANCEL_EDIT" });
 
       const aiMessagePlaceholder = {
         id: generateId(),
@@ -875,8 +923,7 @@ const ChatInterface = () => {
         modelUsed: selectedModel,
       };
 
-      setMessages([...newMessages, aiMessagePlaceholder]);
-      setIsEditingLastMessage(false);
+      dispatch({ type: "ADD_MESSAGES", payload: [aiMessagePlaceholder] });
       executeStream(currentInput, aiMessagePlaceholder.id);
       return;
     }
@@ -901,7 +948,10 @@ const ChatInterface = () => {
       modelUsed: selectedModel,
     };
 
-    setMessages((prev) => [...prev, userMessage, aiMessagePlaceholder]);
+    dispatch({
+      type: "ADD_MESSAGES",
+      payload: [userMessage, aiMessagePlaceholder],
+    });
     executeStream(currentInput, aiMessagePlaceholder.id);
   }, [
     input,
@@ -929,16 +979,14 @@ const ChatInterface = () => {
     <div className="chat-interface">
       <div className="chat-messages">
         {messages.map((message, index) => {
-          // Fixed: Use the actual last message functions
           const isLastUser = isLastUserMessage(index);
           const isLastAi = isLastAiMessage(index);
-          const isLastMessage = isLastUser || isLastAi;
+          const isLastMessage = index === messages.length - 1;
 
           return (
             <MessageBubble
               key={message.id}
               message={message}
-              index={index}
               isLastUser={isLastUser}
               isLastAi={isLastAi}
               isLastMessage={isLastMessage}
@@ -968,7 +1016,7 @@ const ChatInterface = () => {
             Select Model:
           </label>
           <ModelSelector
-            id="model-select"
+            // id is now set inside the ModelSelector component
             selectedModel={selectedModel}
             onModelChange={handleModelChange}
             disabled={isLoading}
@@ -979,7 +1027,9 @@ const ChatInterface = () => {
           <textarea
             ref={textareaRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) =>
+              dispatch({ type: "SET_INPUT", payload: e.target.value })
+            }
             onKeyDown={handleInputKeyDown}
             placeholder={
               isEditingLastMessage
@@ -988,7 +1038,6 @@ const ChatInterface = () => {
                 ? "AI is responding..."
                 : "Type your message here..."
             }
-            disabled={isLoading && !isEditingLastMessage}
             className={isEditingLastMessage ? "editing-mode" : ""}
             maxLength={CONSTANTS.MAX_INPUT_LENGTH}
           />
@@ -999,6 +1048,7 @@ const ChatInterface = () => {
               onClick={handleStopGeneration}
               className="stop-button"
               title="Stop generation"
+              aria-label="Stop generation"
             >
               <svg
                 width="16"
@@ -1017,9 +1067,14 @@ const ChatInterface = () => {
             <button
               type="submit"
               disabled={
-                !input.trim() || input.length > CONSTANTS.MAX_INPUT_LENGTH
+                isLoading ||
+                !input.trim() ||
+                input.length > CONSTANTS.MAX_INPUT_LENGTH
               }
               title={isEditingLastMessage ? "Update message" : "Send message"}
+              aria-label={
+                isEditingLastMessage ? "Update message" : "Send message"
+              }
             >
               <svg
                 width="16"

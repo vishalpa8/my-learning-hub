@@ -164,12 +164,13 @@
 
 /* Blockquotes */
 .message-text blockquote {
-  border-left: 4px solid var(--primary-color);
   margin: var(--spacing-sm) 0;
   padding: var(--spacing-xs) var(--spacing-sm);
+  border-left: 4px solid var(--primary-color);
   background-color: rgba(var(--primary-color-rgb), 0.05);
   border-radius: 0 var(--border-radius) var(--border-radius) 0;
   font-style: italic;
+  color: var(--text-color-secondary);
 }
 
 .message-bubble.user .message-text blockquote {
@@ -491,7 +492,7 @@ pre.ai-code-block code {
   gap: var(--spacing-xs);
   padding: var(--spacing-sm);
   margin: var(--spacing-xs) 0;
-  max-width: 150px;
+  max-width: 220px;
   margin-right: auto;
   background-color: var(--background-color-subtle);
   border: 1px solid var(--border-color);
@@ -548,6 +549,7 @@ pre.ai-code-block code {
   font-size: var(--font-size-sm);
   color: var(--text-muted-color);
   font-style: italic;
+  white-space: nowrap;
   margin-left: var(--spacing-xs);
   animation: fadeInOut 2s infinite ease-in-out;
 }
@@ -574,15 +576,14 @@ pre.ai-code-block code {
 
 .chat-input-form textarea {
   flex: 1;
-  min-height: 40px;
-  max-height: var(180px);
+  max-height: 200px;
   padding: var(--spacing-xs) var(--spacing-sm);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   resize: none;
   font-family: var(--font-family-sans-serif);
   font-size: var(--font-size-base);
-  line-height: 1.2;
+  line-height: 1.5;
   background-color: var(--background-color);
   transition: border-color 0.2s ease;
   outline: none;
@@ -907,5 +908,4 @@ pre.ai-code-block code {
   display: flex; /* Original flex properties */
   align-items: flex-end;
   gap: var(--spacing-xs);
-  min-height: 70px; /* Re-apply min-height here */
 }
