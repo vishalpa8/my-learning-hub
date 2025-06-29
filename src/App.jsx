@@ -6,7 +6,6 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import Navbar from "./components/shared/Navbar";
 import ErrorBoundary from "./components/shared/ErrorBoundary"; // Import ErrorBoundary
 import Footer from "./components/shared/Footer";
 
@@ -14,9 +13,8 @@ import Footer from "./components/shared/Footer";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const DsaPage = lazy(() => import("./pages/DsaPage"));
 const ChessPage = lazy(() => import("./pages/ChessPage"));
-import { RewardProvider } from "./contexts/RewardContext";
-import EngagementPage from "./pages/EngagementPage";
-import AIAssistantPage from "./pages/AIAssistantPage";
+const EngagementPage = lazy(() => import("./pages/EngagementPage"));
+const AIAssistantPage = lazy(() => import("./pages/AIAssistantPage"));
 
 /**
  * Component to handle scrolling to the top of the page on route changes.
@@ -60,16 +58,12 @@ function AppContent() {
  */
 function App() {
   return (
-    <React.StrictMode>
-      {" "}
-      {/* Optional: Add StrictMode for development */}
-      <Router>
+    <Router>
         <ScrollToTop />
-        <RewardProvider>
-          <AppContent />
-        </RewardProvider>
+        import { RewardProvider } from "./contexts/RewardContext"; // Reward context provider
+
+/**
       </Router>
-    </React.StrictMode>
   );
 }
 
