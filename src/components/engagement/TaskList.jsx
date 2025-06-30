@@ -41,8 +41,7 @@ const initialEditState = {
   startDate: "", // For edit validation
 };
 
-// Helper to generate a simple unique ID for client-side temporary items
-const generateTempId = () => Date.now() + Math.random();
+
 const TaskList = ({
   tasks,
   onAddTask,
@@ -890,4 +889,4 @@ TaskList.propTypes = {
   onSetViewMode: PropTypes.func.isRequired,
 };
 
-export default React.memo(TaskList);
+export default TaskList;

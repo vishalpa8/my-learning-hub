@@ -18,6 +18,7 @@ const REWARDS = [
   "Go and Watch any series of your type",
   "Go and drink or eat anything of your like",
 ];
+const POINTS_PER_REWARD = 10;
 /** The number of newly completed DSA questions required to contribute to a reward. */
 const DSA_QUESTIONS_THRESHOLD = 5; // Example: 5 DSA problems
 /** The number of newly completed Chess videos required to contribute to a reward. */
@@ -93,7 +94,7 @@ export const RewardProvider = ({ children }) => {
     );
 
     // Award points for the reward
-    addPoints(CONSTANTS.POINTS_PER_REWARD); // Assuming CONSTANTS.POINTS_PER_REWARD is defined elsewhere
+    addPoints(POINTS_PER_REWARD); // Assuming CONSTANTS.POINTS_PER_REWARD is defined elsewhere
 
     return {
       ...tracker,

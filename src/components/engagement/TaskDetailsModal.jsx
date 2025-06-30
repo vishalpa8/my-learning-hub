@@ -21,23 +21,24 @@ import {
 } from "../../utils/dateHelpers"; // Centralized date helpers
 
 const TaskDetailsModal = ({
-  // TaskDetailsModal render
-  // console.log('TaskDetailsModal rendered');
   isOpen,
   onClose,
   task,
-  onUpdateDescription,
-  onAddSubtask,
-  onUpdateSubtask,
-  onDeleteSubtask,
-  onToggleTask,
-  onMarkAllSubtasksComplete,
-  onUpdateTaskLink,
-  onUpdateTaskEndDate, // New prop for end date editing
+  taskActions,
   userChoseToKeepParentOpen,
-  onSetUserChoseToKeepParentOpen,
-  onReorderSubtasks,
 }) => {
+  const {
+    onUpdateDescription,
+    onAddSubtask,
+    onUpdateSubtask,
+    onDeleteSubtask,
+    onToggleTask,
+    onMarkAllSubtasksComplete,
+    onUpdateTaskLink,
+    onUpdateTaskEndDate,
+    onSetUserChoseToKeepParentOpen,
+    onReorderSubtasks,
+  } = taskActions;
   // State
   const [editingDescription, setEditingDescription] = useState(false);
   const [currentDescription, setCurrentDescription] = useState(
@@ -854,21 +855,23 @@ TaskDetailsModal.propTypes = {
         completed: PropTypes.bool.isRequired,
       })
     ),
-    completions: PropTypes.object, // The new per-day completion tracker
-    displayDate: PropTypes.string, // The specific date this instance represents
-    isCompletedOnThisDay: PropTypes.bool, // Whether this instance is complete
+    completions: PropTypes.object,
+    displayDate: PropTypes.string,
+    isCompletedOnThisDay: PropTypes.bool,
   }),
-  onUpdateDescription: PropTypes.func.isRequired,
-  onAddSubtask: PropTypes.func.isRequired,
-  onUpdateSubtask: PropTypes.func.isRequired,
-  onDeleteSubtask: PropTypes.func.isRequired,
-  onToggleTask: PropTypes.func.isRequired,
-  onMarkAllSubtasksComplete: PropTypes.func.isRequired,
-  onUpdateTaskLink: PropTypes.func.isRequired,
-  onUpdateTaskEndDate: PropTypes.func.isRequired,
+  taskActions: PropTypes.shape({
+    onUpdateDescription: PropTypes.func.isRequired,
+    onAddSubtask: PropTypes.func.isRequired,
+    onUpdateSubtask: PropTypes.func.isRequired,
+    onDeleteSubtask: PropTypes.func.isRequired,
+    onToggleTask: PropTypes.func.isRequired,
+    onMarkAllSubtasksComplete: PropTypes.func.isRequired,
+    onUpdateTaskLink: PropTypes.func.isRequired,
+    onUpdateTaskEndDate: PropTypes.func.isRequired,
+    onSetUserChoseToKeepParentOpen: PropTypes.func.isRequired,
+    onReorderSubtasks: PropTypes.func.isRequired,
+  }).isRequired,
   userChoseToKeepParentOpen: PropTypes.bool,
-  onSetUserChoseToKeepParentOpen: PropTypes.func.isRequired,
-  onReorderSubtasks: PropTypes.func.isRequired,
 };
 
 export default TaskDetailsModal;

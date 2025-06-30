@@ -230,4 +230,4 @@ const ChessPage = () => {
   );
 };
 
-export default React.memo(ChessPage);
+export default ChessPage;

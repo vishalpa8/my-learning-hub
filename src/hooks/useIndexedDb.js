@@ -84,16 +84,19 @@ export function useIndexedDb(key, initialValue) {
       return;
     }
 
-    // Optimistically update the ref to prevent re-saves during the async operation
     const valueToSave = value;
-    lastPersistedValue.current = valueToSave;
 
     db["keyval-store"]
       .put({ id: key, value: valueToSave })
-      .then(() => {}) // No action needed on success, ref is already updated
+      .then(() => {
+        // On successful save, update the ref to the value that was saved.
+        lastPersistedValue.current = valueToSave;
+      })
       .catch((err) => {
         setError(err);
         console.error(`useIndexedDb: Error saving key "${key}":`, err);
+        // Optional: Revert optimistic update on error, though this might cause rapid re-saving.
+        // For now, we'll log the error and let the next render attempt a save if the value is still different.
       });
   }, [key, value, hasLoaded]);
 

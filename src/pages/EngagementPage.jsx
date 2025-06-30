@@ -29,15 +29,7 @@ import TaskDetailsModal from "../components/engagement/TaskDetailsModal";
 import { useLocation } from "react-router-dom"; // Import useLocation
 import Modal from "../components/shared/Modal"; // Import the generic Modal for confirmation
 
-// Helper to get activity level based on completion percentage
-const getActivityLevel = (completed, total) => {
-  if (total === 0) return "none";
-  const percentage = (completed / total) * 100;
-  if (percentage === 100) return "high";
-  if (percentage >= 50) return "medium";
-  if (percentage > 0) return "low";
-  return "none"; // Should be 'worked' if total > 0 and completed = 0, handled by calculateActivityForDate
-};
+
 
 const calculateActivityForDate = (tasksForDateArray) => {
   const validTasksArray = Array.isArray(tasksForDateArray)
@@ -811,24 +803,26 @@ const EngagementPage = () => {
           isOpen={isTaskDetailsModalOpen}
           onClose={handleCloseTaskDetailsModal}
           task={taskToViewDetails}
-          onUpdateDescription={handleUpdateTaskDescription}
-          onAddSubtask={handleAddSubtask}
-          onUpdateSubtask={handleUpdateSubtask}
-          onDeleteSubtask={handleDeleteSubtask}
-          onUpdateTaskEndDate={handleUpdateTaskEndDate}
-          onToggleTask={toggleTask}
-          onMarkAllSubtasksComplete={handleMarkAllSubtasksComplete}
-          onUpdateTaskLink={handleUpdateTaskLink}
+          taskActions={{
+            onUpdateDescription: handleUpdateTaskDescription,
+            onAddSubtask: handleAddSubtask,
+            onUpdateSubtask: handleUpdateSubtask,
+            onDeleteSubtask: handleDeleteSubtask,
+            onToggleTask: toggleTask,
+            onMarkAllSubtasksComplete: handleMarkAllSubtasksComplete,
+            onUpdateTaskLink: handleUpdateTaskLink,
+            onUpdateTaskEndDate: handleUpdateTaskEndDate,
+            onSetUserChoseToKeepParentOpen: (taskId, value) => {
+              setTasksUserChoseToKeepOpen((prev) => ({
+                ...prev,
+                [taskId]: value,
+              }));
+            },
+            onReorderSubtasks: handleReorderSubtasks,
+          }}
           userChoseToKeepParentOpen={
             !!tasksUserChoseToKeepOpen[taskToViewDetails?.id]
           }
-          onSetUserChoseToKeepParentOpen={(taskId, value) => {
-            setTasksUserChoseToKeepOpen((prev) => ({
-              ...prev,
-              [taskId]: value,
-            }));
-          }}
-          onReorderSubtasks={handleReorderSubtasks}
         />
       )}
     </main>

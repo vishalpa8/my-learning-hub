@@ -954,22 +954,7 @@
   color: var(--primary-color);
 }
 
-/* Styles for Subtasks within TaskDetailsModal */
-/* These styles are being added here as requested, but would ideally live in TaskDetailsModal.css */
-.subtask-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
 
-.subtask-checkbox-label {
-  /* This label contains the checkbox and text */
-  flex-grow: 1; /* This makes the label take up available space, pushing buttons to the right */
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  cursor: pointer;
-}
 
 .past-date-restriction {
   color: var(--warning-color-dark, #d39e00); /* Use a warning color */

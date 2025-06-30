@@ -1,6 +1,5 @@
 import { useIndexedDb } from "./useIndexedDb";
 import { CHESS_USER_PROFILE_KEY } from "../constants/localStorageKeys";
-import { chess_badges_definitions, BADGE_CRITERIA } from "../data/chessData";
 import { dateToDDMMYYYY } from "../utils/dateHelpers";
 
 /**

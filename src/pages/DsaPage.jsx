@@ -100,26 +100,30 @@ const DsaPage = () => {
 
   const handleViewChange = useCallback(
     (viewKey) => {
-      if (viewKey !== "dashboard") { // Only track for non-dashboard views
+      if (viewKey !== "dashboard") {
         const today = new Date();
         const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const month = String(today.getMonth() + 1).padStart(2, '0');
         const year = today.getFullYear();
-        setLastVisitedViewDates(prev => ({
-          ...prev,
-          [viewKey]: `${day}/${month}/${year}`, // Store in dd/MM/YYYY format
-        }));
+        const todayStr = `${day}/${month}/${year}`;
+        
+        if (lastVisitedViewDates[viewKey] !== todayStr) {
+          setLastVisitedViewDates(prev => ({
+            ...prev,
+            [viewKey]: todayStr,
+          }));
+        }
       }
       setActiveView(viewKey);
     },
-    [setActiveView, setLastVisitedViewDates]
+    [setActiveView, setLastVisitedViewDates, lastVisitedViewDates]
   );
 
   const uniqueTopics = useMemo(() => getUniqueTopics(dsaData), []);
 
   const baseProblemsForActiveView = useMemo(() => {
     if (activeView === "dashboard") {
-      return []; // Dashboard doesn't list problems this way
+      return [];
     }
     if (activeView === "neetcode150") {
       return dsaData.filter(
@@ -136,9 +140,8 @@ const DsaPage = () => {
         (p) => String(p.isLastMoment).toLowerCase() === "true"
       );
     }
-    // Default to "all" problems for other list views
     return dsaData;
-  }, [activeView]); // dsaData is stable and from module scope
+  }, [activeView]);
 
   const viewProblems = useMemo(() => {
     return baseProblemsForActiveView.filter((p) => {
@@ -151,6 +154,11 @@ const DsaPage = () => {
         filters.searchTerm === "" ||
         p.title.toLowerCase().includes(filters.searchTerm) ||
         (p.subTopic && p.subTopic.toLowerCase().includes(filters.searchTerm));
+      const statusMatch =
+        filters.status === "all" ||
+        (filters.status === "completed" && completedProblems[p.id]) ||
+        (filters.status === "pending" && !completedProblems[p.id]);
+
       return (
         (filters.difficulty === "all" ||
           normalizedDifficulty.toLowerCase() === filters.difficulty) &&
@@ -158,9 +166,7 @@ const DsaPage = () => {
           normalizedTopic.toLowerCase() === filters.topic) &&
         patternMatch &&
         searchTermMatch &&
-        (filters.status === "all" ||
-          (filters.status === "completed" && completedProblems[p.id]) ||
-          (filters.status === "pending" && !completedProblems[p.id]))
+        statusMatch
       );
     });
   }, [baseProblemsForActiveView, filters, completedProblems]);
@@ -357,7 +363,7 @@ const DsaPage = () => {
             <DashboardView
               overallProgress={overallProgressStats}
               totalProblems={dsaData.length}
-              streakData={userProfile.currentStreak} // Pass currentStreak from userProfile
+              streakData={userProfile} // Pass entire userProfile object
             />
           ) : (
             <ProblemListView
@@ -381,4 +387,4 @@ const DsaPage = () => {
   );
 };
 
-export default React.memo(DsaPage);
+export default DsaPage;

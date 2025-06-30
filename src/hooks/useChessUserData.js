@@ -60,15 +60,23 @@ export const useChessUserData = (structuredChessData) => {
             points: Math.max(0, prevProfile.points + pointsChange),
           };
 
-          // ELO Calculation: Recalculate based on total completed video pairs
-          const totalCompletedVideoCount = Object.values(
-            updatedCompletedVideos
-          ).filter((isComplete) => isComplete === true).length;
-          const completedVideoPairs = Math.floor(totalCompletedVideoCount / 2);
+          // ELO Calculation: Adjust based on the change
+          const wasPairCompleted =
+            Object.values(prevCompletedVideos).filter(Boolean).length % 2 === 1 &&
+            newCompletedStatus;
+          const wasPairBroken =
+            Object.values(prevCompletedVideos).filter(Boolean).length % 2 === 0 &&
+            !newCompletedStatus;
 
-          // ELO is always INITIAL_ELO + gains from completed pairs
-          updatedProfile.elo =
-            INITIAL_CHESS_ELO + completedVideoPairs * ELO_GAIN_PER_TWO_VIDEOS;
+          if (wasPairCompleted) {
+            updatedProfile.elo = (prevProfile.elo || INITIAL_CHESS_ELO) + ELO_GAIN_PER_TWO_VIDEOS;
+          } else if (wasPairBroken) {
+            updatedProfile.elo = (prevProfile.elo || INITIAL_CHESS_ELO) - ELO_GAIN_PER_TWO_VIDEOS;
+          }
+          // Ensure ELO doesn't drop below the initial value
+          if (updatedProfile.elo < INITIAL_CHESS_ELO) {
+            updatedProfile.elo = INITIAL_CHESS_ELO;
+          }
 
           // Streak logic: Update only if a video is newly completed.
           if (newCompletedStatus) {
