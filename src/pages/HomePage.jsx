@@ -9,7 +9,7 @@ import {
   DSA_COMPLETED_PROBLEMS_KEY,
   CHESS_LEARNING_PROGRESS_KEY,
   ENGAGEMENT_TASKS_KEY, // Import the key
-} from "../constants/localStorageKeys";
+} from "../constants/localIndexedDbKeys";
 import {
   dateToDDMMYYYY,
   parseDDMMYYYYToDateObj,

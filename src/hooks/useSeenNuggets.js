@@ -1,9 +1,9 @@
 import { useIndexedDb } from "./useIndexedDb";
-import { SEEN_NUGGETS_KEY } from "../constants/localStorageKeys";
+import { SEEN_NUGGETS_KEY } from "../constants/localIndexedDbKeys";
 
 /**
  * Custom hook to manage the state of seen daily chess nuggets in IndexedDB.
- * @returns {[Object.<string, boolean>, (nuggetId: string, onMarkedAsSeen?: () => void) => void, boolean, Error]} 
+ * @returns {[Object.<string, boolean>, (nuggetId: string, onMarkedAsSeen?: () => void) => void, boolean, Error]}
  *          [seenNuggets, markNuggetAsSeen, loading, error]
  */
 export function useSeenNuggets() {
@@ -24,7 +24,7 @@ export function useSeenNuggets() {
       }
       // If not seen, mark as seen and then execute callback
       const newSeenNuggets = { ...prevSeenNuggets, [nuggetId]: true };
-      if (onMarkedAsSeen && typeof onMarkedAsSeen === 'function') {
+      if (onMarkedAsSeen && typeof onMarkedAsSeen === "function") {
         // Execute callback immediately after state update is scheduled
         // This ensures it runs only when a *new* nugget is marked.
         onMarkedAsSeen();

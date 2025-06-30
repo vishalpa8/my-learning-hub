@@ -1,5 +1,5 @@
 // Modal.jsx
-import { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import "./Modal.css";

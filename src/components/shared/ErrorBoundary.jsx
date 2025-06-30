@@ -55,12 +55,12 @@ class ErrorBoundary extends React.Component {
         >
           <h2>Oops! Something went wrong.</h2>
           {this.state.errorMessage && (
-            <p style={{ fontStyle: 'italic', color: '#c0392b', marginTop: '10px', marginBottom: '10px' }}>
-              <strong>Error details:</strong> {this.state.errorMessage}
-            </p>
+            <p style={{ fontStyle: "italic", color: '#c0392b', marginTop: '10px', marginBottom: '10px' }}>
+                <strong>Error details:</strong> {this.state.errorMessage}
+              </p>
           )}
           <p>
-            We're sorry, but there was an error loading this part of the
+            We&#39;re sorry, but there was an error loading this part of the
             application.
           </p>
           <p>Please try refreshing the page.</p>

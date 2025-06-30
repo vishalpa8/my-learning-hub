@@ -1,5 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
-import { AI_CHAT_HISTORY_KEY } from "../constants/localStorageKeys";
+import { AI_CHAT_HISTORY_KEY } from "../constants/localIndexedDbKeys";
+
+const initialChat = [
+  {
+    id: Date.now().toString(), // Simple ID for initial message
+    sender: "ai",
+    text: "Hello! How can I help you with your learning today?",
+    timestamp: new Date()
+      .toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+      .toLowerCase(),
+    isError: false,
+    isStreaming: false,
+  },
+];
 
 /**
  * Custom hook to manage the AI chat history in sessionStorage.
@@ -8,24 +25,37 @@ import { AI_CHAT_HISTORY_KEY } from "../constants/localStorageKeys";
  *          [chatHistory, appendMessage, setChatHistory, loading, error]
  */
 export function useAIChatHistory() {
-  const [chatHistory, setChatHistoryState] = useState(() => {
-    if (typeof window === "undefined") {
-      return [];
+  const [chatHistory, setChatHistoryState] = useState(initialChat);
+
+  // Effect to load chat history from sessionStorage on initial render
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const storedHistory = sessionStorage.getItem(AI_CHAT_HISTORY_KEY);
+        // If storedHistory is null or an empty array string, initialize with a greeting.
+        if (storedHistory && JSON.parse(storedHistory).length > 0) {
+          setChatHistoryState(JSON.parse(storedHistory));
+        } else {
+          setChatHistoryState(initialChat);
+        }
+      } catch (error) {
+        console.error(
+          "Error parsing chat history from sessionStorage:",
+          error
+        );
+        setChatHistoryState(initialChat); // Fallback to initial state on error
+      }
     }
-    try {
-      const storedHistory = sessionStorage.getItem(AI_CHAT_HISTORY_KEY);
-      return storedHistory ? JSON.parse(storedHistory) : [];
-    } catch (error) {
-      console.error("Error parsing chat history from sessionStorage:", error);
-      return [];
-    }
-  });
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   // Effect to save chat history to sessionStorage whenever it changes
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        sessionStorage.setItem(AI_CHAT_HISTORY_KEY, JSON.stringify(chatHistory));
+        sessionStorage.setItem(
+          AI_CHAT_HISTORY_KEY,
+          JSON.stringify(chatHistory)
+        );
       } catch (error) {
         console.error("Error saving chat history to sessionStorage:", error);
       }
@@ -49,5 +79,19 @@ export function useAIChatHistory() {
   }, []);
 
   // sessionStorage operations are synchronous, so loading is always false and error is null
-  return [chatHistory, appendMessage, setChatHistory, false, null];
+  /**
+   * Clears the entire chat history and resets to the initial state.
+   */
+  const clearChatHistory = useCallback(() => {
+    setChatHistoryState(initialChat);
+  }, []);
+
+  return [
+    chatHistory,
+    appendMessage,
+    setChatHistory,
+    clearChatHistory,
+    false,
+    null,
+  ];
 }

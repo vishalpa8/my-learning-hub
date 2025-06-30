@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { dsaData } from "../data/dsaData";
 import DashboardView from "../components/dsa/DashboardView";
-import RewardModal from "../components/shared/RewardModal"; 
+import RewardModal from "../components/shared/RewardModal";
 import { useReward } from "../contexts/useReward";
 import { useIndexedDb } from "../hooks/useIndexedDb";
 import { useUserProfile } from "../hooks/useUserProfile";
 import {
   DSA_COMPLETED_PROBLEMS_KEY,
   DSA_LAST_ACTIVE_VIEW_KEY,
-  DSA_LAST_VISITED_VIEW_DATES_KEY, 
-} from "../constants/localStorageKeys";
+  DSA_LAST_VISITED_VIEW_DATES_KEY,
+} from "../constants/localIndexedDbKeys";
 import {
   groupAndSortProblemsByTopic, // Use this for the primary view
   // groupProblemsByTopicAndPattern, // Keep if needed for other views/features
@@ -54,7 +54,11 @@ const DsaPage = () => {
     searchTerm: "",
   });
 
-  const [userProfile, addPoints, updateStreak, earnBadge, loadingProfile, errorProfile] = useUserProfile();
+  const [
+    userProfile,
+    addPoints,
+    updateStreak,
+  ] = useUserProfile();
 
   const [lastVisitedViewDates, setLastVisitedViewDates] = useIndexedDb(
     DSA_LAST_VISITED_VIEW_DATES_KEY,
@@ -102,13 +106,13 @@ const DsaPage = () => {
     (viewKey) => {
       if (viewKey !== "dashboard") {
         const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, "0");
+        const month = String(today.getMonth() + 1).padStart(2, "0");
         const year = today.getFullYear();
         const todayStr = `${day}/${month}/${year}`;
-        
+
         if (lastVisitedViewDates[viewKey] !== todayStr) {
-          setLastVisitedViewDates(prev => ({
+          setLastVisitedViewDates((prev) => ({
             ...prev,
             [viewKey]: todayStr,
           }));
@@ -199,16 +203,23 @@ const DsaPage = () => {
       return stats; // No problems in this base view
     }
 
-    baseProblemsForActiveView.forEach(problem => {
-      const normalizedDifficultyFromUtil = getNormalizedDifficulty(problem.difficulty);
-      const difficultyKey = normalizedDifficultyFromUtil ? normalizedDifficultyFromUtil.toLowerCase() : null; // Ensure lowercase
+    baseProblemsForActiveView.forEach((problem) => {
+      const normalizedDifficultyFromUtil = getNormalizedDifficulty(
+        problem.difficulty
+      );
+      const difficultyKey = normalizedDifficultyFromUtil
+        ? normalizedDifficultyFromUtil.toLowerCase()
+        : null; // Ensure lowercase
       if (difficultyKey && stats[difficultyKey]) {
         stats[difficultyKey].total++;
         if (completedProblems[problem.id]) {
           stats[difficultyKey].completed++;
         }
-      } else if (difficultyKey) { // Log if normalized difficulty is truthy but not a key in stats
-        console.warn(`[DsaPage] Difficulty key "${difficultyKey}" for problem "${problem.title}" is not a recognized key in stats object (easy, medium, hard).`);
+      } else if (difficultyKey) {
+        // Log if normalized difficulty is truthy but not a key in stats
+        console.warn(
+          `[DsaPage] Difficulty key "${difficultyKey}" for problem "${problem.title}" is not a recognized key in stats object (easy, medium, hard).`
+        );
       } // Keep the warning, it's useful even in dev
     });
     return stats;
@@ -223,9 +234,13 @@ const DsaPage = () => {
     if (!viewProblems || viewProblems.length === 0) {
       return stats;
     }
-    viewProblems.forEach(problem => {
-      const normalizedDifficultyFromUtil = getNormalizedDifficulty(problem.difficulty);
-      const difficultyKey = normalizedDifficultyFromUtil ? normalizedDifficultyFromUtil.toLowerCase() : null;
+    viewProblems.forEach((problem) => {
+      const normalizedDifficultyFromUtil = getNormalizedDifficulty(
+        problem.difficulty
+      );
+      const difficultyKey = normalizedDifficultyFromUtil
+        ? normalizedDifficultyFromUtil.toLowerCase()
+        : null;
       if (difficultyKey && stats[difficultyKey]) {
         stats[difficultyKey].total++;
         if (completedProblems[problem.id]) {

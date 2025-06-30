@@ -1,18 +1,12 @@
 // TaskDetailsModal.jsx
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 
 import PropTypes from "prop-types";
 import Modal from "../shared/Modal";
 import "./TaskDetailsModal.css";
 import validator from "validator";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY } from "../../constants/localStorageKeys";
+import { ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY } from "../../constants/localIndexedDbKeys";
 import { useIndexedDb } from "../../hooks/useIndexedDb";
 import {
   dateToDDMMYYYY,
@@ -208,9 +202,6 @@ const TaskDetailsModal = ({
       handleAddSubtaskClick();
     }
   };
-  const handleToggleSubtaskCompletion = (subtaskId, completed) => {
-    if (task) onUpdateSubtask(task.id, subtaskId, { completed });
-  };
 
   // Subtask Edit
   const handleEditSubtaskClick = (subtask) => {
@@ -342,6 +333,7 @@ const TaskDetailsModal = ({
     hasPromptedThisStreak,
     isAlreadyPrompted, // Use memoized value
     setAlreadyPromptedForComplete,
+    task.subtasks?.length,
   ]);
 
   // Do not render if not open or no task

@@ -1,5 +1,5 @@
 import { useIndexedDb } from "./useIndexedDb";
-import { CHESS_USER_PROFILE_KEY } from "../constants/localStorageKeys";
+import { CHESS_USER_PROFILE_KEY } from "../constants/localIndexedDbKeys";
 import { dateToDDMMYYYY } from "../utils/dateHelpers";
 
 /**

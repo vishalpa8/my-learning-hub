@@ -49,8 +49,6 @@ const TaskList = ({
   onDeleteTask,
   onUpdateTime,
   onUpdateTaskText,
-  onUpdateTaskLink,
-  onUpdateTaskEndDate,
   onViewTaskDetails,
   currentTime,
   selectedDateForDisplay,
@@ -93,7 +91,7 @@ const TaskList = ({
           ...prevForm,
           subtasks: [
             ...prevForm.subtasks,
-            { id: generateTempId(), text: trimmedText, completed: false },
+            { id: Date.now() + Math.random(), text: trimmedText, completed: false },
           ],
           currentSubtaskText: "",
         };

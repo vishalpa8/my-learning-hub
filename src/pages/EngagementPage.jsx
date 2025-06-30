@@ -1,11 +1,11 @@
 // EngagementPage.jsx
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import TaskList from "../components/engagement/TaskList";
 import ActivityCalendar from "../components/engagement/ActivityCalendar";
 import {
   ENGAGEMENT_TASKS_KEY,
   ENGAGEMENT_ACTIVITY_KEY,
-} from "../constants/localStorageKeys"; // Assuming these constants exist
+} from "../constants/localIndexedDbKeys"; // Assuming these constants exist
 import { useIndexedDb } from "../hooks/useIndexedDb";
 import {
   startOfWeek,
@@ -28,8 +28,6 @@ import CopyTaskModal from "../components/engagement/CopyTaskModal";
 import TaskDetailsModal from "../components/engagement/TaskDetailsModal";
 import { useLocation } from "react-router-dom"; // Import useLocation
 import Modal from "../components/shared/Modal"; // Import the generic Modal for confirmation
-
-
 
 const calculateActivityForDate = (tasksForDateArray) => {
   const validTasksArray = Array.isArray(tasksForDateArray)
@@ -126,7 +124,7 @@ const EngagementPage = () => {
     if (!isEqual(activityData, newActivityData)) {
       setActivityData(newActivityData);
     }
-  }, [tasksByDate, setActivityData, allTasks, displayDate]);
+  }, [tasksByDate, setActivityData, allTasks, displayDate, activityData]);
 
   const handleViewTaskDetails = useCallback(
     (taskInstance) => {
@@ -316,7 +314,7 @@ const EngagementPage = () => {
         return;
       }
 
-      const newTasksToAdd = tasksToCopyDetails.map((task, index) => ({
+      const newTasksToAdd = tasksToCopyDetails.map((task) => ({
         ...task,
         id: uuidv4(), // Ensure unique ID
         date: targetDate_DD_MM_YYYY, // New start date for the copied task
@@ -421,8 +419,7 @@ const EngagementPage = () => {
           ...task,
           subtasks: updatedSubtasks,
         };
-        const subtaskJustUnmarked =
-          updates.hasOwnProperty("completed") && !updates.completed;
+        const subtaskJustUnmarked = updates.completed === false;
 
         if (subtaskJustUnmarked && tasksUserChoseToKeepOpen[task.id]) {
           setTasksUserChoseToKeepOpen((prev) => {

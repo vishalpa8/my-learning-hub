@@ -11,7 +11,7 @@ import { streamMessage } from "../../hooks/openRouter";
 import { streamGeminiMessage } from "../../hooks/gemini";
 import { useAIChatHistory } from "../../hooks/useAIChatHistory";
 import { useIndexedDb } from "../../hooks/useIndexedDb";
-import { AI_CHAT_HISTORY_KEY, CHESS_USER_PROFILE_KEY } from "../../constants/localStorageKeys";
+
 import PropTypes from "prop-types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -60,10 +60,6 @@ const useTypewriterEffect = (
   }, [messageId]);
 
   useEffect(() => {
-    // Cleanup function to clear any running interval.
-    const cleanup = () =>
-      intervalRef.current && clearInterval(intervalRef.current);
-
     if (!isStreaming) {
       // When streaming stops, show full text immediately
       setDisplayedText(fullText);
@@ -469,6 +465,8 @@ function chatReducer(state, action) {
       return { ...state, retryCount: action.payload };
     case "SET_COPIED_ID":
       return { ...state, copiedBlockId: action.payload };
+    case "RESET":
+      return { ...initialState };
     default:
       return state;
   }
@@ -487,22 +485,10 @@ const ChatInterface = () => {
     retryCount,
   } = state;
 
-  const [messages, appendMessage, setMessages, loadingMessages, errorMessages] = useAIChatHistory();
-  const [selectedModel, setSelectedModel, loadingModel, errorModel] = useIndexedDb("selectedModel", "openrouter");
-
-  // Show initial AI message only if history is empty and not loading
-  useEffect(() => {
-    if (!loadingMessages && messages.length === 0) {
-      appendMessage({
-        id: generateId(),
-        sender: "ai",
-        text: "Hello! How can I help you with your learning today?",
-        timestamp: formatTime(new Date()),
-        isError: false,
-        isStreaming: false,
-      });
-    }
-  }, [loadingMessages, messages.length, appendMessage]);
+  const [messages, appendMessage, setMessages, clearChatHistory] =
+    useAIChatHistory();
+  const [selectedModel, setSelectedModel] =
+    useIndexedDb("selectedModel", "openrouter");
 
   // Refs
   const messagesEndRef = useRef(null);
@@ -514,7 +500,6 @@ const ChatInterface = () => {
   // Find last messages - Updated to identify actual last messages
   const {
     lastUserMessage,
-    lastAiMessage,
     lastUserMessageIndex,
     lastAiMessageIndex,
     isLastUserMessage,
@@ -595,96 +580,6 @@ const ChatInterface = () => {
     };
   }, []);
 
-  // ===== HANDLERS =====
-  const handleCopyCode = useCallback(async (code, blockId) => {
-    try {
-      await navigator.clipboard.writeText(code);
-      dispatch({ type: "SET_COPIED_ID", payload: blockId });
-      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = setTimeout(
-        () => dispatch({ type: "SET_COPIED_ID", payload: null }),
-        CONSTANTS.COPY_TIMEOUT
-      );
-    } catch (err) {
-      console.error("Failed to copy code:", err);
-    }
-  }, []);
-
-  const handleStopGeneration = useCallback(() => {
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
-    dispatch({ type: "SET_LOADING", payload: false });
-    dispatch({ type: "SET_SHOW_TYPING_INDICATOR", payload: false });
-  }, []);
-
-  const handleEditLastMessage = useCallback(() => {
-    const lastUserMessage = messages
-      .slice()
-      .reverse()
-      .find((m) => m.sender === "user");
-    if (!lastUserMessage || isLoading) return;
-
-    dispatch({ type: "START_EDIT", payload: lastUserMessage.text });
-    textareaRef.current?.focus();
-  }, [messages, isLoading]);
-
-  const handleRetryMessage = useCallback(
-    async (messageId) => {
-      if (isLoading) return;
-
-      const messageToRetryIndex = messages.findIndex(
-        (msg) => msg.id === messageId
-      );
-      if (messageToRetryIndex === -1) return;
-
-      const messageToRetry = messages[messageToRetryIndex];
-      if (!messageToRetry || !messageToRetry.originalPrompt) return;
-
-      // Create a new placeholder to replace the old message.
-      // This ensures a clean state and consistent behavior with new messages.
-      const newAiPlaceholder = {
-        id: generateId(),
-        sender: "ai",
-        text: "",
-        timestamp: "",
-        isError: false,
-        isStreaming: false, // Will be set to true by executeStream
-        originalPrompt: messageToRetry.originalPrompt,
-        modelUsed: selectedModel,
-      };
-
-      setMessages((prevMessages) => {
-        const newMessages = [...prevMessages];
-        newMessages[messageToRetryIndex] = newAiPlaceholder;
-        return newMessages;
-      });
-
-      // Execute the stream with the new placeholder's ID
-      dispatch({
-        type: "SET_LOADING",
-        payload: true,
-      });
-      dispatch({
-        type: "SET_SHOW_TYPING_INDICATOR",
-        payload: true,
-      });
-      dispatch({
-        type: "SET_RETRY_COUNT",
-        payload: 0,
-      });
-      executeStream(
-        messageToRetry.originalPrompt,
-        newAiPlaceholder.id,
-        selectedModel
-      );
-    },
-    [isLoading, messages, selectedModel, setMessages, dispatch]
-  );
-
-  const handleModelChange = useCallback((model) => {
-    setSelectedModel(model);
-  }, [setSelectedModel]);
-
   // ===== ENHANCED STREAMING LOGIC =====
   const executeStream = useCallback(
     async (prompt, placeholderId, modelToUse = selectedModel, attempt = 0) => {
@@ -705,7 +600,8 @@ const ChatInterface = () => {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === placeholderId
-            ? { ...msg, isStreaming: true, modelUsed: modelToUse } : msg
+            ? { ...msg, isStreaming: true, modelUsed: modelToUse }
+            : msg
         )
       );
 
@@ -737,7 +633,7 @@ const ChatInterface = () => {
 
         const decoder = new TextDecoder();
 
-        while (true) {
+        while (true) { // eslint-disable-line no-constant-condition
           const { done, value } = await reader.read();
           if (done) break;
 
@@ -758,7 +654,8 @@ const ChatInterface = () => {
             setMessages((prevMessages) =>
               prevMessages.map((msg) =>
                 msg.id === placeholderId
-                  ? { ...msg, text: currentText, isStreaming: true } : msg
+                  ? { ...msg, text: currentText, isStreaming: true }
+                  : msg
               )
             );
 
@@ -880,6 +777,104 @@ const ChatInterface = () => {
     [selectedModel, setMessages, dispatch]
   );
 
+  // ===== HANDLERS =====
+  const handleCopyCode = useCallback(async (code, blockId) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      dispatch({ type: "SET_COPIED_ID", payload: blockId });
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(
+        () => dispatch({ type: "SET_COPIED_ID", payload: null }),
+        CONSTANTS.COPY_TIMEOUT
+      );
+    } catch (err) {
+      console.error("Failed to copy code:", err);
+    }
+  }, []);
+
+  const handleStopGeneration = useCallback(() => {
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
+    dispatch({ type: "SET_LOADING", payload: false });
+    dispatch({ type: "SET_SHOW_TYPING_INDICATOR", payload: false });
+  }, []);
+
+  const handleEditLastMessage = useCallback(() => {
+    const lastUserMessage = messages
+      .slice()
+      .reverse()
+      .find((m) => m.sender === "user");
+    if (!lastUserMessage || isLoading) return;
+
+    dispatch({ type: "START_EDIT", payload: lastUserMessage.text });
+    textareaRef.current?.focus();
+  }, [messages, isLoading]);
+
+  const handleRetryMessage = useCallback(
+    async (messageId) => {
+      if (isLoading) return;
+
+      const messageToRetryIndex = messages.findIndex(
+        (msg) => msg.id === messageId
+      );
+      if (messageToRetryIndex === -1) return;
+
+      const messageToRetry = messages[messageToRetryIndex];
+      if (!messageToRetry || !messageToRetry.originalPrompt) return;
+
+      // Create a new placeholder to replace the old message.
+      // This ensures a clean state and consistent behavior with new messages.
+      const newAiPlaceholder = {
+        id: generateId(),
+        sender: "ai",
+        text: "",
+        timestamp: "",
+        isError: false,
+        isStreaming: false, // Will be set to true by executeStream
+        originalPrompt: messageToRetry.originalPrompt,
+        modelUsed: selectedModel,
+      };
+
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages[messageToRetryIndex] = newAiPlaceholder;
+        return newMessages;
+      });
+
+      // Execute the stream with the new placeholder's ID
+      dispatch({
+        type: "SET_LOADING",
+        payload: true,
+      });
+      dispatch({
+        type: "SET_SHOW_TYPING_INDICATOR",
+        payload: true,
+      });
+      dispatch({
+        type: "SET_RETRY_COUNT",
+        payload: 0,
+      });
+      executeStream(
+        messageToRetry.originalPrompt,
+        newAiPlaceholder.id,
+        selectedModel
+      );
+    },
+    [isLoading, messages, selectedModel, setMessages, dispatch, executeStream]
+  );
+
+  const handleModelChange = useCallback(
+    (model) => {
+      setSelectedModel(model);
+    },
+    [setSelectedModel]
+  );
+
+  const handleNewChat = useCallback(() => {
+    clearChatHistory();
+    dispatch({ type: "RESET" });
+  }, [clearChatHistory, dispatch]);
+
   const submitInput = useCallback(() => {
     const trimmedInput = input.trim();
     if (
@@ -918,7 +913,7 @@ const ChatInterface = () => {
         text: "",
         timestamp: "",
         isError: false,
-        isStreaming: false,
+        isStreaming: false, // Will be set to true by executeStream
         originalPrompt: currentInput,
         modelUsed: selectedModel,
       };
@@ -958,7 +953,6 @@ const ChatInterface = () => {
     lastUserMessage,
     lastUserMessageIndex,
     lastAiMessageIndex,
-    messages,
     executeStream,
     selectedModel,
     appendMessage,
@@ -1022,6 +1016,29 @@ const ChatInterface = () => {
             onModelChange={handleModelChange}
             disabled={isLoading}
           />
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="new-chat-button"
+            disabled={isLoading}
+            title="Start a new chat"
+            aria-label="Start a new chat"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            New Chat
+          </button>
         </div>
 
         <div className="chat-input-controls">

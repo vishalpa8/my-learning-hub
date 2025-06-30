@@ -5,18 +5,7 @@ import { useUserProfile } from "../../hooks/useUserProfile";
 import { CONSTANTS } from "../../components/ai/chatUtils"; // For POINTS_PER_NUGGET
 import "./DailyNugget.css";
 
-/**
- * Calculates the day of the year (1-366) for a given date.
- *
- * @param {Date} date - The date for which to calculate the day of the year.
- * @returns {number} The day of the year (e.g., 1 for Jan 1st, 366 for Dec 31st in a leap year).
- */
-const getDayOfYear = (date) => {
-  const start = new Date(date.getFullYear(), 0, 0);
-  const diff = date - start; // Direct subtraction of Date objects gives milliseconds
-  const oneDay = 1000 * 60 * 60 * 24;
-  return Math.floor(diff / oneDay);
-};
+
 
 /**
  * Displays a "Daily Chess Nugget" selected based on the current day of the year.
@@ -27,7 +16,7 @@ const DailyNugget = () => {
   const [currentNugget, setCurrentNugget] = useState(null);
   const [seenNuggets, markNuggetAsSeen, loadingSeenNuggets, errorSeenNuggets] =
     useSeenNuggets();
-  const [userProfile, addPoints, updateStreak, earnBadge, loadingProfile, errorProfile] = useUserProfile();
+  const [addPoints, updateStreak, loadingProfile, errorProfile] = useUserProfile();
 
   useEffect(() => {
     if (loadingSeenNuggets || errorSeenNuggets || loadingProfile || errorProfile || !nuggets || nuggets.length === 0) {

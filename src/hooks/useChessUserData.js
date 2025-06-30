@@ -8,7 +8,7 @@ import {
 import {
   CHESS_LEARNING_PROGRESS_KEY,
   CHESS_USER_PROFILE_KEY,
-} from "../constants/localStorageKeys";
+} from "../constants/localIndexedDbKeys";
 
 const ELO_GAIN_PER_TWO_VIDEOS = 10; // Define how much ELO is gained for every 2 completed videos
 
@@ -62,16 +62,18 @@ export const useChessUserData = (structuredChessData) => {
 
           // ELO Calculation: Adjust based on the change
           const wasPairCompleted =
-            Object.values(prevCompletedVideos).filter(Boolean).length % 2 === 1 &&
-            newCompletedStatus;
+            Object.values(prevCompletedVideos).filter(Boolean).length % 2 ===
+              1 && newCompletedStatus;
           const wasPairBroken =
-            Object.values(prevCompletedVideos).filter(Boolean).length % 2 === 0 &&
-            !newCompletedStatus;
+            Object.values(prevCompletedVideos).filter(Boolean).length % 2 ===
+              0 && !newCompletedStatus;
 
           if (wasPairCompleted) {
-            updatedProfile.elo = (prevProfile.elo || INITIAL_CHESS_ELO) + ELO_GAIN_PER_TWO_VIDEOS;
+            updatedProfile.elo =
+              (prevProfile.elo || INITIAL_CHESS_ELO) + ELO_GAIN_PER_TWO_VIDEOS;
           } else if (wasPairBroken) {
-            updatedProfile.elo = (prevProfile.elo || INITIAL_CHESS_ELO) - ELO_GAIN_PER_TWO_VIDEOS;
+            updatedProfile.elo =
+              (prevProfile.elo || INITIAL_CHESS_ELO) - ELO_GAIN_PER_TWO_VIDEOS;
           }
           // Ensure ELO doesn't drop below the initial value
           if (updatedProfile.elo < INITIAL_CHESS_ELO) {
