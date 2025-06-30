@@ -2,12 +2,12 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { dsaData } from "../data/dsaData";
 import DashboardView from "../components/dsa/DashboardView";
 import RewardModal from "../components/shared/RewardModal"; 
-import { useReward } from "../contexts/useReward"; // Updated import path
+import { useReward } from "../contexts/useReward";
 import { useIndexedDb } from "../hooks/useIndexedDb";
+import { useUserProfile } from "../hooks/useUserProfile";
 import {
   DSA_COMPLETED_PROBLEMS_KEY,
   DSA_LAST_ACTIVE_VIEW_KEY,
-  DSA_STREAK_KEY,
   DSA_LAST_VISITED_VIEW_DATES_KEY, 
 } from "../constants/localStorageKeys";
 import {
@@ -54,10 +54,7 @@ const DsaPage = () => {
     searchTerm: "",
   });
 
-  const [streakData, setStreakData] = useIndexedDb(DSA_STREAK_KEY, {
-    currentStreak: 0,
-    lastCompletionDate: null,
-  });
+  const [userProfile, addPoints, updateStreak, earnBadge, loadingProfile, errorProfile] = useUserProfile();
 
   const [lastVisitedViewDates, setLastVisitedViewDates] = useIndexedDb(
     DSA_LAST_VISITED_VIEW_DATES_KEY,
@@ -81,37 +78,20 @@ const DsaPage = () => {
     (problemId) => {
       setCompletedProblems((prev) => {
         const newCompleted = { ...prev };
-        if (newCompleted[problemId]) {
+        const isCurrentlyCompleted = !!newCompleted[problemId];
+
+        if (isCurrentlyCompleted) {
           delete newCompleted[problemId];
         } else {
           newCompleted[problemId] = true;
+          // Award points and update streak only when a problem is newly completed
+          addPoints(10); // Example: 10 points per DSA problem
+          updateStreak(new Date());
         }
         return newCompleted;
       });
-
-      const today = new Date();
-      const todayDateString = today.toDateString();
-      setStreakData((prev) => {
-        if (prev.lastCompletionDate === todayDateString) return prev;
-        const lastCompletion = prev.lastCompletionDate
-          ? new Date(prev.lastCompletionDate)
-          : null;
-        let newStreak = 1;
-        if (lastCompletion) {
-          const yesterday = new Date(today);
-          yesterday.setDate(today.getDate() - 1);
-          if (lastCompletion.toDateString() === yesterday.toDateString()) {
-            newStreak = (prev.currentStreak || 0) + 1;
-          }
-        }
-        return {
-          ...prev,
-          currentStreak: newStreak,
-          lastCompletionDate: todayDateString,
-        };
-      });
     },
-    [setCompletedProblems, setStreakData]
+    [setCompletedProblems, addPoints, updateStreak]
   );
 
   const handleFilterChange = useCallback((filterType, value) => {
@@ -377,7 +357,7 @@ const DsaPage = () => {
             <DashboardView
               overallProgress={overallProgressStats}
               totalProblems={dsaData.length}
-              streakData={streakData} // Pass streakData to DashboardView
+              streakData={userProfile.currentStreak} // Pass currentStreak from userProfile
             />
           ) : (
             <ProblemListView

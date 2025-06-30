@@ -181,15 +181,7 @@ export const checkAndAwardChessBadges = (
         }
         break;
       } // End block scope
-      case BADGE_CRITERIA.TASKS_COMPLETED:
-        // This criteria requires task completion data to be part of the userProfile
-        // or passed to this function. For now, it's a placeholder.
-        if (import.meta.env.DEV) {
-          console.warn(
-            `Badge criteria type "${BADGE_CRITERIA.TASKS_COMPLETED}" for badge "${badge.id}" requires task completion data not currently available.`
-          );
-        }
-        break;
+      
       default:
         if (import.meta.env.DEV) {
           console.warn(

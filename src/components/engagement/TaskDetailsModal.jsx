@@ -21,6 +21,8 @@ import {
 } from "../../utils/dateHelpers"; // Centralized date helpers
 
 const TaskDetailsModal = ({
+  // TaskDetailsModal render
+  // console.log('TaskDetailsModal rendered');
   isOpen,
   onClose,
   task,
@@ -367,6 +369,7 @@ const TaskDetailsModal = ({
     const [removed] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, removed);
 
+    console.log("Calling onReorderSubtasks", task.id, reordered);
     onReorderSubtasks(task.id, reordered); // Persist new order
   };
 

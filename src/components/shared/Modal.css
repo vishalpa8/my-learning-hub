@@ -25,8 +25,8 @@
   max-width: 900px; /* Width to accommodate two columns for CopyTaskModal */
   width: 95vw;
   min-width: 320px;
-  max-height: 90vh;
-  overflow: hidden; /* Prevent content from spilling before sections handle scroll */
+  /* max-height: 90vh; */
+  /* overflow: hidden; /* Prevent content from spilling before sections handle scroll */
   position: relative;
   box-shadow: var(--box-shadow-xl); /* Keep a prominent shadow */
   display: flex;
@@ -47,11 +47,9 @@
 @keyframes modalContentSlideUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
@@ -104,7 +102,7 @@
 
 .modal-body {
   flex-grow: 1;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   padding: var(--spacing-lg); /* Add padding to the body */
 }
 

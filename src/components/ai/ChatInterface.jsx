@@ -9,6 +9,9 @@ import React, {
 } from "react";
 import { streamMessage } from "../../hooks/openRouter";
 import { streamGeminiMessage } from "../../hooks/gemini";
+import { useAIChatHistory } from "../../hooks/useAIChatHistory";
+import { useIndexedDb } from "../../hooks/useIndexedDb";
+import { AI_CHAT_HISTORY_KEY, CHESS_USER_PROFILE_KEY } from "../../constants/localStorageKeys";
 import PropTypes from "prop-types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -442,21 +445,10 @@ MessageBubble.propTypes = {
 
 // ===== REDUCER FOR STATE MANAGEMENT =====
 const initialState = {
-  messages: [
-    {
-      id: generateId(),
-      sender: "ai",
-      text: "Hello! How can I help you with your learning today?",
-      timestamp: formatTime(new Date()),
-      isError: false,
-      isStreaming: false,
-    },
-  ],
   input: "",
   isLoading: false,
   isEditingLastMessage: false,
   retryCount: 0,
-  selectedModel: "openrouter",
   copiedBlockId: null,
   showTypingIndicator: false,
 };
@@ -465,69 +457,18 @@ function chatReducer(state, action) {
   switch (action.type) {
     case "SET_INPUT":
       return { ...state, input: action.payload };
-    case "START_EDIT": {
-      const lastUserMessage = state.messages
-        .slice()
-        .reverse()
-        .find((m) => m.sender === "user");
-      if (!lastUserMessage || state.isLoading) return state;
-      return {
-        ...state,
-        input: lastUserMessage.text,
-        isEditingLastMessage: true,
-      };
-    }
+    case "START_EDIT":
+      return { ...state, input: action.payload, isEditingLastMessage: true };
     case "CANCEL_EDIT":
       return { ...state, isEditingLastMessage: false, input: "" };
-    case "ADD_MESSAGES":
-      return { ...state, messages: [...state.messages, ...action.payload] };
-    case "UPDATE_MESSAGE":
-      return {
-        ...state,
-        messages: state.messages.map((msg) =>
-          msg.id === action.payload.id
-            ? { ...msg, ...action.payload.updates }
-            : msg
-        ),
-      };
-    case "REPLACE_MESSAGES":
-      return { ...state, messages: action.payload };
-    case "STREAM_START":
-      return {
-        ...state,
-        isLoading: true,
-        showTypingIndicator: true,
-        retryCount: action.payload.attempt,
-        messages: state.messages.map((msg) =>
-          msg.id === action.payload.id
-            ? { ...msg, isStreaming: true, modelUsed: action.payload.modelUsed }
-            : msg
-        ),
-      };
-    case "STREAM_DATA_RECEIVED":
-      return {
-        ...state,
-        showTypingIndicator: false, // Hide indicator on first data
-        messages: state.messages.map((msg) =>
-          msg.id === action.payload.id
-            ? { ...msg, text: action.payload.text, isStreaming: true }
-            : msg
-        ),
-      };
-    case "STREAM_END":
-      return {
-        ...state,
-        isLoading: false,
-        showTypingIndicator: false,
-        retryCount: 0,
-        messages: state.messages.map((msg) =>
-          msg.isStreaming ? { ...msg, isStreaming: false } : msg
-        ),
-      };
+    case "SET_LOADING":
+      return { ...state, isLoading: action.payload };
+    case "SET_SHOW_TYPING_INDICATOR":
+      return { ...state, showTypingIndicator: action.payload };
+    case "SET_RETRY_COUNT":
+      return { ...state, retryCount: action.payload };
     case "SET_COPIED_ID":
       return { ...state, copiedBlockId: action.payload };
-    case "SET_MODEL":
-      return { ...state, selectedModel: action.payload };
     default:
       return state;
   }
@@ -538,15 +479,30 @@ const ChatInterface = () => {
   // State
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const {
-    messages,
     input,
     isLoading,
     copiedBlockId,
     showTypingIndicator,
     isEditingLastMessage,
     retryCount,
-    selectedModel,
   } = state;
+
+  const [messages, appendMessage, setMessages, loadingMessages, errorMessages] = useAIChatHistory();
+  const [selectedModel, setSelectedModel, loadingModel, errorModel] = useIndexedDb("selectedModel", "openrouter");
+
+  // Show initial AI message only if history is empty and not loading
+  useEffect(() => {
+    if (!loadingMessages && messages.length === 0) {
+      appendMessage({
+        id: generateId(),
+        sender: "ai",
+        text: "Hello! How can I help you with your learning today?",
+        timestamp: formatTime(new Date()),
+        isError: false,
+        isStreaming: false,
+      });
+    }
+  }, [loadingMessages, messages.length, appendMessage]);
 
   // Refs
   const messagesEndRef = useRef(null);
@@ -657,13 +613,20 @@ const ChatInterface = () => {
   const handleStopGeneration = useCallback(() => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
     if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
-    dispatch({ type: "STREAM_END" });
+    dispatch({ type: "SET_LOADING", payload: false });
+    dispatch({ type: "SET_SHOW_TYPING_INDICATOR", payload: false });
   }, []);
 
   const handleEditLastMessage = useCallback(() => {
-    dispatch({ type: "START_EDIT" });
+    const lastUserMessage = messages
+      .slice()
+      .reverse()
+      .find((m) => m.sender === "user");
+    if (!lastUserMessage || isLoading) return;
+
+    dispatch({ type: "START_EDIT", payload: lastUserMessage.text });
     textareaRef.current?.focus();
-  }, []);
+  }, [messages, isLoading]);
 
   const handleRetryMessage = useCallback(
     async (messageId) => {
@@ -690,19 +653,24 @@ const ChatInterface = () => {
         modelUsed: selectedModel,
       };
 
-      const newMessages = [...messages];
-      newMessages[messageToRetryIndex] = newAiPlaceholder;
-
-      dispatch({ type: "REPLACE_MESSAGES", payload: newMessages });
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages[messageToRetryIndex] = newAiPlaceholder;
+        return newMessages;
+      });
 
       // Execute the stream with the new placeholder's ID
       dispatch({
-        type: "STREAM_START",
-        payload: {
-          id: newAiPlaceholder.id,
-          attempt: 0,
-          modelUsed: selectedModel,
-        },
+        type: "SET_LOADING",
+        payload: true,
+      });
+      dispatch({
+        type: "SET_SHOW_TYPING_INDICATOR",
+        payload: true,
+      });
+      dispatch({
+        type: "SET_RETRY_COUNT",
+        payload: 0,
       });
       executeStream(
         messageToRetry.originalPrompt,
@@ -710,20 +678,36 @@ const ChatInterface = () => {
         selectedModel
       );
     },
-    [isLoading, messages, selectedModel]
+    [isLoading, messages, selectedModel, setMessages, dispatch]
   );
 
   const handleModelChange = useCallback((model) => {
-    dispatch({ type: "SET_MODEL", payload: model });
-  }, []);
+    setSelectedModel(model);
+  }, [setSelectedModel]);
 
   // ===== ENHANCED STREAMING LOGIC =====
   const executeStream = useCallback(
     async (prompt, placeholderId, modelToUse = selectedModel, attempt = 0) => {
       dispatch({
-        type: "STREAM_START",
-        payload: { id: placeholderId, attempt, modelUsed: modelToUse },
+        type: "SET_LOADING",
+        payload: true,
       });
+      dispatch({
+        type: "SET_SHOW_TYPING_INDICATOR",
+        payload: true,
+      });
+      dispatch({
+        type: "SET_RETRY_COUNT",
+        payload: attempt,
+      });
+
+      // Update the placeholder message with streaming status and model used
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === placeholderId
+            ? { ...msg, isStreaming: true, modelUsed: modelToUse } : msg
+        )
+      );
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -752,10 +736,6 @@ const ChatInterface = () => {
         });
 
         const decoder = new TextDecoder();
-        let messageLength = 0;
-
-        // Hide typing indicator once we start receiving content
-        let hasHiddenTyping = false;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -775,10 +755,12 @@ const ChatInterface = () => {
                 "\n\n... [Message truncated due to length]";
             }
 
-            dispatch({
-              type: "STREAM_DATA_RECEIVED",
-              payload: { id: placeholderId, text: currentText },
-            });
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === placeholderId
+                  ? { ...msg, text: currentText, isStreaming: true } : msg
+              )
+            );
 
             if (currentText.length >= CONSTANTS.MAX_MESSAGE_LENGTH) {
               break; // Stop reading stream if truncated
@@ -789,17 +771,21 @@ const ChatInterface = () => {
         if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
 
         if (hasReceivedAnyContent) {
-          dispatch({
-            type: "UPDATE_MESSAGE",
-            payload: {
-              id: placeholderId,
-              updates: {
-                timestamp: formatTime(new Date()),
-                originalPrompt: prompt,
-              },
-            },
-          });
-          dispatch({ type: "STREAM_END" });
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === placeholderId
+                ? {
+                    ...msg,
+                    timestamp: formatTime(new Date()),
+                    originalPrompt: prompt,
+                    isStreaming: false,
+                  }
+                : msg
+            )
+          );
+          dispatch({ type: "SET_LOADING", payload: false });
+          dispatch({ type: "SET_SHOW_TYPING_INDICATOR", payload: false });
+          dispatch({ type: "SET_RETRY_COUNT", payload: 0 });
           abortControllerRef.current = null;
           return;
         } else {
@@ -813,37 +799,45 @@ const ChatInterface = () => {
 
         // If we received content before error, treat as success
         if (hasReceivedAnyContent) {
-          dispatch({
-            type: "UPDATE_MESSAGE",
-            payload: {
-              id: placeholderId,
-              updates: {
-                timestamp: formatTime(new Date()),
-                originalPrompt: prompt,
-              },
-            },
-          });
-          dispatch({ type: "STREAM_END" });
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === placeholderId
+                ? {
+                    ...msg,
+                    timestamp: formatTime(new Date()),
+                    originalPrompt: prompt,
+                    isStreaming: false,
+                  }
+                : msg
+            )
+          );
+          dispatch({ type: "SET_LOADING", payload: false });
+          dispatch({ type: "SET_SHOW_TYPING_INDICATOR", payload: false });
+          dispatch({ type: "SET_RETRY_COUNT", payload: 0 });
           abortControllerRef.current = null;
           return;
         }
 
         // Handle user abort
         if (isUserAbortError(error)) {
-          dispatch({
-            type: "UPDATE_MESSAGE",
-            payload: {
-              id: placeholderId,
-              updates: {
-                text: CONSTANTS.MESSAGES.USER_STOPPED,
-                timestamp: formatTime(new Date()),
-                isError: true,
-                isStoppedByUser: true,
-                originalPrompt: prompt,
-              },
-            },
-          });
-          dispatch({ type: "STREAM_END" });
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === placeholderId
+                ? {
+                    ...msg,
+                    text: CONSTANTS.MESSAGES.USER_STOPPED,
+                    timestamp: formatTime(new Date()),
+                    isError: true,
+                    isStoppedByUser: true,
+                    originalPrompt: prompt,
+                    isStreaming: false,
+                  }
+                : msg
+            )
+          );
+          dispatch({ type: "SET_LOADING", payload: false });
+          dispatch({ type: "SET_SHOW_TYPING_INDICATOR", payload: false });
+          dispatch({ type: "SET_RETRY_COUNT", payload: 0 });
           abortControllerRef.current = null;
           return;
         }
@@ -863,23 +857,27 @@ const ChatInterface = () => {
         // Final error
         const errorMessage = getErrorMessage(error);
 
-        dispatch({
-          type: "UPDATE_MESSAGE",
-          payload: {
-            id: placeholderId,
-            updates: {
-              text: errorMessage,
-              timestamp: formatTime(new Date()),
-              isError: true,
-              originalPrompt: prompt,
-            },
-          },
-        });
-        dispatch({ type: "STREAM_END" });
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === placeholderId
+              ? {
+                  ...msg,
+                  text: errorMessage,
+                  timestamp: formatTime(new Date()),
+                  isError: true,
+                  originalPrompt: prompt,
+                  isStreaming: false,
+                }
+              : msg
+          )
+        );
+        dispatch({ type: "SET_LOADING", payload: false });
+        dispatch({ type: "SET_SHOW_TYPING_INDICATOR", payload: false });
+        dispatch({ type: "SET_RETRY_COUNT", payload: 0 });
         abortControllerRef.current = null;
       }
     },
-    [selectedModel] // Dependencies are stable
+    [selectedModel, setMessages, dispatch]
   );
 
   const submitInput = useCallback(() => {
@@ -897,19 +895,21 @@ const ChatInterface = () => {
 
     // Handle editing last message
     if (isEditingLastMessage && lastUserMessage) {
-      const newMessages = [...messages];
-      newMessages[lastUserMessageIndex] = {
-        ...newMessages[lastUserMessageIndex],
-        text: currentInput,
-        isEdited: true,
-        timestamp: formatTime(new Date()),
-      };
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages[lastUserMessageIndex] = {
+          ...newMessages[lastUserMessageIndex],
+          text: currentInput,
+          isEdited: true,
+          timestamp: formatTime(new Date()),
+        };
 
-      if (lastAiMessageIndex > lastUserMessageIndex) {
-        newMessages.splice(lastAiMessageIndex, 1);
-      }
+        if (lastAiMessageIndex > lastUserMessageIndex) {
+          newMessages.splice(lastAiMessageIndex, 1);
+        }
+        return newMessages;
+      });
 
-      dispatch({ type: "REPLACE_MESSAGES", payload: newMessages });
       dispatch({ type: "CANCEL_EDIT" });
 
       const aiMessagePlaceholder = {
@@ -923,7 +923,7 @@ const ChatInterface = () => {
         modelUsed: selectedModel,
       };
 
-      dispatch({ type: "ADD_MESSAGES", payload: [aiMessagePlaceholder] });
+      appendMessage(aiMessagePlaceholder);
       executeStream(currentInput, aiMessagePlaceholder.id);
       return;
     }
@@ -948,10 +948,8 @@ const ChatInterface = () => {
       modelUsed: selectedModel,
     };
 
-    dispatch({
-      type: "ADD_MESSAGES",
-      payload: [userMessage, aiMessagePlaceholder],
-    });
+    appendMessage(userMessage);
+    appendMessage(aiMessagePlaceholder);
     executeStream(currentInput, aiMessagePlaceholder.id);
   }, [
     input,
@@ -963,6 +961,9 @@ const ChatInterface = () => {
     messages,
     executeStream,
     selectedModel,
+    appendMessage,
+    setMessages,
+    dispatch,
   ]);
 
   const handleInputKeyDown = useCallback(

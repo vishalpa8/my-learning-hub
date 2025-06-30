@@ -13,6 +13,8 @@ export const CONSTANTS = {
   MAX_TEXTAREA_HEIGHT: 200,
   TYPING_DELAY: 30, // Delay between characters for typewriter effect
   WORD_CHUNK_SIZE: 3, // Number of words to add at once
+  POINTS_PER_REWARD: 10, // Points awarded when a reward is triggered
+  POINTS_PER_NUGGET: 5, // Points awarded for viewing a daily nugget
   SYSTEM_PROMPT:
     "You are a helpful AI assistant focused on learning and education. Provide clear, accurate, and helpful responses.",
   MESSAGES: {

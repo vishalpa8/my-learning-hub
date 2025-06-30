@@ -55,3 +55,18 @@ export const ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY =
  * Example: `{"2023-10-27": { completedTasks: 3, totalTasks: 5, activityLevel: "medium" }}`
  */
 export const ENGAGEMENT_ACTIVITY_KEY = "engagementActivity";
+
+/**
+ * Key for storing the IDs of daily chess nuggets that the user has already seen.
+ * Expected value: An object mapping nugget IDs (string) to boolean (true if seen).
+ * Example: `{"nugget_1": true, "nugget_3": true}`
+ */
+export const SEEN_NUGGETS_KEY = "seenNuggets";
+
+// --- AI Feature Keys ---
+
+/**
+ * Key for storing the AI chat history.
+ * Expected value: An array of message objects, e.g., `[{ role: "user", content: "Hello" }, { role: "model", content: "Hi there!" }]`
+ */
+export const AI_CHAT_HISTORY_KEY = "aiChatHistory";

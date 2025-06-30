@@ -43,14 +43,15 @@ const ChessPage = () => {
     [allVideos, completedVideos]
   );
 
+  // Track previous completed count to avoid unnecessary updates
+  const prevCompletedRef = React.useRef(0);
+
   useEffect(() => {
-    // When overall chess progress (specifically completed count) changes, record it for rewards.
-    // The RewardContext will handle the combined logic.
-    if (overallProgress) {
+    // Only record progress if the completed count has actually changed
+    if (overallProgress && overallProgress.completed !== prevCompletedRef.current) {
       recordChessProgress(overallProgress.completed);
+      prevCompletedRef.current = overallProgress.completed;
     }
-    // recordChessProgress from context is typically stable (memoized in its provider).
-    // Including it in dependencies is correct and ensures effect runs if it were to change.
   }, [overallProgress, recordChessProgress]);
 
   const nextPlaylist = useMemo(
@@ -114,13 +115,15 @@ const ChessPage = () => {
           </div>
         </div>
         <div className="chess-hero-progress">
-          <ProgressBarDisplay
-            completed={overallProgress.completed}
-            total={overallProgress.total}
-            label={`Overall Progress: ${overallProgress.completed} / ${
-              overallProgress.total
-            } videos (${overallProgress.percent.toFixed(1)}%)`}
-          />
+          {overallProgress.total > 0 && (
+            <ProgressBarDisplay
+              completed={overallProgress.completed}
+              total={overallProgress.total}
+              label={`Overall Progress: ${overallProgress.completed} / ${
+                overallProgress.total
+              } videos (${overallProgress.percent.toFixed(1)}%)`}
+            />
+          )}
         </div>
       </section>
 
@@ -157,11 +160,13 @@ const ChessPage = () => {
                     ({stage.id.replace("elo", "")} ELO)
                   </span>
                 </h2>
-                <ProgressBarDisplay
-                  completed={stageProgress.completed}
-                  total={stageProgress.total}
-                  label={`Stage Progress: ${stageProgress.completed} / ${stageProgress.total} videos`}
-                />
+                {stageProgress.total > 0 && (
+                  <ProgressBarDisplay
+                    completed={stageProgress.completed}
+                    total={stageProgress.total}
+                    label={`Stage Progress: ${stageProgress.completed} / ${stageProgress.total} videos`}
+                  />
+                )}
               </div>
               <div className="playlists-grid">
                 {stage.playlists.map((playlist) => {

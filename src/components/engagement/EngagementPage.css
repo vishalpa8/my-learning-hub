@@ -1183,7 +1183,7 @@
 
 .improved-task-list-li.dragging {
   box-shadow: var(--box-shadow-xl); /* Stronger shadow when dragging */
-  transform: rotate(2deg) translateY(-5px); /* Slight rotation and lift */
+  
   background-color: var(
     --primary-color-xxlight
   ); /* Light background when dragging */

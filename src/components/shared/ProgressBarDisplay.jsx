@@ -21,13 +21,6 @@ const ProgressBarDisplay = ({ completed, total, label }) => {
     // environments where 'process' is not defined.
     // For Vite projects (often run with `npm run dev`), `import.meta.env.DEV` is the preferred way.
     // For Create React App, `process.env.NODE_ENV` should be replaced by the build tool.
-    if (import.meta.env.DEV) {
-      // Vite-specific way to check for development mode
-
-      console.warn(
-        `ProgressBarDisplay: 'total' prop must be a positive number to render. Received: ${total}`
-      );
-    }
     return null;
   }
 

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { nuggets } from "../../data/chessData";
+import { useSeenNuggets } from "../../hooks/useSeenNuggets";
+import { useUserProfile } from "../../hooks/useUserProfile";
+import { CONSTANTS } from "../../components/ai/chatUtils"; // For POINTS_PER_NUGGET
 import "./DailyNugget.css";
 
 /**
@@ -22,23 +25,43 @@ const getDayOfYear = (date) => {
  */
 const DailyNugget = () => {
   const [currentNugget, setCurrentNugget] = useState(null);
+  const [seenNuggets, markNuggetAsSeen, loadingSeenNuggets, errorSeenNuggets] =
+    useSeenNuggets();
+  const [userProfile, addPoints, updateStreak, earnBadge, loadingProfile, errorProfile] = useUserProfile();
 
   useEffect(() => {
-    // Ensure nuggets is a non-empty array before attempting to select one.
-    if (nuggets && nuggets.length > 0) {
-      const today = new Date();
-      const dayOfYear = getDayOfYear(today);
-      // Ensure index is always within bounds, dayOfYear is 1-based.
-      const nuggetIndex = (dayOfYear - 1 + nuggets.length) % nuggets.length;
-      setCurrentNugget(nuggets[nuggetIndex]);
+    if (loadingSeenNuggets || errorSeenNuggets || loadingProfile || errorProfile || !nuggets || nuggets.length === 0) {
+      return;
     }
-    // This effect runs once on mount. 'nuggets' is a static import,
-    // so it doesn't strictly need to be a dependency, but adding it is harmless.
-  }, []); // Empty dependency array ensures this runs only once on component mount.
+
+    const today = new Date();
+
+    // Filter out nuggets that have already been seen
+    const unseenNuggets = nuggets.filter((nugget) => !seenNuggets[nugget.id]);
+
+    if (unseenNuggets.length > 0) {
+      // Select a random unseen nugget
+      const nuggetIndex = Math.floor(Math.random() * unseenNuggets.length);
+      const selectedNugget = unseenNuggets[nuggetIndex];
+      setCurrentNugget(selectedNugget);
+
+      // Mark nugget as seen and trigger point/streak update via callback
+      markNuggetAsSeen(selectedNugget.id, () => {
+        addPoints(CONSTANTS.POINTS_PER_NUGGET);
+        updateStreak(today);
+      });
+    } else {
+      // All nuggets have been seen, reset the seen nuggets for the next cycle
+      
+      // Only reset if seenNuggets is not already empty to prevent infinite loops
+      if (Object.keys(seenNuggets).length > 0) {
+        markNuggetAsSeen({}); // This will overwrite the existing seenNuggets with an empty object
+      }
+      setCurrentNugget(null); // Clear current nugget until next render cycle picks a new one
+    }
+  }, [loadingSeenNuggets, errorSeenNuggets, seenNuggets, markNuggetAsSeen, addPoints, updateStreak, loadingProfile, errorProfile]);
 
   if (!currentNugget) {
-    // Return null if no nugget can be determined (e.g., empty nuggets data).
-    // This prevents rendering an empty or broken section.
     return null;
   }
 

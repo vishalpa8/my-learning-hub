@@ -63,7 +63,7 @@ function App() {
     <React.StrictMode>
       {" "}
       {/* Optional: Add StrictMode for development */}
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ScrollToTop />
         <RewardProvider>
           <AppContent />

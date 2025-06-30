@@ -1,5 +1,21 @@
 // --- Playlists and Video Data ---
 
+/**
+ * @typedef {object} VideoData
+ * @property {string} id - Unique ID for the video.
+ * @property {string} title - Title of the video.
+ * @property {string} [duration] - Optional: Duration of the video (e.g., "15:30").
+ * @property {string} [thumbnailUrl] - Optional: URL to the video thumbnail.
+ */
+
+/**
+ * @typedef {object} PlaylistData
+ * @property {string} title - Title of the playlist.
+ * @property {string} playlistUrl - URL to the YouTube playlist or single video.
+ * @property {string} focusArea - Description of the playlist's focus.
+ * @property {VideoData[]} videos - Array of video objects within the playlist.
+ */
+
 /** @type {Object.<string, PlaylistData>} */
 export const playlistVideoData = {
   // =====================
@@ -505,6 +521,8 @@ export const playlistVideoData = {
       {
         id: "elo2400_cand_aga_1", // AGA for Agadmator
         title: "Nepomniachtchi vs. Nakamura | FIDE Candidates 2024",
+        duration: "1:02:15",
+        thumbnailUrl: "https://img.youtube.com/vi/example_video_id/hqdefault.jpg",
       },
       {
         id: "elo2400_cand_aga_2",
@@ -691,6 +709,7 @@ export const nuggets = [
     emoji: "♟️",
   },
   {
+    id: "nugget_5",
     quote:
       '"The passed pawn is a criminal, who should be kept under lock and key." - Aron Nimzowitsch',
     focus: "Pawn Play",
@@ -735,16 +754,7 @@ export const chess_badges_definitions = [
       value: 3,
     },
   },
-  {
-    id: "task_master",
-    name: "Task Master",
-    icon: "✔️",
-    description: "Complete 5 personal learning goals.",
-    criteria: {
-      type: BADGE_CRITERIA.TASKS_COMPLETED,
-      value: 5,
-    },
-  },
+  
   {
     id: "feedback_hero",
     name: "Feedback Hero",

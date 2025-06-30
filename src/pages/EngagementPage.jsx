@@ -163,8 +163,6 @@ const EngagementPage = () => {
 
   useEffect(() => {
     if (isTaskDetailsModalOpen && taskToViewDetails) {
-      // Safeguard tasksByDate before accessing
-      // Now, taskToViewDetails might be an 'instance' from filteredTasks, so we need to find the original task
       const originalTask = allTasks.find((t) => t.id === taskToViewDetails.id);
 
       if (!originalTask) {
@@ -172,7 +170,6 @@ const EngagementPage = () => {
         return;
       }
 
-      // Create the potential new state for the modal's task
       const newTaskForModal = {
         ...originalTask,
         displayDate: taskToViewDetails.displayDate,
@@ -189,7 +186,7 @@ const EngagementPage = () => {
       }
     }
   }, [
-    allTasks, // Changed from tasksByDate to allTasks
+    allTasks,
     isTaskDetailsModalOpen,
     taskToViewDetails,
     handleCloseTaskDetailsModal,
@@ -527,19 +524,16 @@ const EngagementPage = () => {
       setTasksByDate((prevTasksByDate) => {
         const newTasksByDate = { ...prevTasksByDate };
         let taskFoundAndDeleted = false;
-        // Iterate through all date keys to find and remove the task
         for (const dateKey in newTasksByDate) {
           const originalTasks = newTasksByDate[dateKey];
           const newTasks = originalTasks.filter((task) => task.id !== id);
           if (newTasks.length < originalTasks.length) {
-            // If the task was found and filtered out
             if (newTasks.length > 0) {
               newTasksByDate[dateKey] = newTasks;
             } else {
               delete newTasksByDate[dateKey]; // Clean up empty date entries
             }
             taskFoundAndDeleted = true;
-            // Task found and deleted. Since tasks are stored only under their start date, we can exit the loop.
             break;
           }
         }

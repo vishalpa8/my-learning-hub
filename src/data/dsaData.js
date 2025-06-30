@@ -87,6 +87,67 @@ export function getProblemsByTopicOrdered(topic) {
 }
 
 /**
+ * Filters and sorts the dsaData array based on multiple criteria.
+ * @param {object} filters - An object containing filter criteria.
+ * @param {string} [filters.topic] - The topic to filter by (case-insensitive).
+ * @param {string} [filters.difficulty] - The difficulty to filter by (case-insensitive).
+ * @param {string} [filters.pattern] - The pattern to filter by (case-insensitive, checks if pattern is included in problem.pattern).
+ * @param {string} [filters.source] - A source to filter by (case-insensitive, checks if source is included in problem.sources array).
+ * @param {boolean} [filters.isLastMoment] - Whether to filter by isLastMoment flag.
+ * @returns {Array<ProblemData>} An array of problems matching the criteria, sorted by difficulty and then title.
+ */
+export function getFilteredDsaProblems({
+  topic,
+  difficulty,
+  pattern,
+  source,
+  isLastMoment,
+}) {
+  let filteredProblems = [...dsaData];
+
+  if (topic) {
+    const normalizedTopic = NORMALIZED_TOPIC_MERGE_MAP.get(topic.toLowerCase()) || topic;
+    filteredProblems = filteredProblems.filter(
+      (problem) => (problem.topic || "").toLowerCase() === normalizedTopic.toLowerCase()
+    );
+  }
+
+  if (difficulty) {
+    filteredProblems = filteredProblems.filter(
+      (problem) => (problem.difficulty || "").toLowerCase() === difficulty.toLowerCase()
+    );
+  }
+
+  if (pattern) {
+    filteredProblems = filteredProblems.filter((problem) =>
+      (problem.pattern || "").toLowerCase().includes(pattern.toLowerCase())
+    );
+  }
+
+  if (source) {
+    filteredProblems = filteredProblems.filter((problem) =>
+      (problem.sources || []).some((s) =>
+        s.toLowerCase().includes(source.toLowerCase())
+      )
+    );
+  }
+
+  if (typeof isLastMoment === "boolean") {
+    filteredProblems = filteredProblems.filter(
+      (problem) => problem.isLastMoment === isLastMoment
+    );
+  }
+
+  // Always sort by difficulty and then title for consistency
+  return filteredProblems.sort(
+    (a, b) =>
+      difficultyOrder.indexOf(a.difficulty) -
+        difficultyOrder.indexOf(b.difficulty) ||
+      (a.title || "").localeCompare(b.title || "")
+  );
+}
+
+/**
  * Array of DSA problems with metadata for topic, difficulty, links, and sources.
  * @type {Array<{
  *   id: string,
