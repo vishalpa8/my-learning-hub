@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { AI_CHAT_HISTORY_KEY } from "../constants/localIndexedDbKeys";
 
+import { v4 as uuidv4 } from "uuid";
+
 const initialChat = [
   {
-    id: Date.now().toString(), // Simple ID for initial message
+    id: uuidv4(), // Simple ID for initial message
     sender: "ai",
     text: "Hello! How can I help you with your learning today?",
     timestamp: new Date()
@@ -25,28 +27,25 @@ const initialChat = [
  *          [chatHistory, appendMessage, setChatHistory, loading, error]
  */
 export function useAIChatHistory() {
-  const [chatHistory, setChatHistoryState] = useState(initialChat);
-
-  // Effect to load chat history from sessionStorage on initial render
-  useEffect(() => {
+  const [chatHistory, setChatHistoryState] = useState(() => {
     if (typeof window !== "undefined") {
       try {
         const storedHistory = sessionStorage.getItem(AI_CHAT_HISTORY_KEY);
-        // If storedHistory is null or an empty array string, initialize with a greeting.
-        if (storedHistory && JSON.parse(storedHistory).length > 0) {
-          setChatHistoryState(JSON.parse(storedHistory));
-        } else {
-          setChatHistoryState(initialChat);
+        if (storedHistory) {
+          const parsedHistory = JSON.parse(storedHistory);
+          if (parsedHistory.length > 0) {
+            return parsedHistory;
+          }
         }
       } catch (error) {
         console.error(
-          "Error parsing chat history from sessionStorage:",
+          "Error parsing chat history from sessionStorage during initialization:",
           error
         );
-        setChatHistoryState(initialChat); // Fallback to initial state on error
       }
     }
-  }, []); // Empty dependency array ensures this runs only once on mount
+    return initialChat;
+  });
 
   // Effect to save chat history to sessionStorage whenever it changes
   useEffect(() => {

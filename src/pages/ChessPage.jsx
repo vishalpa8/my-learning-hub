@@ -47,12 +47,11 @@ const ChessPage = () => {
   const prevCompletedRef = React.useRef(0);
 
   useEffect(() => {
-    // Only record progress if the completed count has actually changed
-    if (overallProgress && overallProgress.completed !== prevCompletedRef.current) {
+    if (overallProgress.completed !== prevCompletedRef.current) {
       recordChessProgress(overallProgress.completed);
       prevCompletedRef.current = overallProgress.completed;
     }
-  }, [overallProgress, recordChessProgress]);
+  }, [overallProgress.completed, recordChessProgress]);
 
   const nextPlaylist = useMemo(
     () =>

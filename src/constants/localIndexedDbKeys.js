@@ -26,7 +26,7 @@ export const CHESS_USER_PROFILE_KEY = "chessUserProfile";
 export const DSA_COMPLETED_PROBLEMS_KEY = "dsaCompletedProblems";
 /** Key for storing the last active view in the DSA section (e.g., "dashboard", "all", "core"). Expected value: string. */
 export const DSA_LAST_ACTIVE_VIEW_KEY = "dsaLastActiveView";
-/** Key for storing DSA learning streak information. Expected value: An object like `{"currentStreak": 3, "lastCompletionDate": "YYYY-MM-DD"}`. */
+/** Key for storing DSA learning streak information. Expected value: An object like `{"currentStreak": 3, "lastCompletionDate": "DD-MM-YYYY"}`. */
 export const DSA_STREAK_KEY = "dsaStreakData";
 /** Key for tracking DSA reward progress and earned rewards, used by RewardContext. Expected value: An object (see RewardContext for structure). */
 export const DSA_REWARD_TRACKER_KEY = "dsaRewardProgress";
@@ -51,7 +51,7 @@ export const ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY =
 /**
  * Key for storing aggregated daily activity data.
  * Useful for calendar views to quickly display daily engagement summaries.
- * Expected value: An object mapping dates (string "YYYY-MM-DD") to activity summary objects.
+ * Expected value: An object mapping dates (string "DD-MM-YYYY") to activity summary objects.
  * Example: `{"2023-10-27": { completedTasks: 3, totalTasks: 5, activityLevel: "medium" }}`
  */
 export const ENGAGEMENT_ACTIVITY_KEY = "engagementActivity";

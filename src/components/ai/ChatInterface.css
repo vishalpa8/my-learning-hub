@@ -2,8 +2,7 @@
 
 /* ===== CHAT SECTION CONTAINER ===== */
 .ai-chat-section {
-  height: 70vh; /* Full viewport height */
-  max-height: 70vh;
+  min-height: 70vh; /* Minimum height for the chat section */
   overflow: hidden;
   display: flex;
   flex-direction: column;

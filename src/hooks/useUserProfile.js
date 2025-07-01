@@ -6,7 +6,7 @@ import { dateToDDMMYYYY } from "../utils/dateHelpers";
  * @typedef {object} UserProfile
  * @property {number} points - Total points earned by the user.
  * @property {number} currentStreak - Current learning streak in days.
- * @property {string | null} lastActivityDate - The last date (YYYY-MM-DD) a learning activity was recorded.
+ * @property {string | null} lastActivityDate - The last date (DD-MM-YYYY) a learning activity was recorded.
  * @property {Object.<string, boolean>} earnedBadges - Object mapping badge IDs to true if earned.
  */
 
@@ -44,9 +44,17 @@ export function useUserProfile() {
    */
   const updateStreak = (activityDate) => {
     setUserProfile((prevProfile) => {
-      const todayStr = dateToDDMMYYYY(activityDate);
-      const yesterday = new Date(activityDate);
-      yesterday.setDate(activityDate.getDate() - 1);
+      // Ensure activityDate is a Date object
+      let currentActivityDate = activityDate;
+      if (!(activityDate instanceof Date)) {
+        // Assuming activityDate might be a string in DD-MM-YYYY format if not a Date object
+        const parts = activityDate.split('-');
+        currentActivityDate = new Date(parts[2], parts[1] - 1, parts[0]);
+      }
+
+      const todayStr = dateToDDMMYYYY(currentActivityDate);
+      const yesterday = new Date(currentActivityDate);
+      yesterday.setDate(currentActivityDate.getDate() - 1);
       const yesterdayStr = dateToDDMMYYYY(yesterday);
 
       let newStreak = prevProfile.currentStreak;

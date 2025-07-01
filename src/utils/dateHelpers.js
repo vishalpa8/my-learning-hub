@@ -21,25 +21,7 @@ export const parseDDMMYYYYToDateObj = (dateStr) => {
   return isValid(parsed) ? parsed : null;
 };
 
-// Helper to parse YYYY-MM-DD string to a Date object
-export const parseYYYYMMDDToDateObj = (dateStr) => {
-  if (!dateStr) return null;
-  const parsed = parse(dateStr, "yyyy-MM-dd", new Date());
-  return isValid(parsed) ? parsed : null;
-};
 
-// Helper to convert DD-MM-YYYY to YYYY-MM-DD for date inputs
-export const convertDDMMYYYYtoYYYYMMDD = (ddmmyyyy) => {
-  // Make the function more robust by handling if a Date object is passed by mistake.
-  if (ddmmyyyy instanceof Date) {
-    // If it's a Date object, format it to the expected string format first.
-    ddmmyyyy = dateToDDMMYYYY(ddmmyyyy);
-  }
-  if (typeof ddmmyyyy !== "string" || ddmmyyyy.split("-").length !== 3)
-    return "";
-  const [day, month, year] = ddmmyyyy.split("-");
-  return `${year}-${month}-${day}`;
-};
 
 // Helper to check if a date string (DD-MM-YYYY) is in the past (ignoring time)
 export const isPastDate = (dateStr) => {

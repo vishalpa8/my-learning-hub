@@ -59,9 +59,12 @@ const DailyNugget = () => {
   return (
     <section className="daily-nugget-section card-style" aria-labelledby="daily-nugget-title">
       <h3 id="daily-nugget-title">💡 Daily Chess Nugget</h3>
-      {/* SECURITY NOTE: 'quote' and 'description' use dangerouslySetInnerHTML.
-          This is acceptable if the HTML in 'chessData.js' is static, trusted, and sanitized.
-          Avoid this pattern if the content can be influenced by untrusted sources or contains complex HTML/scripts. */}
+      {/*
+        SECURITY WARNING: The use of dangerouslySetInnerHTML below is a potential security risk.
+        It is used here because the data in `chessData.js` is considered trusted and static.
+        If this data were to come from an external source or be user-generated, it would need
+        to be sanitized to prevent XSS attacks. Consider using a library like DOMPurify.
+      */}
       <blockquote dangerouslySetInnerHTML={{ __html: `"${quote}"` }} />
       <p>
         <strong>Focus:</strong> {focus}

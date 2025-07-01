@@ -500,3 +500,27 @@ button,
   gap: var(--spacing-xs);
   cursor: pointer;
 }
+
+.drag-handle {
+  cursor: grab;
+  padding: 0 var(--spacing-xs);
+  color: var(--text-muted-color);
+  opacity: 0.6;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+  color: var(--primary-color);
+}
+
+.subtask-item.dragging {
+  background-color: var(--primary-color-xlight);
+  box-shadow: var(--box-shadow-lifted);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--primary-color-light);
+}
+
+.subtask-item.dragging .subtask-text {
+  color: var(--primary-color-dark);
+}

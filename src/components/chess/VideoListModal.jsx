@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "./VideoListModal.css";
 import ProgressBarDisplay from "../shared/ProgressBarDisplay";
 import { calculateProgress } from "../../utils/chessUtils";
@@ -41,53 +42,7 @@ const VideoListModal = ({
   const closeButtonRef = useRef(null);
   const firstVideoItemRef = useRef(null);
 
-  useEffect(() => {
-    if (isVisible) {
-      const focusableElements =
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-      const modal = modalContentRef.current;
-      if (!modal) return;
-
-      const firstFocusableElement = modal.querySelectorAll(focusableElements)[0];
-      const focusableContent = modal.querySelectorAll(focusableElements);
-      const lastFocusableElement = focusableContent[focusableContent.length - 1];
-
-      const handleTabKeyPress = (event) => {
-        if (event.key !== "Tab") {
-          return;
-        }
-
-        if (event.shiftKey) {
-          if (document.activeElement === firstFocusableElement) {
-            lastFocusableElement.focus();
-            event.preventDefault();
-          }
-        } else {
-          if (document.activeElement === lastFocusableElement) {
-            firstFocusableElement.focus();
-            event.preventDefault();
-          }
-        }
-      };
-
-      const handleEscapeKey = (event) => {
-        if (event.key === "Escape") {
-          onClose();
-        }
-      };
-
-      document.addEventListener("keydown", handleEscapeKey);
-      document.addEventListener("keydown", handleTabKeyPress);
-
-      const focusTarget = firstVideoItemRef.current || closeButtonRef.current;
-      focusTarget?.focus();
-
-      return () => {
-        document.removeEventListener("keydown", handleEscapeKey);
-        document.removeEventListener("keydown", handleTabKeyPress);
-      };
-    }
-  }, [isVisible, onClose]);
+  useFocusTrap(modalContentRef, isVisible, onClose, firstVideoItemRef, closeButtonRef);
 
   // Early return if the modal should not be visible or if there's no playlist data.
   if (!isVisible || !playlist) {

@@ -3,12 +3,8 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import Modal from "../shared/Modal";
 import PropTypes from "prop-types";
 import "./EngagementPage.css";
-import {
-  dateToDDMMYYYY,
-  convertDDMMYYYYtoYYYYMMDD,
-  isPastDate,
-  parseYYYYMMDDToDateObj,
-} from "../../utils/dateHelpers";
+import { v4 as uuidv4 } from "uuid";
+import { dateToDDMMYYYY, isPastDate } from "../../utils/dateHelpers";
 
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
@@ -38,9 +34,7 @@ const initialEditState = {
   id: null,
   text: "",
   time: "",
-  startDate: "", // For edit validation
 };
-
 
 const TaskList = ({
   tasks,
@@ -91,7 +85,11 @@ const TaskList = ({
           ...prevForm,
           subtasks: [
             ...prevForm.subtasks,
-            { id: Date.now() + Math.random(), text: trimmedText, completed: false },
+            {
+              id: uuidv4(),
+              text: trimmedText,
+              completed: false,
+            },
           ],
           currentSubtaskText: "",
         };
@@ -267,11 +265,9 @@ const TaskList = ({
   const getDeleteConfirmationMessage = (task) => {
     if (!task) return "";
     // Robustly detect multi-day task: endDate exists and is different from start date
-    if (task.endDate && task.endDate !== convertDDMMYYYYtoYYYYMMDD(task.date)) {
+    if (task.endDate && task.endDate !== task.date) {
       const formattedStartDate = task.date;
-      const formattedEndDate = dateToDDMMYYYY(
-        parseYYYYMMDDToDateObj(task.endDate)
-      );
+      const formattedEndDate = task.endDate;
       return `This is a multi-day task active from ${formattedStartDate} to ${formattedEndDate}. Deleting it will remove it permanently from all days. Are you sure you want to delete "${task.text}"?`;
     }
     // Standard message for single-day tasks
@@ -301,9 +297,7 @@ const TaskList = ({
     }
   };
   const allowTaskCreation = !isPastDate(selectedDateForDisplay);
-  const minEndDateForNewTask = convertDDMMYYYYtoYYYYMMDD(
-    selectedDateForDisplay
-  );
+  const minEndDateForNewTask = selectedDateForDisplay;
 
   const isReorderingEnabled = viewMode === "date";
 

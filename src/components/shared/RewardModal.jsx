@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import "./RewardModal.css"; // Assuming CSS is co-located or in a shared styles folder
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 
 /**
  * A generic modal component to display reward messages or other notifications.
@@ -22,53 +23,7 @@ const RewardModal = ({
   const closeButtonRef = useRef(null); // Ref for the 'x' close button
   const mainButtonRef = useRef(null); // Ref for the footer button
 
-  useEffect(() => {
-    if (isVisible) {
-      const focusableElements =
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-      const modal = modalRef.current;
-      if (!modal) return;
-
-      const firstFocusableElement = modal.querySelectorAll(focusableElements)[0];
-      const focusableContent = modal.querySelectorAll(focusableElements);
-      const lastFocusableElement = focusableContent[focusableContent.length - 1];
-
-      const handleTabKeyPress = (event) => {
-        if (event.key !== "Tab") {
-          return;
-        }
-
-        if (event.shiftKey) {
-          if (document.activeElement === firstFocusableElement) {
-            lastFocusableElement.focus();
-            event.preventDefault();
-          }
-        } else {
-          if (document.activeElement === lastFocusableElement) {
-            firstFocusableElement.focus();
-            event.preventDefault();
-          }
-        }
-      };
-
-      const handleEscapeKey = (event) => {
-        if (event.key === "Escape") {
-          onClose();
-        }
-      };
-
-      document.addEventListener("keydown", handleEscapeKey);
-      document.addEventListener("keydown", handleTabKeyPress);
-
-      const focusTarget = mainButtonRef.current || closeButtonRef.current;
-      focusTarget?.focus();
-
-      return () => {
-        document.removeEventListener("keydown", handleEscapeKey);
-        document.removeEventListener("keydown", handleTabKeyPress);
-      };
-    }
-  }, [isVisible, onClose]);
+  useFocusTrap(modalRef, isVisible, onClose, mainButtonRef, closeButtonRef);
 
   if (!isVisible) return null;
 

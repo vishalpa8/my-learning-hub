@@ -18,8 +18,6 @@ import {
   isWithinInterval,
   dateToDDMMYYYY,
   parseDDMMYYYYToDateObj,
-  parseYYYYMMDDToDateObj,
-  convertDDMMYYYYtoYYYYMMDD,
 } from "../utils/dateHelpers";
 import { v4 as uuidv4 } from "uuid";
 import isEqual from "fast-deep-equal";
@@ -67,6 +65,7 @@ const EngagementPage = () => {
   const [tasksUserChoseToKeepOpen, setTasksUserChoseToKeepOpen] = useState({});
   const [isConfirmDeleteAllOpen, setIsConfirmDeleteAllOpen] = useState(false);
   const [viewMode, setViewMode] = useState("date"); // 'date', 'week', 'month'
+  const [manuallyOrderedIds, setManuallyOrderedIds] = useState([]);
 
   const [tasksByDate, setTasksByDate] = useIndexedDb(ENGAGEMENT_TASKS_KEY, {});
   const [activityData, setActivityData] = useIndexedDb(
@@ -110,7 +109,7 @@ const EngagementPage = () => {
       const tasksOnThisDay = allTasks.filter((task) => {
         const taskStart = parseDDMMYYYYToDateObj(task.date);
         const taskEnd = task.endDate
-          ? parseYYYYMMDDToDateObj(task.endDate)
+          ? parseDDMMYYYYToDateObj(task.endDate)
           : taskStart;
         return isWithinInterval(dateObj, { start: taskStart, end: taskEnd });
       });
@@ -121,10 +120,13 @@ const EngagementPage = () => {
       newActivityData[dateKey] = calculateActivityForDate(taskInstances);
     }
     // Deep compare to prevent unnecessary state updates and IndexedDB writes
-    if (!isEqual(activityData, newActivityData)) {
-      setActivityData(newActivityData);
-    }
-  }, [tasksByDate, setActivityData, allTasks, displayDate, activityData]);
+    setActivityData((prevActivityData) => {
+      if (!isEqual(prevActivityData, newActivityData)) {
+        return newActivityData;
+      }
+      return prevActivityData;
+    });
+  }, [tasksByDate, setActivityData, allTasks, displayDate]);
 
   const handleViewTaskDetails = useCallback(
     (taskInstance) => {
@@ -152,6 +154,10 @@ const EngagementPage = () => {
   }, []);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toTimeString().slice(0, 5));
+    }, 1000);
+
     if (isTaskDetailsModalOpen && taskToViewDetails) {
       const originalTask = allTasks.find((t) => t.id === taskToViewDetails.id);
 
@@ -169,25 +175,18 @@ const EngagementPage = () => {
         ),
       };
       // Only update the state if the content has actually changed to prevent infinite loops.
-      if (
-        JSON.stringify(newTaskForModal) !== JSON.stringify(taskToViewDetails)
-      ) {
+      if (!isEqual(newTaskForModal, taskToViewDetails)) {
         setTaskToViewDetails(newTaskForModal);
       }
     }
+
+    return () => clearInterval(interval);
   }, [
     allTasks,
     isTaskDetailsModalOpen,
     taskToViewDetails,
     handleCloseTaskDetailsModal,
   ]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date().toTimeString().slice(0, 5));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Centralized task update logic
   const updateTaskInState = useCallback(
@@ -196,8 +195,12 @@ const EngagementPage = () => {
         const newTasksByDate = { ...prevTasksByDate };
         let taskFoundAndUpdated = false;
 
-        // Iterate through all date keys to find the original task
-        for (const dateKey in newTasksByDate) {
+        // Find the date key where the task is stored
+        const dateKey = Object.keys(newTasksByDate).find((date) =>
+          newTasksByDate[date].some((task) => task.id === taskId)
+        );
+
+        if (dateKey) {
           const tasksOnDate = newTasksByDate[dateKey];
           const taskIndex = tasksOnDate.findIndex((t) => t.id === taskId);
 
@@ -207,15 +210,10 @@ const EngagementPage = () => {
             updatedTasksOnDate[taskIndex] = updateFn(originalTask); // Apply the update function
             newTasksByDate[dateKey] = updatedTasksOnDate;
             taskFoundAndUpdated = true;
-            break; // Found and updated, exit loop
           }
         }
-        // Perform a deep comparison before returning the new state
-        // This prevents unnecessary updates to IndexedDB if the content hasn't truly changed.
-        if (
-          taskFoundAndUpdated &&
-          JSON.stringify(newTasksByDate) !== JSON.stringify(prevTasksByDate)
-        ) {
+
+        if (taskFoundAndUpdated) {
           return newTasksByDate;
         }
         return prevTasksByDate;
@@ -229,7 +227,7 @@ const EngagementPage = () => {
       // In week/month view, new tasks should default to today's date
       const targetDate = viewMode === "date" ? selectedDay : today_DD_MM_YYYY;
       const newTask = {
-        id: Date.now(),
+        id: uuidv4(),
         text,
         // Tasks are no longer "completed" globally, but per day.
         // `completions` will store { "DD-MM-YYYY": true/false }
@@ -241,7 +239,7 @@ const EngagementPage = () => {
         link: link || null,
         // If no endDate is provided, default it to be the same as the start date.
         // This makes the data model more explicit for single-day tasks.
-        endDate: endDate || convertDDMMYYYYtoYYYYMMDD(targetDate), // In YYYY-MM-DD
+        endDate: endDate || targetDate, // In DD-MM-YYYY
       };
       setTasksByDate((prevTasksByDate) => {
         const currentTasksByDate = prevTasksByDate || {};
@@ -324,7 +322,7 @@ const EngagementPage = () => {
         endDate: task.endDate || null, // endDate is already calculated in CopyTaskModal
         subtasks: (task.subtasks || []).map((st) => ({
           ...st,
-          id: Date.now() + Math.random(), // Ensure unique ID for subtasks
+          id: uuidv4(), // Ensure unique ID for subtasks
           completed: false, // Subtasks are copied as incomplete
         })),
       }));
@@ -382,7 +380,7 @@ const EngagementPage = () => {
     (taskId, subtaskText) => {
       updateTaskInState(taskId, (task) => {
         const newSubtask = {
-          id: Date.now() + Math.random(),
+          id: uuidv4(), // Ensure unique ID for subtasks
           text: subtaskText,
           completed: false,
         };
@@ -541,6 +539,7 @@ const EngagementPage = () => {
   const handleSetViewMode = useCallback(
     (mode) => {
       setViewMode(mode);
+      setManuallyOrderedIds([]); // Reset manual order when view changes
       if (mode === "date") {
         handleGoToToday();
       }
@@ -569,9 +568,27 @@ const EngagementPage = () => {
   );
 
   const filteredTasks = useMemo(() => {
-    // Use displayDate for week/month calculations to align with calendar view
     const currentViewDate = displayDate;
-    let taskInstances = []; // This will hold task objects with an added 'displayDate' and 'isCompletedOnThisDay'
+    let taskInstances = [];
+
+    const getTaskInstancesForDay = (day) => {
+      const dayKey = dateToDDMMYYYY(day);
+      return allTasks
+        .filter((task) => {
+          const taskStart = parseDDMMYYYYToDateObj(task.date);
+          const taskEnd = task.endDate
+            ? parseDDMMYYYYToDateObj(task.endDate)
+            : taskStart;
+          return isWithinInterval(day, { start: taskStart, end: taskEnd });
+        })
+        .map((task) => ({
+          ...task,
+          displayDate: dayKey,
+          isCompletedOnThisDay: !!(
+            task.completions && task.completions[dayKey]
+          ),
+        }));
+    };
 
     switch (viewMode) {
       case "week": {
@@ -581,27 +598,7 @@ const EngagementPage = () => {
           start: weekStart,
           end: weekEnd,
         });
-
-        daysInWeek.forEach((day) => {
-          const dayKey = dateToDDMMYYYY(day);
-          const tasksOnThisDay = allTasks.filter((task) => {
-            const taskStart = parseDDMMYYYYToDateObj(task.date);
-            const taskEnd = task.endDate
-              ? parseYYYYMMDDToDateObj(task.endDate)
-              : taskStart;
-            return isWithinInterval(day, { start: taskStart, end: taskEnd });
-          });
-
-          tasksOnThisDay.forEach((task) => {
-            taskInstances.push({
-              ...task,
-              displayDate: dayKey, // The specific day this instance represents
-              isCompletedOnThisDay: !!(
-                task.completions && task.completions[dayKey]
-              ),
-            });
-          });
-        });
+        taskInstances = daysInWeek.flatMap(getTaskInstancesForDay);
         break;
       }
       case "month": {
@@ -611,59 +608,31 @@ const EngagementPage = () => {
           start: monthStart,
           end: monthEnd,
         });
-
-        daysInMonth.forEach((day) => {
-          const dayKey = dateToDDMMYYYY(day);
-          const tasksOnThisDay = allTasks.filter((task) => {
-            const taskStart = parseDDMMYYYYToDateObj(task.date);
-            const taskEnd = task.endDate
-              ? parseYYYYMMDDToDateObj(task.endDate)
-              : taskStart;
-            return isWithinInterval(day, { start: taskStart, end: taskEnd });
-          });
-
-          tasksOnThisDay.forEach((task) => {
-            taskInstances.push({
-              ...task,
-              displayDate: dayKey,
-              isCompletedOnThisDay: !!(
-                task.completions && task.completions[dayKey]
-              ),
-            });
-          });
-        });
+        taskInstances = daysInMonth.flatMap(getTaskInstancesForDay);
         break;
       }
       case "date":
       default: {
         const selectedDateObj = parseDDMMYYYYToDateObj(selectedDay);
-        const tasksOnSelectedDay = allTasks.filter((task) => {
-          const taskStart = parseDDMMYYYYToDateObj(task.date);
-          const taskEnd = task.endDate
-            ? parseYYYYMMDDToDateObj(task.endDate)
-            : taskStart;
-          return isWithinInterval(selectedDateObj, {
-            start: taskStart,
-            end: taskEnd,
-          });
-        });
-        taskInstances = tasksOnSelectedDay.map((task) => ({
-          ...task,
-          displayDate: selectedDay,
-          isCompletedOnThisDay: !!(
-            task.completions && task.completions[selectedDay]
-          ),
-        }));
+        taskInstances = getTaskInstancesForDay(selectedDateObj);
         break;
       }
     }
 
-    // Sort the results by displayDate and then time
-    const sortedInstances = taskInstances.sort((a, b) => {
+    // Sort the results
+    taskInstances.sort((a, b) => {
       const dateA = parseDDMMYYYYToDateObj(a.displayDate);
       const dateB = parseDDMMYYYYToDateObj(b.displayDate);
       if (dateA < dateB) return -1;
       if (dateA > dateB) return 1;
+
+      if (manuallyOrderedIds.length > 0) {
+        const indexA = manuallyOrderedIds.indexOf(a.id);
+        const indexB = manuallyOrderedIds.indexOf(b.id);
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+      }
 
       if (a.time && b.time) return a.time.localeCompare(b.time);
       if (a.time) return -1;
@@ -672,25 +641,35 @@ const EngagementPage = () => {
       return 0;
     });
 
-    return sortedInstances.map((task) => ({
+    return taskInstances.map((task) => ({
       ...task,
-      // The task's start date is its 'date' property, but we need it in YYYY-MM-DD for the input
-      startDate: convertDDMMYYYYtoYYYYMMDD(task.date),
+      startDate: task.date,
     }));
-  }, [allTasks, viewMode, selectedDay, displayDate]);
+  }, [allTasks, viewMode, selectedDay, displayDate, manuallyOrderedIds]);
 
   const handleReorderTasks = useCallback(
     (reorderedTasks) => {
-      // Reordering only makes sense for the 'date' view and affects tasks starting on that day.
-      // We need to filter out tasks that don't actually start on selectedDay.
-      const tasksStartingOnSelectedDay = reorderedTasks.filter(
+      // This function now receives the full reordered list for the current view.
+      // It's crucial to only update the order for tasks that are genuinely part of the selected day's list.
+      const taskIdsInOrder = reorderedTasks.map((t) => t.id);
+
+      // Update the manual order state
+      setManuallyOrderedIds(taskIdsInOrder);
+
+      // Persist the new order to the database, but only for the tasks that belong to the current day.
+      // This prevents tasks from other days from being incorrectly moved.
+      const tasksThatBelongToSelectedDay = reorderedTasks.filter(
         (task) => task.date === selectedDay
       );
 
-      setTasksByDate((prev) => ({
-        ...prev,
-        [selectedDay]: tasksStartingOnSelectedDay,
-      }));
+      setTasksByDate((prev) => {
+        // Create a new map that includes the reordered tasks for the selected day.
+        const newTasksByDate = {
+          ...prev,
+          [selectedDay]: tasksThatBelongToSelectedDay,
+        };
+        return newTasksByDate;
+      });
     },
     [setTasksByDate, selectedDay]
   );

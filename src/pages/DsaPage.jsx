@@ -148,30 +148,19 @@ const DsaPage = () => {
   }, [activeView]);
 
   const viewProblems = useMemo(() => {
-    return baseProblemsForActiveView.filter((p) => {
-      const normalizedDifficulty = getNormalizedDifficulty(p.difficulty);
-      const normalizedTopic = getNormalizedTopic(p.topic);
-      const patternMatch =
-        filters.pattern === "all" ||
-        (p.pattern && p.pattern.toLowerCase().includes(filters.pattern));
-      const searchTermMatch =
-        filters.searchTerm === "" ||
-        p.title.toLowerCase().includes(filters.searchTerm) ||
-        (p.subTopic && p.subTopic.toLowerCase().includes(filters.searchTerm));
-      const statusMatch =
-        filters.status === "all" ||
-        (filters.status === "completed" && completedProblems[p.id]) ||
-        (filters.status === "pending" && !completedProblems[p.id]);
+    const { difficulty, topic, pattern, status, searchTerm } = filters;
 
-      return (
-        (filters.difficulty === "all" ||
-          normalizedDifficulty.toLowerCase() === filters.difficulty) &&
-        (filters.topic === "all" ||
-          normalizedTopic.toLowerCase() === filters.topic) &&
-        patternMatch &&
-        searchTermMatch &&
-        statusMatch
-      );
+    return baseProblemsForActiveView.filter((p) => {
+      const normalizedDifficulty = getNormalizedDifficulty(p.difficulty).toLowerCase();
+      const normalizedTopic = getNormalizedTopic(p.topic).toLowerCase();
+
+      const difficultyMatch = difficulty === "all" || normalizedDifficulty === difficulty;
+      const topicMatch = topic === "all" || normalizedTopic === topic;
+      const patternMatch = pattern === "all" || (p.pattern && p.pattern.toLowerCase().includes(pattern));
+      const searchTermMatch = searchTerm === "" || p.title.toLowerCase().includes(searchTerm) || (p.subTopic && p.subTopic.toLowerCase().includes(searchTerm));
+      const statusMatch = status === "all" || (status === "completed" && completedProblems[p.id]) || (status === "pending" && !completedProblems[p.id]);
+
+      return difficultyMatch && topicMatch && patternMatch && searchTermMatch && statusMatch;
     });
   }, [baseProblemsForActiveView, filters, completedProblems]);
 
@@ -180,76 +169,47 @@ const DsaPage = () => {
     [viewProblems, completedProblems]
   );
 
-  const currentViewDifficultyStats = useMemo(() => {
-    const stats = {
-      easy: { total: 0, completed: 0 },
-      medium: { total: 0, completed: 0 },
-      hard: { total: 0, completed: 0 },
-    };
+  const calculateDifficultyStats = (problems, completedProblems) => {
+  const stats = {
+    easy: { total: 0, completed: 0 },
+    medium: { total: 0, completed: 0 },
+    hard: { total: 0, completed: 0 },
+  };
 
-    // baseProblemsForActiveView will be an empty array if activeView is 'dashboard'
-    // or if the view itself has no problems (e.g., no core problems in dsaData).
-    // The subsequent check for length handles this.
-
-    // The console.log uses activeView from the outer scope for clarity.
-    if (import.meta.env.DEV) {
-      // console.log(`[DsaPage] Calculating stats for activeView: ${activeView}, baseProblemsForActiveView count: ${baseProblemsForActiveView ? baseProblemsForActiveView.length : 0}`);
-    }
-
-    if (!baseProblemsForActiveView || baseProblemsForActiveView.length === 0) {
-      if (import.meta.env.DEV) {
-        // console.log("[DsaPage] No base problems for this view (or view is dashboard), returning zero stats.");
-      }
-      return stats; // No problems in this base view
-    }
-
-    baseProblemsForActiveView.forEach((problem) => {
-      const normalizedDifficultyFromUtil = getNormalizedDifficulty(
-        problem.difficulty
-      );
-      const difficultyKey = normalizedDifficultyFromUtil
-        ? normalizedDifficultyFromUtil.toLowerCase()
-        : null; // Ensure lowercase
-      if (difficultyKey && stats[difficultyKey]) {
-        stats[difficultyKey].total++;
-        if (completedProblems[problem.id]) {
-          stats[difficultyKey].completed++;
-        }
-      } else if (difficultyKey) {
-        // Log if normalized difficulty is truthy but not a key in stats
-        console.warn(
-          `[DsaPage] Difficulty key "${difficultyKey}" for problem "${problem.title}" is not a recognized key in stats object (easy, medium, hard).`
-        );
-      } // Keep the warning, it's useful even in dev
-    });
+  if (!problems || problems.length === 0) {
     return stats;
-  }, [baseProblemsForActiveView, completedProblems]);
+  }
 
-  const filteredDifficultyStats = useMemo(() => {
-    const stats = {
-      easy: { total: 0, completed: 0 },
-      medium: { total: 0, completed: 0 },
-      hard: { total: 0, completed: 0 },
-    };
-    if (!viewProblems || viewProblems.length === 0) {
-      return stats;
-    }
-    viewProblems.forEach((problem) => {
-      const normalizedDifficultyFromUtil = getNormalizedDifficulty(
-        problem.difficulty
-      );
-      const difficultyKey = normalizedDifficultyFromUtil
-        ? normalizedDifficultyFromUtil.toLowerCase()
-        : null;
-      if (difficultyKey && stats[difficultyKey]) {
-        stats[difficultyKey].total++;
-        if (completedProblems[problem.id]) {
-          stats[difficultyKey].completed++;
-        }
+  problems.forEach((problem) => {
+    const normalizedDifficultyFromUtil = getNormalizedDifficulty(
+      problem.difficulty
+    );
+    const difficultyKey = normalizedDifficultyFromUtil
+      ? normalizedDifficultyFromUtil.toLowerCase()
+      : null;
+    if (difficultyKey && stats[difficultyKey]) {
+      stats[difficultyKey].total++;
+      if (completedProblems[problem.id]) {
+        stats[difficultyKey].completed++;
       }
-    });
-    return stats;
-  }, [viewProblems, completedProblems]);
+    } else if (difficultyKey) {
+      console.warn(
+        `[DsaPage] Difficulty key "${difficultyKey}" for problem "${problem.title}" is not a recognized key in stats object (easy, medium, hard).`
+      );
+    }
+  });
+  return stats;
+};
+
+  const currentViewDifficultyStats = useMemo(
+    () => calculateDifficultyStats(baseProblemsForActiveView, completedProblems),
+    [baseProblemsForActiveView, completedProblems]
+  );
+
+  const filteredDifficultyStats = useMemo(
+    () => calculateDifficultyStats(viewProblems, completedProblems),
+    [viewProblems, completedProblems]
+  );
 
   return (
     <div className="dsa-page-outer">

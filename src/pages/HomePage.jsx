@@ -3,19 +3,15 @@ import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import Modal from "../components/shared/Modal"; // Import the Modal component
-import ProgressBarDisplay from "../components/shared/ProgressBarDisplay";
+import ProgressCard from "../components/shared/ProgressCard";
+import QuickLinkCard from "../components/shared/QuickLinkCard";
 import { useIndexedDb, clearEntireDatabase } from "../hooks/useIndexedDb"; // Assumes clearEntireDatabase is exported
 import {
   DSA_COMPLETED_PROBLEMS_KEY,
   CHESS_LEARNING_PROGRESS_KEY,
   ENGAGEMENT_TASKS_KEY, // Import the key
 } from "../constants/localIndexedDbKeys";
-import {
-  dateToDDMMYYYY,
-  parseDDMMYYYYToDateObj,
-  parseYYYYMMDDToDateObj,
-  isWithinInterval,
-} from "../utils/dateHelpers";
+import { calculateEngagementProgress } from "../utils/progressUtils";
 
 import { dsaData } from "../data/dsaData";
 import { playlistVideoData } from "../data/chessData";
@@ -44,34 +40,10 @@ const HomePage = () => {
     return { completed, total, percent };
   }, [completedChessVideos]);
 
-  const engagementProgress = useMemo(() => {
-    const todayObj = new Date();
-    const todayStr = dateToDDMMYYYY(todayObj);
-    const allTasks = Object.values(engagementTasksData || {}).flat();
-
-    // Correctly filter for tasks active today, including multi-day tasks
-    const tasksActiveToday = allTasks.filter((task) => {
-      const taskStart = parseDDMMYYYYToDateObj(task.date);
-      const taskEnd = task.endDate
-        ? parseYYYYMMDDToDateObj(task.endDate)
-        : taskStart;
-      return isWithinInterval(todayObj, { start: taskStart, end: taskEnd });
-    });
-
-    // Correctly count completed tasks by checking the completions object for today's date
-    const todaysCompleted = tasksActiveToday.filter(
-      (task) => task.completions && task.completions[todayStr]
-    ).length;
-
-    const todaysTotal = tasksActiveToday.length;
-    const todaysPercent =
-      todaysTotal > 0 ? Math.round((todaysCompleted / todaysTotal) * 100) : 0;
-    return {
-      todaysCompleted,
-      todaysTotal,
-      todaysPercent,
-    };
-  }, [engagementTasksData]);
+  const engagementProgress = useMemo(
+    () => calculateEngagementProgress(engagementTasksData),
+    [engagementTasksData]
+  );
 
   // Prepare data for ProgressCards to make the ProgressCard component more generic
   const dsaCardData = useMemo(
@@ -302,49 +274,5 @@ const HomePage = () => {
     </main>
   );
 };
-
-const ProgressCard = ({
-  icon,
-  title,
-  completed,
-  total,
-  percent,
-  link,
-  label, // New prop for the progress bar label
-  linkText, // New prop for the button text
-}) => (
-  <div className="progress-card">
-    <div className="progress-card-header">
-      <span className="progress-card-icon">{icon}</span>
-      <h3>{title}</h3>
-      <span className="progress-card-percent">{percent}%</span>{" "}
-      {/* Always display percent */}
-    </div>
-    {total > 0 || (title === "Daily Routine" && completed >= 0) ? ( // Show progress bar if there's a total, or for daily routine even if total is 0 but completed is known
-      <ProgressBarDisplay
-        completed={completed}
-        total={total}
-        label={label} // Use the passed label
-      />
-    ) : // Optional: Show a message if there's no data to display for progress
-    // <p className="no-progress-data">No activity yet.</p>
-    // Or render nothing if total is 0 and it's not daily routine
-    null}
-    <Link to={link} className="home-btn-primary">
-      {linkText} {/* Use the passed button text */}
-    </Link>
-  </div>
-);
-
-const QuickLinkCard = ({ title, description, href, cta, icon }) => (
-  <div className="quick-link-card">
-    <span className="quick-link-icon">{icon}</span>
-    <h4>{title}</h4>
-    <p>{description}</p>
-    <Link to={href} className="home-btn-primary">
-      {cta}
-    </Link>
-  </div>
-);
 
 export default React.memo(HomePage);

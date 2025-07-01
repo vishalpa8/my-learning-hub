@@ -8,11 +8,6 @@ import validator from "validator";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY } from "../../constants/localIndexedDbKeys";
 import { useIndexedDb } from "../../hooks/useIndexedDb";
-import {
-  dateToDDMMYYYY,
-  parseYYYYMMDDToDateObj,
-  convertDDMMYYYYtoYYYYMMDD, // Import for minEndDateInput
-} from "../../utils/dateHelpers"; // Centralized date helpers
 
 const TaskDetailsModal = ({
   isOpen,
@@ -54,7 +49,7 @@ const TaskDetailsModal = ({
 
   // New states for End Date editing
   const [editingEndDate, setEditingEndDate] = useState(false);
-  const [currentEndDate, setCurrentEndDate] = useState(task?.endDate || ""); // YYYY-MM-DD
+  const [currentEndDate, setCurrentEndDate] = useState(task?.endDate || ""); // DD-MM-YYYY
 
   const [alreadyPromptedForComplete, setAlreadyPromptedForComplete] =
     useIndexedDb(ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY, {});
@@ -348,11 +343,9 @@ const TaskDetailsModal = ({
       })
     : "--:--";
   // Format YYYY-MM-DD to DD-MM-YYYY for display consistency
-  const formattedEndDate = task.endDate
-    ? dateToDDMMYYYY(parseYYYYMMDDToDateObj(task.endDate)) // Convert YYYY-MM-DD string to Date object, then to DD-MM-YYYY string
-    : null;
+  const formattedEndDate = task.endDate ? task.endDate : null;
   // Min date for end date input (should not be before task's start date, in YYYY-MM-DD format)
-  const minEndDateInput = convertDDMMYYYYtoYYYYMMDD(task.date); // task.date is DD-MM-YYYY string
+  const minEndDateInput = task.date;
 
   const handleSubtaskDragEnd = (result) => {
     if (!result.destination) return;
@@ -362,7 +355,6 @@ const TaskDetailsModal = ({
     const [removed] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, removed);
 
-    console.log("Calling onReorderSubtasks", task.id, reordered);
     onReorderSubtasks(task.id, reordered); // Persist new order
   };
 

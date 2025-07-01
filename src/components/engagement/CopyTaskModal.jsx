@@ -9,13 +9,11 @@ import React, {
 import PropTypes from "prop-types";
 import Modal from "../shared/Modal";
 import ActivityCalendar from "./ActivityCalendar";
-import { differenceInDays, addDays, format } from "date-fns";
+import { differenceInDays, addDays } from "date-fns";
 import {
   isWithinInterval,
   dateToDDMMYYYY,
   parseDDMMYYYYToDateObj,
-  parseYYYYMMDDToDateObj,
-  convertDDMMYYYYtoYYYYMMDD,
 } from "../../utils/dateHelpers";
 import { v4 as uuidv4 } from "uuid";
 import "./CopyTaskModal.css";
@@ -27,21 +25,21 @@ import "./CopyTaskModal.css";
 const calculateCopiedTaskEndDate = (
   originalTask,
   newStartDate_DDMMYYYY,
-  explicitEndDate_YYYYMMDD
+  explicitEndDate_DDMMYYYY
 ) => {
-  if (explicitEndDate_YYYYMMDD) {
-    return explicitEndDate_YYYYMMDD;
+  if (explicitEndDate_DDMMYYYY) {
+    return explicitEndDate_DDMMYYYY;
   }
   if (originalTask.endDate) {
     const originalStartDateObj = parseDDMMYYYYToDateObj(originalTask.date);
-    const originalEndDateObj = parseYYYYMMDDToDateObj(originalTask.endDate);
+    const originalEndDateObj = parseDDMMYYYYToDateObj(originalTask.endDate);
     const durationInDays = differenceInDays(
       originalEndDateObj,
       originalStartDateObj
     );
     const newStartDateObj = parseDDMMYYYYToDateObj(newStartDate_DDMMYYYY);
     const newEndDateObj = addDays(newStartDateObj, durationInDays);
-    return format(newEndDateObj, "yyyy-MM-dd");
+    return dateToDDMMYYYY(newEndDateObj);
   }
   return null;
 };
@@ -125,7 +123,7 @@ const CopyTaskModal = ({
   const isTaskActiveOnDate = useCallback((task, dateObj) => {
     const taskStart = parseDDMMYYYYToDateObj(task.date);
     const taskEnd = task.endDate
-      ? parseYYYYMMDDToDateObj(task.endDate)
+      ? parseDDMMYYYYToDateObj(task.endDate)
       : taskStart;
     return (
       taskStart instanceof Date &&
@@ -175,7 +173,7 @@ const CopyTaskModal = ({
       if (isCopyable) {
         const taskStart = parseDDMMYYYYToDateObj(task.date);
         const taskEnd = task.endDate
-          ? parseYYYYMMDDToDateObj(task.endDate)
+          ? parseDDMMYYYYToDateObj(task.endDate)
           : taskStart;
         if (
           taskStart instanceof Date &&
@@ -302,7 +300,7 @@ const CopyTaskModal = ({
   }, [isOpen, selectedTaskIds, handleCopyButtonClick]);
 
   const minEndDateForCopiedTask = useMemo(() => {
-    return convertDDMMYYYYtoYYYYMMDD(targetDate);
+    return targetDate;
   }, [targetDate]);
 
   return (
