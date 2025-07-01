@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { getStructuredChessData, calculateProgress } from "../utils/chessUtils";
+import { calculateProgress } from "../utils/progressUtils";
+import { getStructuredChessData } from "../utils/chessUtils";
 import { useChessUserData } from "../hooks/useChessUserData"; // Import the custom hook
 import { useReward } from "../contexts/useReward"; // Updated import path
 import DailyNugget from "../components/chess/DailyNugget";

@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "./VideoListModal.css";
 import ProgressBarDisplay from "../shared/ProgressBarDisplay";
-import { calculateProgress } from "../../utils/chessUtils";
+import { calculateProgress } from "../../utils/progressUtils";
 
 /**
  * @typedef {object} Video
@@ -42,7 +42,13 @@ const VideoListModal = ({
   const closeButtonRef = useRef(null);
   const firstVideoItemRef = useRef(null);
 
-  useFocusTrap(modalContentRef, isVisible, onClose, firstVideoItemRef, closeButtonRef);
+  useFocusTrap(
+    modalContentRef,
+    isVisible,
+    onClose,
+    firstVideoItemRef,
+    closeButtonRef
+  );
 
   // Early return if the modal should not be visible or if there's no playlist data.
   if (!isVisible || !playlist) {

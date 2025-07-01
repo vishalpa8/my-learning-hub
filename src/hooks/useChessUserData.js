@@ -1,10 +1,12 @@
 import { useCallback } from "react";
 import { useIndexedDb } from "./useIndexedDb";
 import {
-  INITIAL_CHESS_ELO, // Import the constant
   initialChessUserProfile,
   checkAndAwardChessBadges,
 } from "../utils/chessUtils";
+import {
+  INITIAL_CHESS_ELO, // Import the constant
+} from "../constants/chessConstants";
 import {
   CHESS_LEARNING_PROGRESS_KEY,
   CHESS_USER_PROFILE_KEY,

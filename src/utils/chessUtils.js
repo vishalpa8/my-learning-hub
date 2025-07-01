@@ -3,21 +3,7 @@ import {
   chess_badges_definitions,
   BADGE_CRITERIA,
 } from "../data/chessData";
-
-/** ELO stages for chess learning */
-export const ELO_STAGES = [
-  { id: "elo1400", name: "1400-1700 ELO Stage", prefix: "elo1400_" },
-  { id: "elo1700", name: "1700-2000 ELO Stage", prefix: "elo1700_" },
-  { id: "elo2000", name: "2000-2400 ELO Stage", prefix: "elo2000_" },
-  { id: "elo2400", name: "2400+ ELO Stage", prefix: "elo2400_" },
-];
-
-/**
- * @typedef {object} StructuredVideo
- * @property {string} id - Original video ID within its playlist.
- * @property {string} title - Title of the video.
- * @property {string} globalId - Globally unique ID for the video (playlistKey_videoId).
- */
+import { ELO_STAGES, INITIAL_CHESS_ELO } from "../constants/chessConstants";
 
 /**
  * @typedef {object} StructuredPlaylist
@@ -66,43 +52,6 @@ export const getStructuredChessData = () =>
   }).filter((stage) => stage.playlists.length > 0);
 
 /**
- * Calculates progress for a list of items.
- * @param {Array<Object>} items - The list of items to calculate progress for.
- * @param {Object.<string, boolean>} completedItems - An object mapping item IDs to their completion status (true if completed).
- * @param {function(Object): string} [getItemId=(item) => item.id] - A function to extract the ID from an item.
- * @param {function(Object): Array<Object>} [getSubItems=null] - Optional function to get sub-items if items are nested (e.g., playlists containing videos).
- * @returns {{completed: number, total: number, percent: number}} An object with the count of completed items, total items, and completion percentage.
- */
-export const calculateProgress = (
-  items,
-  completedItems,
-  getItemId = (item) => item.id,
-  getSubItems = null
-) => {
-  let total = 0;
-  let completed = 0;
-
-  items.forEach((item) => {
-    if (getSubItems) {
-      const subItems = getSubItems(item) || [];
-      total += subItems.length;
-      subItems.forEach((subItem) => {
-        if (completedItems[getItemId(subItem)]) completed++;
-      });
-    } else {
-      total++;
-      if (completedItems[getItemId(item)]) completed++;
-    }
-  });
-
-  return {
-    completed,
-    total,
-    percent: total > 0 ? (completed / total) * 100 : 0,
-  };
-};
-
-/**
  * Default initial structure for a chess user's profile.
  * This is used as the default value in `useIndexedDb` for the chess user profile.
  * @type {Object}
@@ -113,7 +62,6 @@ export const calculateProgress = (
  * @property {Object.<string, {earnedAt: string}>} earnedBadges - Badges earned by the user, with earning date.
  * @property {number} elo - User's current ELO rating.
  */
-export const INITIAL_CHESS_ELO = 1350; // Define your starting ELO here
 
 export const initialChessUserProfile = {
   elo: INITIAL_CHESS_ELO, // Set the initial ELO
@@ -122,6 +70,75 @@ export const initialChessUserProfile = {
   currentStreak: 0,
   longestStreak: 0,
   earnedBadges: {},
+};
+
+/**
+ * Checks if the POINTS_EARNED badge criteria is met.
+ * @param {Object} userProfile - The current user profile.
+ * @param {Object} badge - The badge definition.
+ * @returns {boolean} True if criteria met, false otherwise.
+ */
+const checkPointsBadge = (userProfile, badge) => {
+  const currentPoints = userProfile?.points ?? 0;
+  return currentPoints >= badge.criteria.value;
+};
+
+/**
+ * Checks if the VIDEOS_WATCHED badge criteria is met.
+ * @param {Object} completedVideos - An object mapping video global IDs to their completion status.
+ * @param {Object} badge - The badge definition.
+ * @returns {boolean} True if criteria met, false otherwise.
+ */
+const checkVideosWatchedBadge = (completedVideos, badge, totalVideosCompleted) => {
+  return totalVideosCompleted >= badge.criteria.value;
+};
+
+/**
+ * Checks if the LEARNING_STREAK badge criteria is met.
+ * @param {Object} userProfile - The current user profile.
+ * @param {Object} badge - The badge definition.
+ * @returns {boolean} True if criteria met, false otherwise.
+ */
+const checkLearningStreakBadge = (userProfile, badge) => {
+  const currentStreak = userProfile?.currentStreak ?? 0;
+  return currentStreak >= badge.criteria.value;
+};
+
+/**
+ * Checks if the ELO_THRESHOLD badge criteria is met.
+ * @param {Object} userProfile - The current user profile.
+ * @param {Object} badge - The badge definition.
+ * @returns {boolean} True if criteria met, false otherwise.
+ */
+const checkEloThresholdBadge = (userProfile, badge) => {
+  const currentElo = userProfile?.elo ?? 0;
+  return currentElo >= badge.criteria.value;
+};
+
+/**
+ * Checks if the STAGE_CLEARED badge criteria is met.
+ * @param {Object} completedVideos - An object mapping video global IDs to their completion status.
+ * @param {Object} badge - The badge definition.
+ * @param {Array<Object>} structuredChessData - The structured chess data.
+ * @returns {boolean} True if criteria met, false otherwise.
+ */
+const checkStageClearedBadge = (
+  completedVideos,
+  badge,
+  structuredChessData
+) => {
+  const targetStageId = badge.criteria.value;
+  const stageToClear = structuredChessData.find((s) => s.id === targetStageId);
+  if (stageToClear) {
+    const stageVideos = stageToClear.playlists.flatMap((p) => p.videos);
+    if (stageVideos.length > 0) {
+      const completedStageVideos = stageVideos.filter(
+        (v) => completedVideos[v.globalId]
+      ).length;
+      return completedStageVideos === stageVideos.length;
+    }
+  }
+  return false;
 };
 
 /**
@@ -145,43 +162,27 @@ export const checkAndAwardChessBadges = (
 
   chess_badges_definitions.forEach((badge) => {
     let criteriaMet = false;
-    // Ensure userProfile and its properties are defined before accessing
-    const currentPoints = userProfile?.points ?? 0;
-    const currentStreak = userProfile?.currentStreak ?? 0;
-    const currentElo = userProfile?.elo ?? 0; // Assuming ELO is part of the profile for ELO_THRESHOLD
 
     switch (badge.criteria.type) {
       case BADGE_CRITERIA.POINTS_EARNED:
-        criteriaMet = currentPoints >= badge.criteria.value;
+        criteriaMet = checkPointsBadge(userProfile, badge);
         break;
       case BADGE_CRITERIA.VIDEOS_WATCHED:
-        criteriaMet = totalVideosCompleted >= badge.criteria.value;
+        criteriaMet = checkVideosWatchedBadge(completedVideos, badge, totalVideosCompleted);
         break;
       case BADGE_CRITERIA.LEARNING_STREAK:
-        criteriaMet = currentStreak >= badge.criteria.value;
+        criteriaMet = checkLearningStreakBadge(userProfile, badge);
         break;
-      case BADGE_CRITERIA.ELO_THRESHOLD: // Added ELO_THRESHOLD check
-        criteriaMet = currentElo >= badge.criteria.value;
+      case BADGE_CRITERIA.ELO_THRESHOLD:
+        criteriaMet = checkEloThresholdBadge(userProfile, badge);
         break;
-      case BADGE_CRITERIA.STAGE_CLEARED: {
-        // Added block scope
-        const targetStageId = badge.criteria.value; // e.g., "elo1400"
-        const stageToClear = structuredChessData.find(
-          (s) => s.id === targetStageId
+      case BADGE_CRITERIA.STAGE_CLEARED:
+        criteriaMet = checkStageClearedBadge(
+          completedVideos,
+          badge,
+          structuredChessData
         );
-        if (stageToClear) {
-          const stageVideos = stageToClear.playlists.flatMap((p) => p.videos);
-          if (stageVideos.length > 0) {
-            // Ensure stage has videos to complete
-            const completedStageVideos = stageVideos.filter(
-              (v) => completedVideos[v.globalId]
-            ).length;
-            criteriaMet = completedStageVideos === stageVideos.length;
-          }
-        }
         break;
-      } // End block scope
-      
       default:
         if (import.meta.env.DEV) {
           console.warn(
