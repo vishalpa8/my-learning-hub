@@ -1006,39 +1006,42 @@ const ChatInterface = () => {
           submitInput();
         }}
       >
-        <div className="model-selection-area">
-          <label htmlFor="model-select" className="model-select-label">
-            Select Model:
-          </label>
-          <ModelSelector
-            // id is now set inside the ModelSelector component
-            selectedModel={selectedModel}
-            onModelChange={handleModelChange}
-            disabled={isLoading}
-          />
-          <button
-            type="button"
-            onClick={handleNewChat}
-            className="new-chat-button"
-            disabled={isLoading}
-            title="Start a new chat"
-            aria-label="Start a new chat"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+        <div className="chat-input-header">
+          <div className="chat-controls-top">
+            <div className="model-selection-area">
+              <label htmlFor="model-select" className="model-select-label">
+                Select Model:
+              </label>
+              <ModelSelector
+                selectedModel={selectedModel}
+                onModelChange={handleModelChange}
+                disabled={isLoading}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="new-chat-button"
+              disabled={isLoading}
+              title="Start a new chat"
+              aria-label="Start a new chat"
             >
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            New Chat
-          </button>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              New Chat
+            </button>
+          </div>
         </div>
 
         <div className="chat-input-controls">
@@ -1049,15 +1052,10 @@ const ChatInterface = () => {
               dispatch({ type: "SET_INPUT", payload: e.target.value })
             }
             onKeyDown={handleInputKeyDown}
-            placeholder={
-              isEditingLastMessage
-                ? "Edit your message..."
-                : isLoading
-                ? "AI is responding..."
-                : "Type your message here..."
-            }
+            placeholder={isLoading ? "AI is responding..." : "Type your message here..."}
             className={isEditingLastMessage ? "editing-mode" : ""}
             maxLength={CONSTANTS.MAX_INPUT_LENGTH}
+            aria-label="Message input"
           />
 
           {isLoading ? (
