@@ -12,10 +12,10 @@
 .chat-interface {
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
   background-color: var(--background-color);
   overflow: hidden; /* Prevent overflow from container */
+  min-height: 70vh;
 }
 
 .chat-messages {
@@ -26,6 +26,7 @@
   flex-direction: column;
   gap: var(--spacing-md);
   min-height: 0; /* Allow flex item to shrink below content size */
+  flex-grow: 1;
 }
 
 /* Custom scrollbar */
