@@ -14,6 +14,8 @@ import {
   isWithinInterval,
   dateToDDMMYYYY,
   parseDDMMYYYYToDateObj,
+  ddmmyyyyToYYYYMMDD,
+  yyyymmddToDDMMYYYY,
 } from "../../utils/dateHelpers";
 import { v4 as uuidv4 } from "uuid";
 import "./CopyTaskModal.css";
@@ -423,14 +425,14 @@ const CopyTaskModal = ({
               <input
                 id="copy-task-end-date"
                 type="date"
-                value={copiedTaskEndDate}
+                value={ddmmyyyyToYYYYMMDD(copiedTaskEndDate)}
                 onChange={(e) =>
                   dispatch({
                     type: "SET_COPIED_END_DATE",
-                    payload: e.target.value,
+                    payload: yyyymmddToDDMMYYYY(e.target.value),
                   })
                 }
-                min={minEndDateForCopiedTask}
+                min={ddmmyyyyToYYYYMMDD(minEndDateForCopiedTask)}
                 className="copy-task-end-date-input"
               />
               <button

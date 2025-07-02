@@ -21,8 +21,6 @@ export const parseDDMMYYYYToDateObj = (dateStr) => {
   return isValid(parsed) ? parsed : null;
 };
 
-
-
 // Helper to check if a date string (DD-MM-YYYY) is in the past (ignoring time)
 export const isPastDate = (dateStr) => {
   const today = new Date();
@@ -33,27 +31,29 @@ export const isPastDate = (dateStr) => {
 };
 
 /**
- * Formats a date string from YYYY-MM-DD to DD-MM-YYYY for display.
- * @param {string} dateString - The date string in YYYY-MM-DD format.
- * @returns {string} The formatted date string in DD-MM-YYYY format, or an empty string if input is invalid.
- */
-export const formatDateForDisplay = (dateString) => {
-  if (!dateString || typeof dateString !== 'string') return "";
-  const parts = dateString.split('-');
-  if (parts.length !== 3) return dateString; // Return original if not in expected format
-  const [year, month, day] = parts;
-  return `${day}-${month}-${year}`;
-};
-
-/**
- * Formats a date string from DD-MM-YYYY to YYYY-MM-DD for input fields or storage.
+ * Converts a date string from DD-MM-YYYY to YYYY-MM-DD format.
+ * Useful for <input type="date"> elements.
  * @param {string} dateString - The date string in DD-MM-YYYY format.
  * @returns {string} The formatted date string in YYYY-MM-DD format, or an empty string if input is invalid.
  */
-export const formatDateForInput = (dateString) => {
+export const ddmmyyyyToYYYYMMDD = (dateString) => {
   if (!dateString || typeof dateString !== 'string') return "";
   const parts = dateString.split('-');
-  if (parts.length !== 3) return dateString; // Return original if not in expected format
+  if (parts.length !== 3) return "";
   const [day, month, year] = parts;
   return `${year}-${month}-${day}`;
+};
+
+/**
+ * Converts a date string from YYYY-MM-DD to DD-MM-YYYY format.
+ * Useful for converting <input type="date"> values back to app's standard.
+ * @param {string} dateString - The date string in YYYY-MM-DD format.
+ * @returns {string} The formatted date string in DD-MM-YYYY format, or an empty string if input is invalid.
+ */
+export const yyyymmddToDDMMYYYY = (dateString) => {
+  if (!dateString || typeof dateString !== 'string') return "";
+  const parts = dateString.split('-');
+  if (parts.length !== 3) return "";
+  const [year, month, day] = parts;
+  return `${day}-${month}-${year}`;
 };
