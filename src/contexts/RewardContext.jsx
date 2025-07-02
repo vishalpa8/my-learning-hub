@@ -1,9 +1,21 @@
-import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+} from "react";
 import { useIndexedDb } from "../hooks/useIndexedDb";
 import { useUserProfile } from "../hooks/useUserProfile";
-import { DSA_REWARD_TRACKER_KEY, CHESS_COMPLETED_VIDEOS_KEY } from "../constants/localIndexedDbKeys";
+import {
+  DSA_REWARD_TRACKER_KEY,
+  CHESS_USER_PROFILE_KEY,
+} from "../constants/localIndexedDbKeys";
 import { RewardContext } from "./useReward";
-import { getStructuredChessData, checkAndAwardChessBadges } from "../utils/chessUtils";
+import {
+  getStructuredChessData,
+  checkAndAwardChessBadges,
+} from "../utils/chessUtils";
 
 /** A list of predefined reward messages. */
 const REWARDS = [
@@ -56,8 +68,9 @@ export const RewardProvider = ({ children }) => {
     }
   );
 
-  const [userProfile, addPoints, earnBadge, loadingUserProfile] = useUserProfile();
-  const [completedVideos] = useIndexedDb(CHESS_COMPLETED_VIDEOS_KEY, {});
+  const [userProfile, addPoints, earnBadge, loadingUserProfile] =
+    useUserProfile();
+  const [completedVideos] = useIndexedDb(CHESS_USER_PROFILE_KEY, {});
 
   const structuredChessData = useMemo(() => getStructuredChessData(), []);
 
