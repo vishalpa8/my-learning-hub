@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { dateToDDMMYYYY } from "../utils/dateHelpers";
 import { dsaData } from "../data/dsaData";
 import DashboardView from "../components/dsa/DashboardView";
 import RewardModal from "../components/shared/RewardModal";
@@ -106,10 +107,7 @@ const DsaPage = () => {
     (viewKey) => {
       if (viewKey !== "dashboard") {
         const today = new Date();
-        const day = String(today.getDate()).padStart(2, "0");
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const year = today.getFullYear();
-        const todayStr = `${day}/${month}/${year}`;
+        const todayStr = dateToDDMMYYYY(today);
 
         if (lastVisitedViewDates[viewKey] !== todayStr) {
           setLastVisitedViewDates((prev) => ({

@@ -4,7 +4,7 @@ import Modal from "../shared/Modal";
 import PropTypes from "prop-types";
 import "./EngagementPage.css";
 import { v4 as uuidv4 } from "uuid";
-import { dateToDDMMYYYY, isPastDate } from "../../utils/dateHelpers";
+import { dateToDDMMYYYY, isPastDate, formatDateForInput, formatDateForDisplay } from "../../utils/dateHelpers";
 
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
@@ -500,11 +500,11 @@ const TaskList = ({
                 <input
                   id="new-task-end-date"
                   type="date"
-                  value={newTaskForm.endDate}
+                  value={formatDateForInput(newTaskForm.endDate)}
                   onChange={(e) =>
-                    handleNewTaskFormChange("endDate", e.target.value)
+                    handleNewTaskFormChange("endDate", formatDateForDisplay(e.target.value))
                   }
-                  min={minEndDateForNewTask}
+                  min={formatDateForInput(minEndDateForNewTask)}
                   className="task-end-date-input"
                   disabled={!allowTaskCreation}
                 />

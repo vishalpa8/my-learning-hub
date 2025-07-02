@@ -6,6 +6,10 @@ import Modal from "../shared/Modal";
 import "./TaskDetailsModal.css";
 import validator from "validator";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import {
+  formatDateForDisplay,
+  formatDateForInput
+} from "../../utils/dateHelpers";
 import { ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY } from "../../constants/localIndexedDbKeys";
 import { useIndexedDb } from "../../hooks/useIndexedDb";
 
@@ -342,8 +346,6 @@ const TaskDetailsModal = ({
         hour12: true,
       })
     : "--:--";
-  // Format YYYY-MM-DD to DD-MM-YYYY for display consistency
-  const formattedEndDate = task.endDate ? task.endDate : null;
   // Min date for end date input (should not be before task's start date, in YYYY-MM-DD format)
   const minEndDateInput = task.date;
 
@@ -371,13 +373,13 @@ const TaskDetailsModal = ({
           <p className="task-details-meta">
             {task.endDate ? (
               <>
-                <strong>From:</strong> {task.date}
+                <strong>From:</strong> {formatDateForDisplay(task.date)}
                 <strong className="meta-separator">To:</strong>{" "}
-                {formattedEndDate}
+                {formatDateForDisplay(task.endDate)}
               </>
             ) : (
               <>
-                <strong>Date:</strong> {task.date}
+                <strong>Date:</strong> {formatDateForDisplay(task.date)}
               </>
             )}
             <strong className="meta-separator">Time:</strong> {formattedTime}
@@ -534,10 +536,10 @@ const TaskDetailsModal = ({
               <div className="end-date-edit-area">
                 <input
                   type="date"
-                  value={currentEndDate}
+                  value={formatDateForInput(currentEndDate)}
                   onChange={handleEndDateChange}
                   onKeyDown={handleEndDateKeyDown}
-                  min={minEndDateInput}
+                  min={formatDateForInput(minEndDateInput)}
                   className="task-details-input"
                   autoFocus
                 />
@@ -558,9 +560,9 @@ const TaskDetailsModal = ({
               </div>
             ) : (
               <div className="end-date-display-area">
-                {formattedEndDate ? (
+                {task.endDate ? (
                   <>
-                    <p className="end-date-text">{formattedEndDate}</p>
+                    <p className="end-date-text">{formatDateForDisplay(task.endDate)}</p>
                     <div className="description-view-actions">
                       <button
                         onClick={() => setEditingEndDate(true)}

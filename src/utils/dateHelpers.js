@@ -31,3 +31,29 @@ export const isPastDate = (dateStr) => {
   if (!parsed) return false;
   return parsed < today;
 };
+
+/**
+ * Formats a date string from YYYY-MM-DD to DD-MM-YYYY for display.
+ * @param {string} dateString - The date string in YYYY-MM-DD format.
+ * @returns {string} The formatted date string in DD-MM-YYYY format, or an empty string if input is invalid.
+ */
+export const formatDateForDisplay = (dateString) => {
+  if (!dateString || typeof dateString !== 'string') return "";
+  const parts = dateString.split('-');
+  if (parts.length !== 3) return dateString; // Return original if not in expected format
+  const [year, month, day] = parts;
+  return `${day}-${month}-${year}`;
+};
+
+/**
+ * Formats a date string from DD-MM-YYYY to YYYY-MM-DD for input fields or storage.
+ * @param {string} dateString - The date string in DD-MM-YYYY format.
+ * @returns {string} The formatted date string in YYYY-MM-DD format, or an empty string if input is invalid.
+ */
+export const formatDateForInput = (dateString) => {
+  if (!dateString || typeof dateString !== 'string') return "";
+  const parts = dateString.split('-');
+  if (parts.length !== 3) return dateString; // Return original if not in expected format
+  const [day, month, year] = parts;
+  return `${year}-${month}-${day}`;
+};

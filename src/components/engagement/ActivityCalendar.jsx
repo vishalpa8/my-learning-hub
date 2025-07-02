@@ -2,6 +2,7 @@
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import "./EngagementPage.css";
+import { dateToDDMMYYYY } from "../../utils/dateHelpers";
 
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -16,16 +17,7 @@ function getGridDays(year, month) {
   return days;
 }
 
-// Robust local date string (DD-MM-YYYY)
-function getDateStr(year, month, day) {
-  if (!day) return "";
-  const d = new Date(year, month, day);
-  return [
-    String(d.getDate()).padStart(2, "0"),
-    String(d.getMonth() + 1).padStart(2, "0"), // Month
-    d.getFullYear(),
-  ].join("-"); // Output: DD-MM-YYYY
-}
+
 
 // Helper to get props for each day cell
 function getDayProps(
@@ -48,7 +40,7 @@ function getDayProps(
     };
   }
 
-  const dateStr = getDateStr(year, month, day);
+  const dateStr = dateToDDMMYYYY(new Date(year, month, day));
   let className = "calendar-day";
   const cellStyle = {};
 
@@ -152,14 +144,7 @@ const ActivityCalendar = ({
 
   const gridDays = useMemo(() => getGridDays(year, month), [year, month]);
 
-  const todayStr = useMemo(() => {
-    const todayDate = new Date();
-    return getDateStr(
-      todayDate.getFullYear(),
-      todayDate.getMonth(),
-      todayDate.getDate()
-    );
-  }, []);
+  const todayStr = useMemo(() => dateToDDMMYYYY(new Date()), []);
 
   return (
     <section

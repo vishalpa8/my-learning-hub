@@ -11,6 +11,7 @@ import {
   CHESS_LEARNING_PROGRESS_KEY,
   CHESS_USER_PROFILE_KEY,
 } from "../constants/localIndexedDbKeys";
+import { dateToDDMMYYYY, parseDDMMYYYYToDateObj } from "../utils/dateHelpers";
 
 const ELO_GAIN_PER_TWO_VIDEOS = 10; // Define how much ELO is gained for every 2 completed videos
 
@@ -85,21 +86,21 @@ export const useChessUserData = (structuredChessData) => {
           // Streak logic: Update only if a video is newly completed.
           if (newCompletedStatus) {
             const today = new Date();
-            const todayDateString = today.toDateString();
+            const todayDateString = dateToDDMMYYYY(today);
             let newCurrentStreak = prevProfile.currentStreak || 0;
             let newLongestStreak = prevProfile.longestStreak || 0;
 
             // Only update streak if it's a new day of activity
             if (prevProfile.lastActiveDate !== todayDateString) {
               const lastCompletion = prevProfile.lastActiveDate
-                ? new Date(prevProfile.lastActiveDate)
+                ? parseDDMMYYYYToDateObj(prevProfile.lastActiveDate)
                 : null;
 
               if (lastCompletion) {
                 const yesterday = new Date(today);
                 yesterday.setDate(today.getDate() - 1);
                 if (
-                  lastCompletion.toDateString() === yesterday.toDateString()
+                  dateToDDMMYYYY(lastCompletion) === dateToDDMMYYYY(yesterday)
                 ) {
                   newCurrentStreak = (prevProfile.currentStreak || 0) + 1;
                 } else {
