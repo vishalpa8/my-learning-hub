@@ -55,11 +55,7 @@ const DsaPage = () => {
     searchTerm: "",
   });
 
-  const [
-    userProfile,
-    addPoints,
-    updateStreak,
-  ] = useUserProfile();
+  const [userProfile, addPoints, updateStreak] = useUserProfile();
 
   const [lastVisitedViewDates, setLastVisitedViewDates] = useIndexedDb(
     DSA_LAST_VISITED_VIEW_DATES_KEY,
@@ -149,16 +145,33 @@ const DsaPage = () => {
     const { difficulty, topic, pattern, status, searchTerm } = filters;
 
     return baseProblemsForActiveView.filter((p) => {
-      const normalizedDifficulty = getNormalizedDifficulty(p.difficulty).toLowerCase();
+      const normalizedDifficulty = getNormalizedDifficulty(
+        p.difficulty
+      ).toLowerCase();
       const normalizedTopic = getNormalizedTopic(p.topic).toLowerCase();
 
-      const difficultyMatch = difficulty === "all" || normalizedDifficulty === difficulty;
+      const difficultyMatch =
+        difficulty === "all" || normalizedDifficulty === difficulty;
       const topicMatch = topic === "all" || normalizedTopic === topic;
-      const patternMatch = pattern === "all" || (p.pattern && p.pattern.toLowerCase().includes(pattern));
-      const searchTermMatch = searchTerm === "" || p.title.toLowerCase().includes(searchTerm) || (p.subTopic && p.subTopic.toLowerCase().includes(searchTerm));
-      const statusMatch = status === "all" || (status === "completed" && completedProblems[p.id]) || (status === "pending" && !completedProblems[p.id]);
+      const patternMatch =
+        pattern === "all" ||
+        (p.pattern && p.pattern.toLowerCase().includes(pattern));
+      const searchTermMatch =
+        searchTerm === "" ||
+        p.title.toLowerCase().includes(searchTerm) ||
+        (p.subTopic && p.subTopic.toLowerCase().includes(searchTerm));
+      const statusMatch =
+        status === "all" ||
+        (status === "completed" && completedProblems[p.id]) ||
+        (status === "pending" && !completedProblems[p.id]);
 
-      return difficultyMatch && topicMatch && patternMatch && searchTermMatch && statusMatch;
+      return (
+        difficultyMatch &&
+        topicMatch &&
+        patternMatch &&
+        searchTermMatch &&
+        statusMatch
+      );
     });
   }, [baseProblemsForActiveView, filters, completedProblems]);
 
@@ -168,39 +181,40 @@ const DsaPage = () => {
   );
 
   const calculateDifficultyStats = (problems, completedProblems) => {
-  const stats = {
-    easy: { total: 0, completed: 0 },
-    medium: { total: 0, completed: 0 },
-    hard: { total: 0, completed: 0 },
+    const stats = {
+      easy: { total: 0, completed: 0 },
+      medium: { total: 0, completed: 0 },
+      hard: { total: 0, completed: 0 },
+    };
+
+    if (!problems || problems.length === 0) {
+      return stats;
+    }
+
+    problems.forEach((problem) => {
+      const normalizedDifficultyFromUtil = getNormalizedDifficulty(
+        problem.difficulty
+      );
+      const difficultyKey = normalizedDifficultyFromUtil
+        ? normalizedDifficultyFromUtil.toLowerCase()
+        : null;
+      if (difficultyKey && stats[difficultyKey]) {
+        stats[difficultyKey].total++;
+        if (completedProblems[problem.id]) {
+          stats[difficultyKey].completed++;
+        }
+      } else if (difficultyKey) {
+        console.warn(
+          `[DsaPage] Difficulty key "${difficultyKey}" for problem "${problem.title}" is not a recognized key in stats object (easy, medium, hard).`
+        );
+      }
+    });
+    return stats;
   };
 
-  if (!problems || problems.length === 0) {
-    return stats;
-  }
-
-  problems.forEach((problem) => {
-    const normalizedDifficultyFromUtil = getNormalizedDifficulty(
-      problem.difficulty
-    );
-    const difficultyKey = normalizedDifficultyFromUtil
-      ? normalizedDifficultyFromUtil.toLowerCase()
-      : null;
-    if (difficultyKey && stats[difficultyKey]) {
-      stats[difficultyKey].total++;
-      if (completedProblems[problem.id]) {
-        stats[difficultyKey].completed++;
-      }
-    } else if (difficultyKey) {
-      console.warn(
-        `[DsaPage] Difficulty key "${difficultyKey}" for problem "${problem.title}" is not a recognized key in stats object (easy, medium, hard).`
-      );
-    }
-  });
-  return stats;
-};
-
   const currentViewDifficultyStats = useMemo(
-    () => calculateDifficultyStats(baseProblemsForActiveView, completedProblems),
+    () =>
+      calculateDifficultyStats(baseProblemsForActiveView, completedProblems),
     [baseProblemsForActiveView, completedProblems]
   );
 
@@ -334,12 +348,14 @@ const DsaPage = () => {
         >
           {activeView === "dashboard" ? (
             <DashboardView
+              data-testid="dashboard-view"
               overallProgress={overallProgressStats}
               totalProblems={dsaData.length}
               streakData={userProfile} // Pass entire userProfile object
             />
           ) : (
             <ProblemListView
+              data-testid="problem-list-view"
               groupedProblems={groupedProblems}
               onToggleProblemComplete={handleToggleComplete}
               showPatternFilter={filters.pattern !== "all"}

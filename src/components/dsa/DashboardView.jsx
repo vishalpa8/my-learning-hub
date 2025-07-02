@@ -21,7 +21,7 @@ const DashboardView = ({ overallProgress, totalProblems, streakData }) => {
 
   return (
     // Added className="dashboard-view" to apply the main flex layout from DsaStyles.css
-    <div id="dashboard-view" className="dashboard-view">
+    <div id="dashboard-view" className="dashboard-view" data-testid="dashboard-view">
       {/* Made "overview" a dashboard-card for consistent styling */}
       <section id="overview" className="dashboard-card">
         <h2>Welcome to Your DSA Pathway!</h2>

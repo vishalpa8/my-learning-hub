@@ -16,7 +16,14 @@ const DailyNugget = () => {
   const [currentNugget, setCurrentNugget] = useState(null);
   const [seenNuggets, markNuggetAsSeen, loadingSeenNuggets, errorSeenNuggets] =
     useSeenNuggets();
-  const [addPoints, updateStreak, loadingProfile, errorProfile] = useUserProfile();
+  const [
+    ,
+    addPoints,
+    updateStreak,
+    ,
+    loadingProfile,
+    errorProfile,
+  ] = useUserProfile();
 
   useEffect(() => {
     if (loadingSeenNuggets || errorSeenNuggets || loadingProfile || errorProfile || !nuggets || nuggets.length === 0) {
@@ -48,7 +55,16 @@ const DailyNugget = () => {
       }
       setCurrentNugget(null); // Clear current nugget until next render cycle picks a new one
     }
-  }, [loadingSeenNuggets, errorSeenNuggets, seenNuggets, markNuggetAsSeen, addPoints, updateStreak, loadingProfile, errorProfile]);
+  }, [
+    loadingSeenNuggets,
+    errorSeenNuggets,
+    seenNuggets,
+    markNuggetAsSeen,
+    addPoints,
+    updateStreak,
+    loadingProfile,
+    errorProfile,
+    ]);
 
   if (!currentNugget) {
     return null;

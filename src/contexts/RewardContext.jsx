@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useIndexedDb } from "../hooks/useIndexedDb";
 import { useUserProfile } from "../hooks/useUserProfile";
-import { DSA_REWARD_TRACKER_KEY } from "../constants/localIndexedDbKeys";
+import { DSA_REWARD_TRACKER_KEY, CHESS_COMPLETED_VIDEOS_KEY } from "../constants/localIndexedDbKeys";
 import { RewardContext } from "./useReward";
-import { chess_badges_definitions, BADGE_CRITERIA } from "../data/chessData";
+import { getStructuredChessData, checkAndAwardChessBadges } from "../utils/chessUtils";
 
 /** A list of predefined reward messages. */
 const REWARDS = [
@@ -56,20 +56,27 @@ export const RewardProvider = ({ children }) => {
     }
   );
 
-  const [userProfile, addPoints, earnBadge] = useUserProfile();
+  const [userProfile, addPoints, earnBadge, loadingUserProfile] = useUserProfile();
+  const [completedVideos] = useIndexedDb(CHESS_COMPLETED_VIDEOS_KEY, {});
+
+  const structuredChessData = useMemo(() => getStructuredChessData(), []);
 
   const lastKnownPointsRef = useRef(userProfile.points);
   const lastKnownStreakRef = useRef(userProfile.currentStreak);
 
   // Effect to update lastKnownPointsRef when userProfile.points changes
   useEffect(() => {
-    lastKnownPointsRef.current = userProfile.points;
-  }, [userProfile.points]);
+    if (!loadingUserProfile) {
+      lastKnownPointsRef.current = userProfile.points;
+    }
+  }, [userProfile.points, loadingUserProfile]);
 
   // Effect to update lastKnownStreakRef when userProfile.currentStreak changes
   useEffect(() => {
-    lastKnownStreakRef.current = userProfile.currentStreak;
-  }, [userProfile.currentStreak]);
+    if (!loadingUserProfile) {
+      lastKnownStreakRef.current = userProfile.currentStreak;
+    }
+  }, [userProfile.currentStreak, loadingUserProfile]);
 
   /**
    * Handles the logic for triggering a reward: selects a message, updates available rewards,
@@ -217,35 +224,19 @@ export const RewardProvider = ({ children }) => {
     }
   }, [rewardTracker, setRewardTracker]);
 
-  // Effect to check and award badges when user profile data changes
+  // Effect to check and award badges when user profile data or completed videos change
   useEffect(() => {
-    if (!userProfile || !userProfile.earnedBadges) return; // Ensure profile is loaded
+    if (!userProfile || !userProfile.earnedBadges || !completedVideos) return; // Ensure data is loaded
 
-    chess_badges_definitions.forEach((badge) => {
-      if (!userProfile.earnedBadges[badge.id]) {
-        let criteriaMet = false;
-        switch (badge.criteria.type) {
-          case BADGE_CRITERIA.POINTS_EARNED:
-            criteriaMet = userProfile.points >= badge.criteria.value;
-            break;
-          case BADGE_CRITERIA.LEARNING_STREAK:
-            criteriaMet = userProfile.currentStreak >= badge.criteria.value;
-            break;
-          // Add other criteria types as needed (e.g., TASKS_COMPLETED, STAGE_CLEARED, VIDEOS_WATCHED)
-          // For now, these would need to be passed into the RewardProvider or fetched here.
-          // For simplicity, we'll focus on points and streak for now.
-          default:
-            break;
-        }
-
-        if (criteriaMet) {
-          earnBadge(badge.id);
-          // Optionally, show a notification or a special modal for new badge earned
-          console.log(`Badge earned: ${badge.name}`);
-        }
-      }
-    });
-  }, [userProfile, earnBadge]); // Depend on userProfile and earnBadge
+    const updatedProfile = checkAndAwardChessBadges(
+      userProfile,
+      completedVideos,
+      structuredChessData
+    );
+    if (updatedProfile.earnedBadges !== userProfile.earnedBadges) {
+      earnBadge(updatedProfile.earnedBadges);
+    }
+  }, [userProfile, completedVideos, structuredChessData, earnBadge]);
 
   /** Closes the reward modal. */
   const closeRewardModal = () => {

@@ -220,7 +220,7 @@ const ProblemListView = ({
     : 0; // Summing totals from the stats object
 
   return (
-    <div>
+    <div data-testid="problem-list-view">
       {" "}
       {/* Removed id="problem-list-view" */}
       {/* The h2 viewTitle element has been removed */}

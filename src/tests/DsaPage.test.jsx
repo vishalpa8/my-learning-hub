@@ -1,3 +1,4 @@
+import React from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { BrowserRouter as Router } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
@@ -20,15 +21,17 @@ vi.mock("../hooks/useUserProfile", () => ({
 
 vi.mock("../hooks/useIndexedDb");
 
+let completedProblems = {};
+const setCompletedProblems = vi.fn((update) => {
+  if (typeof update === "function") {
+    completedProblems = update(completedProblems);
+  } else {
+    completedProblems = update;
+  }
+});
+
 describe("DsaPage", () => {
-  let completedProblems = {};
-  const setCompletedProblems = vi.fn((update) => {
-    if (typeof update === "function") {
-      completedProblems = update(completedProblems);
-    } else {
-      completedProblems = update;
-    }
-  });
+  
 
   beforeEach(() => {
     completedProblems = {};
@@ -37,7 +40,9 @@ describe("DsaPage", () => {
         return [completedProblems, setCompletedProblems];
       }
       if (key === DSA_LAST_ACTIVE_VIEW_KEY) {
-        return ["dashboard", vi.fn()];
+        // Use a local state to simulate the hook's behavior
+        const [activeViewMock, setActiveViewMock] = React.useState(initialValue);
+        return [activeViewMock, setActiveViewMock];
       }
       return [initialValue, vi.fn()];
     });

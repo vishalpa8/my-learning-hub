@@ -65,11 +65,11 @@ export const useChessUserData = (structuredChessData) => {
 
           // ELO Calculation: Adjust based on the change
           const wasPairCompleted =
-            Object.values(prevCompletedVideos).filter(Boolean).length % 2 ===
-              1 && newCompletedStatus;
+            Object.values(updatedCompletedVideos).filter(Boolean).length % 2 ===
+              0 && newCompletedStatus;
           const wasPairBroken =
-            Object.values(prevCompletedVideos).filter(Boolean).length % 2 ===
-              0 && !newCompletedStatus;
+            Object.values(updatedCompletedVideos).filter(Boolean).length % 2 ===
+              1 && !newCompletedStatus;
 
           if (wasPairCompleted) {
             updatedProfile.elo =

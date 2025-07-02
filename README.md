@@ -55,7 +55,7 @@ My Learning Hub is a comprehensive web application built with React, designed to
 my-learning-hub/
 ├── public/
 ├── src/
-│   ├── assets/         # Static assets like images, icons
+
 │   ├── components/     # Reusable UI components
 │   │   ├── chess/
 │   │   ├── dsa/

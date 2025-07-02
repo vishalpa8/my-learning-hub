@@ -1,4 +1,4 @@
-﻿import { GoogleGenAI } from "@google/genai";
+﻿import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /**
  * Gemini AI model for text generation.
@@ -13,9 +13,7 @@ let geminiAI = null;
 function initGemini() {
   if (!geminiAI && import.meta.env.VITE_GEMINI_API_KEY) {
     try {
-      geminiAI = new GoogleGenAI({
-        apiKey: import.meta.env.VITE_GEMINI_API_KEY,
-      });
+      geminiAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
     } catch (error) {
       console.error(
         "Failed to initialize GoogleGenAI. Please check your API key.",
@@ -68,7 +66,7 @@ export async function streamGeminiMessage(
     const { signal, model = DEFAULT_MODEL } = options;
 
     // Get the generative model instance. System instructions are passed here.
-    const contents = [{ role: "user", parts: [{ text: userMessage }] }];
+    
 
     const generationConfig = {
       temperature: 0.7,
@@ -92,13 +90,16 @@ export async function streamGeminiMessage(
     // Start the stream generation directly using the `models` property.
     // This avoids the `getGenerativeModel is not a function` error by using the
     // primary method shown in the SDK's documentation.
-    const streamResult = await geminiAI.models.generateContentStream({
+    const generativeModel = geminiAI.getGenerativeModel({
       model,
-      contents,
       systemInstruction: systemPrompt,
       generationConfig,
       safetySettings,
     });
+
+    const streamResult = await generativeModel.generateContentStream(
+      userMessage
+    );
 
     // Adapt the SDK's async generator to a browser-standard ReadableStream.
     const readableStream = new ReadableStream({
