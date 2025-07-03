@@ -86,7 +86,7 @@ export const getUniquePatterns = (problemsData) => {
 export const calculateOverallProgress = (problemsData, completedProblemsMap) => {
   const total = problemsData.length;
   const completed = Object.keys(completedProblemsMap || {}).filter(
-    (id) => completedProblemsMap[id]
+    (id) => !!completedProblemsMap[id]
   ).length;
   return {
     completed,

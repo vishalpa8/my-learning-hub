@@ -47,6 +47,7 @@ const DsaPage = () => {
     DSA_LAST_ACTIVE_VIEW_KEY,
     "dashboard"
   );
+
   const [filters, setFilters] = useState({
     difficulty: "all",
     topic: "all",
@@ -55,7 +56,7 @@ const DsaPage = () => {
     searchTerm: "",
   });
 
-  const [userProfile, addPoints, updateStreak] = useUserProfile();
+  const [userProfile, updatePoints] = useUserProfile();
 
   const [lastVisitedViewDates, setLastVisitedViewDates] = useIndexedDb(
     DSA_LAST_VISITED_VIEW_DATES_KEY,
@@ -67,13 +68,18 @@ const DsaPage = () => {
     [completedProblems]
   );
 
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
   useEffect(() => {
-    // When DSA progress changes, record it for reward checking.
-    // The RewardContext will handle the combined logic.
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+      return;
+    }
+
     if (recordDsaProgress) {
       recordDsaProgress(overallProgressStats.completed);
     }
-  }, [overallProgressStats.completed, recordDsaProgress]);
+  }, [overallProgressStats.completed, recordDsaProgress, isInitialLoad]);
 
   const handleToggleComplete = useCallback(
     (problemId) => {
@@ -83,16 +89,16 @@ const DsaPage = () => {
 
         if (isCurrentlyCompleted) {
           delete newCompleted[problemId];
+          updatePoints(-10, newCompleted[problemId]); // Deduct points, pass original completion date for removal
         } else {
-          newCompleted[problemId] = true;
-          // Award points and update streak only when a problem is newly completed
-          addPoints(10); // Example: 10 points per DSA problem
-          updateStreak(new Date());
+          newCompleted[problemId] = new Date().toISOString(); // Store completion date
+          updatePoints(10, newCompleted[problemId]); // Award points with activity date
         }
+
         return newCompleted;
       });
     },
-    [setCompletedProblems, addPoints, updateStreak]
+    [setCompletedProblems, updatePoints]
   );
 
   const handleFilterChange = useCallback((filterType, value) => {

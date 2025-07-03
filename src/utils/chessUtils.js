@@ -4,6 +4,7 @@ import {
   BADGE_CRITERIA,
 } from "../data/chessData";
 import { ELO_STAGES, INITIAL_CHESS_ELO } from "../constants/chessConstants";
+import { dateToDDMMYYYY, parseDDMMYYYYToDateObj } from "../utils/dateHelpers";
 
 /**
  * @typedef {object} StructuredPlaylist
@@ -153,12 +154,10 @@ export const checkAndAwardChessBadges = (
   completedVideos,
   structuredChessData
 ) => {
-  const newEarnedBadges = {}; // Start with an empty object for badges for this evaluation
-  const originalEarnedBadges = userProfile.earnedBadges || {}; // Keep track of previously earned badges
-  let badgesChanged = false; // Flag to see if the set of earned badges actually changed
+  const newEarnedBadges = {};
+  const originalEarnedBadges = userProfile.earnedBadges || {};
 
-  const totalVideosCompleted =
-    Object.values(completedVideos).filter(Boolean).length; // Count only true values
+  const totalVideosCompleted = Object.values(completedVideos).filter(Boolean).length;
 
   chess_badges_definitions.forEach((badge) => {
     let criteriaMet = false;
@@ -191,25 +190,80 @@ export const checkAndAwardChessBadges = (
         }
         break;
     }
+
     if (criteriaMet) {
       // If criteria are met, add/keep the badge.
       // Preserve original earnedAt date if it already existed.
       newEarnedBadges[badge.id] = originalEarnedBadges[badge.id]
-        ? originalEarnedBadges[badge.id] // Keep original earnedAt
-        : { earnedAt: new Date().toISOString() }; // New badge, set earnedAt
+        ? originalEarnedBadges[badge.id]
+        : { earnedAt: new Date().toISOString() };
     }
   });
 
-  // Check if the set of earned badges has actually changed.
-  // Given current logic (only adding/keeping badges), a change in length is sufficient.
-  if (
-    Object.keys(newEarnedBadges).length !==
-    Object.keys(originalEarnedBadges).length
-  ) {
-    badgesChanged = true;
+  // Determine if badges have changed (either added or removed)
+  const currentBadgeIds = Object.keys(newEarnedBadges);
+  const previousBadgeIds = Object.keys(originalEarnedBadges);
+
+  const badgesAdded = currentBadgeIds.some(
+    (id) => !previousBadgeIds.includes(id)
+  );
+  const badgesRemoved = previousBadgeIds.some(
+    (id) => !currentBadgeIds.includes(id)
+  );
+
+  if (badgesAdded || badgesRemoved) {
+    return { ...userProfile, earnedBadges: newEarnedBadges };
+  } else {
+    return userProfile;
+  }
+};
+
+/**
+ * Calculates the current and longest streak based on completed video dates.
+ * @param {Object.<string, boolean>} completedVideos - An object mapping video global IDs to their completion status.
+ * @returns {{currentStreak: number, longestStreak: number, lastActiveDate: string | null}}
+ */
+export const calculateStreakFromCompletedVideos = (
+  completedVideos
+) => {
+  const completedDates = new Set();
+  for (const videoId in completedVideos) {
+    if (completedVideos[videoId]) {
+      completedDates.add(dateToDDMMYYYY(new Date(completedVideos[videoId])));
+    }
   }
 
-  return badgesChanged
-    ? { ...userProfile, earnedBadges: newEarnedBadges } // Return updated profile only if badges changed
-    : userProfile; // Otherwise, return the original profile to prevent unnecessary state updates
+  const sortedDates = Array.from(completedDates)
+    .map((dateStr) => parseDDMMYYYYToDateObj(dateStr))
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  let currentStreak = 0;
+  let longestStreak = 0;
+  let lastDate = null;
+
+  if (sortedDates.length > 0) {
+    currentStreak = 1;
+    longestStreak = 1;
+    lastDate = sortedDates[0];
+
+    for (let i = 1; i < sortedDates.length; i++) {
+      const currentDate = sortedDates[i];
+      const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        currentStreak++;
+      } else if (diffDays > 1) {
+        currentStreak = 1; // Reset streak if not consecutive
+      }
+      longestStreak = Math.max(longestStreak, currentStreak);
+      lastDate = currentDate;
+    }
+  }
+
+  return {
+    currentStreak,
+    longestStreak,
+    lastActiveDate: lastDate ? dateToDDMMYYYY(lastDate) : null,
+  };
 };

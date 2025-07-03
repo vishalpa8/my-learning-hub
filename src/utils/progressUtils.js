@@ -21,23 +21,29 @@ export const calculateProgress = (
   let total = 0;
   let completed = 0;
 
+  const safeCompletedItems = completedItems || {}; // Ensure it's an object
+
   items.forEach((item) => {
     if (getSubItems) {
       const subItems = getSubItems(item) || [];
       total += subItems.length;
       subItems.forEach((subItem) => {
-        if (completedItems[getItemId(subItem)]) completed++;
+        if (safeCompletedItems[getItemId(subItem)]) completed++;
       });
     } else {
       total++;
-      if (completedItems[getItemId(item)]) completed++;
+      if (safeCompletedItems[getItemId(item)]) completed++;
     }
   });
 
+  // Ensure completed and total are numbers before calculation
+  const numericCompleted = Number(completed);
+  const numericTotal = Number(total);
+
   return {
-    completed,
-    total,
-    percent: total > 0 ? (completed / total) * 100 : 0,
+    completed: numericCompleted,
+    total: numericTotal,
+    percent: numericTotal > 0 ? (numericCompleted / numericTotal) * 100 : 0,
   };
 };
 

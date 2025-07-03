@@ -87,15 +87,15 @@ const ChessPage = () => {
           <div className="chess-hero-stats">
             <div>
               <span className="stat-label">ELO</span>
-              <span className="stat-value">{userProfile.elo ?? "N/A"}</span>
+              <span className="stat-value">{isNaN(userProfile.elo) ? "N/A" : userProfile.elo}</span>
             </div>
             <div>
               <span className="stat-label">Points</span>
-              <span className="stat-value">{userProfile.points}</span>
+              <span className="stat-value">{isNaN(userProfile.points) ? "N/A" : userProfile.points}</span>
             </div>
             <div>
               <span className="stat-label">Streak</span>
-              <span className="stat-value">{userProfile.currentStreak}🔥</span>
+              <span className="stat-value">{isNaN(userProfile.currentStreak) ? "N/A" : userProfile.currentStreak}🔥</span>
             </div>
           </div>
           <div className="chess-hero-actions">
@@ -133,7 +133,7 @@ const ChessPage = () => {
         {/* Use global .card style */}
         <h2>My Badges</h2>
         <div className="badges-scroll">
-          <UserBadges earnedBadges={userProfile.earnedBadges} />
+          <UserBadges earnedBadges={userProfile?.earnedBadges ?? {}} />
         </div>
       </section>
 
@@ -157,7 +157,7 @@ const ChessPage = () => {
                 <h2>
                   {stage.name}
                   <span className="elo-range-label">
-                    ({stage.id.replace("elo", "")} ELO)
+                    ({String(stage.id).replace("elo", "")} ELO)
                   </span>
                 </h2>
                 {stageProgress.total > 0 && (
@@ -171,7 +171,7 @@ const ChessPage = () => {
               <div className="playlists-grid">
                 {stage.playlists.map((playlist) => {
                   const playlistCompletedCount = playlist.videos.filter(
-                    (v) => completedVideos[v.globalId]
+                    (v) => !!completedVideos[v.globalId]
                   ).length;
                   return (
                     <div key={playlist.id} className="card playlist-card">

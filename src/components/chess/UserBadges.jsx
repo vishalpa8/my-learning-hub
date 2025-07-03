@@ -11,7 +11,7 @@ import "./UserBadges.css";
  *   if the badge has been earned by the user.
  *   Example: `{"beginner_learner": true, "consistent_student": { "earnedAt": "2023-01-01T00:00:00.000Z" }}`
  */
-const UserBadges = ({ earnedBadges }) => {
+const UserBadges = ({ earnedBadges = {} }) => {
   const earnedBadgeDetails = chess_badges_definitions.filter(
     (badgeDef) => earnedBadges[badgeDef.id]
   );

@@ -68,8 +68,7 @@ export const RewardProvider = ({ children }) => {
     }
   );
 
-  const [userProfile, addPoints, earnBadge, loadingUserProfile] =
-    useUserProfile();
+  const [userProfile, updatePoints, earnBadge, loadingUserProfile] = useUserProfile();
   const [completedVideos] = useIndexedDb(CHESS_USER_PROFILE_KEY, {});
 
   const structuredChessData = useMemo(() => getStructuredChessData(), []);
@@ -110,7 +109,7 @@ export const RewardProvider = ({ children }) => {
       );
 
       // Award points for the reward
-      addPoints(POINTS_PER_REWARD); // Assuming CONSTANTS.POINTS_PER_REWARD is defined elsewhere
+      updatePoints(POINTS_PER_REWARD); // Assuming CONSTANTS.POINTS_PER_REWARD is defined elsewhere
 
       return {
         ...tracker,
@@ -121,8 +120,8 @@ export const RewardProvider = ({ children }) => {
         pendingMessage: selectedMessage,
       };
     },
-    [addPoints]
-  ); // REWARDS is a module-level constant, so no dependencies needed.
+    [updatePoints]
+  );
 
   /**
    * Checks if the combined reward threshold is met and triggers the reward logic if so.

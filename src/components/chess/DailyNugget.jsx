@@ -18,8 +18,8 @@ const DailyNugget = () => {
     useSeenNuggets();
   const [
     ,
-    addPoints,
-    updateStreak,
+    updatePoints,
+    ,
     ,
     loadingProfile,
     errorProfile,
@@ -30,7 +30,7 @@ const DailyNugget = () => {
       return;
     }
 
-    const today = new Date();
+    
 
     // Filter out nuggets that have already been seen
     const unseenNuggets = nuggets.filter((nugget) => !seenNuggets[nugget.id]);
@@ -43,8 +43,7 @@ const DailyNugget = () => {
 
       // Mark nugget as seen and trigger point/streak update via callback
       markNuggetAsSeen(selectedNugget.id, () => {
-        addPoints(CONSTANTS.POINTS_PER_NUGGET);
-        updateStreak(today);
+        updatePoints(CONSTANTS.POINTS_PER_NUGGET, new Date().toISOString());
       });
     } else {
       // All nuggets have been seen, reset the seen nuggets for the next cycle
@@ -60,8 +59,7 @@ const DailyNugget = () => {
     errorSeenNuggets,
     seenNuggets,
     markNuggetAsSeen,
-    addPoints,
-    updateStreak,
+    updatePoints,
     loadingProfile,
     errorProfile,
     ]);

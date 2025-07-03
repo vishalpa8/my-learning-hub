@@ -54,8 +54,12 @@ export function useIndexedDb(key, initialValue) {
         // result is { id: key, value: data } or undefined
         if (isMounted) {
           if (result && "value" in result) {
-            setValue(result.value);
-            lastPersistedValue.current = result.value; // Crucial: Sync ref with loaded value
+            const loadedValue = result.value;
+            if (loadedValue && typeof loadedValue === 'object' && !Array.isArray(loadedValue.allActivityDates)) {
+              loadedValue.allActivityDates = []; // Ensure it's an array
+            }
+            setValue(loadedValue);
+            lastPersistedValue.current = loadedValue; // Crucial: Sync ref with loaded value
           }
           setHasLoaded(true);
         }

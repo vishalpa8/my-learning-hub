@@ -19,33 +19,50 @@ vi.mock("../hooks/useUserProfile", () => ({
   useUserProfile: vi.fn(() => [{}, vi.fn(), vi.fn()]),
 }));
 
-vi.mock("../hooks/useIndexedDb");
+vi.mock("../hooks/useIndexedDb", async (importOriginal) => {
+  const actual = await importOriginal();
+  let mockActiveView = "dashboard"; // Default initial value
+  let mockCompletedProblems = {};
+  const mockSetCompletedProblems = vi.fn((update) => {
+    if (typeof update === "function") {
+      mockCompletedProblems = update(mockCompletedProblems);
+    } else {
+      mockCompletedProblems = update;
+    }
+  });
 
-let completedProblems = {};
-const setCompletedProblems = vi.fn((update) => {
-  if (typeof update === "function") {
-    completedProblems = update(completedProblems);
-  } else {
-    completedProblems = update;
-  }
+  return {
+    ...actual,
+    useIndexedDb: vi.fn((key, initialValue) => {
+      if (key === DSA_COMPLETED_PROBLEMS_KEY) {
+        return [mockCompletedProblems, mockSetCompletedProblems];
+      }
+      if (key === DSA_LAST_ACTIVE_VIEW_KEY) {
+        // Return a controlled state for activeView
+        return [
+          mockActiveView,
+          vi.fn((newValue) => {
+            mockActiveView = newValue;
+          }),
+        ];
+      }
+      return [initialValue, vi.fn()];
+    }),
+    // Export helpers to set the mock states for tests
+    __setMockActiveView: (newView) => {
+      mockActiveView = newView;
+    },
+    __setMockCompletedProblems: (newCompleted) => {
+      mockCompletedProblems = newCompleted;
+    },
+  };
 });
 
 describe("DsaPage", () => {
-  
-
   beforeEach(() => {
-    completedProblems = {};
-    useIndexedDb.useIndexedDb.mockImplementation((key, initialValue) => {
-      if (key === DSA_COMPLETED_PROBLEMS_KEY) {
-        return [completedProblems, setCompletedProblems];
-      }
-      if (key === DSA_LAST_ACTIVE_VIEW_KEY) {
-        // Use a local state to simulate the hook's behavior
-        const [activeViewMock, setActiveViewMock] = React.useState(initialValue);
-        return [activeViewMock, setActiveViewMock];
-      }
-      return [initialValue, vi.fn()];
-    });
+    useIndexedDb.__setMockCompletedProblems({}); // Reset mock completed problems
+    useIndexedDb.__setMockActiveView("dashboard"); // Reset mock active view
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -67,9 +84,7 @@ describe("DsaPage", () => {
     expect(
       screen.getByRole("heading", { name: /DSA & CP Pathway/i })
     ).toBeInTheDocument();
-    expect(
-      screen.getByTestId("dashboard-view")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("dashboard-view")).toBeInTheDocument();
   });
 
   it("switches to the 'All Problems' view when the tab is clicked", async () => {
@@ -82,9 +97,7 @@ describe("DsaPage", () => {
     await user.click(allProblemsTab);
 
     await waitFor(() => {
-      expect(
-        screen.queryByTestId("dashboard-view")
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("dashboard-view")).not.toBeInTheDocument();
     });
     expect(await screen.findByTestId("problem-list-view")).toBeInTheDocument();
   });
@@ -104,9 +117,7 @@ describe("DsaPage", () => {
       const problems = screen.getAllByRole("article");
       expect(problems.length).toBeGreaterThan(0);
       problems.forEach((problem) => {
-        expect(
-          within(problem).getByText("Easy")
-        ).toBeInTheDocument();
+        expect(within(problem).getByText("Easy")).toBeInTheDocument();
       });
     });
 
@@ -125,18 +136,16 @@ describe("DsaPage", () => {
     });
     await user.click(allProblemsTab);
 
-    const firstProblemCheckbox = (
-      await screen.findAllByRole("checkbox")
-    )[0];
+    const firstProblemCheckbox = (await screen.findAllByRole("checkbox"))[0];
     expect(firstProblemCheckbox).not.toBeChecked();
 
     await user.click(firstProblemCheckbox);
     expect(firstProblemCheckbox).toBeChecked();
-    expect(setCompletedProblems).toHaveBeenCalledTimes(1);
+    expect(useIndexedDb.__setMockCompletedProblems).toHaveBeenCalledTimes(1);
 
     await user.click(firstProblemCheckbox);
     expect(firstProblemCheckbox).not.toBeChecked();
-    expect(setCompletedProblems).toHaveBeenCalledTimes(2);
+    expect(useIndexedDb.__setMockCompletedProblems).toHaveBeenCalledTimes(2);
   });
 
   it("should have no accessibility violations", async () => {

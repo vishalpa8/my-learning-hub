@@ -1,19 +1,9 @@
 import { useCallback } from "react";
 import { useIndexedDb } from "./useIndexedDb";
-import {
-  initialChessUserProfile,
-  checkAndAwardChessBadges,
-} from "../utils/chessUtils";
-import {
-  INITIAL_CHESS_ELO, // Import the constant
-} from "../constants/chessConstants";
+import { useUserProfile } from "./useUserProfile";
 import {
   CHESS_LEARNING_PROGRESS_KEY,
-  CHESS_USER_PROFILE_KEY,
 } from "../constants/localIndexedDbKeys";
-import { dateToDDMMYYYY, parseDDMMYYYYToDateObj } from "../utils/dateHelpers";
-
-const ELO_GAIN_PER_TWO_VIDEOS = 10; // Define how much ELO is gained for every 2 completed videos
 
 /**
  * Custom hook to manage chess user data, including video completion progress,
@@ -32,10 +22,7 @@ export const useChessUserData = (structuredChessData) => {
     CHESS_LEARNING_PROGRESS_KEY,
     {}
   );
-  const [userProfile, setUserProfile] = useIndexedDb(
-    CHESS_USER_PROFILE_KEY,
-    initialChessUserProfile
-  );
+  const [userProfile, updatePoints] = useUserProfile();
 
   /**
    * Toggles the completion status of a video, updates user points,
@@ -51,86 +38,21 @@ export const useChessUserData = (structuredChessData) => {
 
         const updatedCompletedVideos = { ...prevCompletedVideos };
         if (newCompletedStatus) {
-          updatedCompletedVideos[videoGlobalId] = true;
+          updatedCompletedVideos[videoGlobalId] = new Date().toISOString(); // Store completion date
         } else {
           delete updatedCompletedVideos[videoGlobalId];
         }
 
-        setUserProfile((prevProfile) => {
-          const pointsChange = newCompletedStatus ? videoPoints : -videoPoints;
-          let updatedProfile = {
-            ...prevProfile,
-            points: Math.max(0, prevProfile.points + pointsChange),
-          };
+        const pointsChange = newCompletedStatus ? videoPoints : -videoPoints;
+        const activityDate = newCompletedStatus ? updatedCompletedVideos[videoGlobalId] : prevCompletedVideos[videoGlobalId];
 
-          // ELO Calculation: Adjust based on the change
-          const wasPairCompleted =
-            Object.values(updatedCompletedVideos).filter(Boolean).length % 2 ===
-              0 && newCompletedStatus;
-          const wasPairBroken =
-            Object.values(updatedCompletedVideos).filter(Boolean).length % 2 ===
-              1 && !newCompletedStatus;
-
-          if (wasPairCompleted) {
-            updatedProfile.elo =
-              (prevProfile.elo || INITIAL_CHESS_ELO) + ELO_GAIN_PER_TWO_VIDEOS;
-          } else if (wasPairBroken) {
-            updatedProfile.elo =
-              (prevProfile.elo || INITIAL_CHESS_ELO) - ELO_GAIN_PER_TWO_VIDEOS;
-          }
-          // Ensure ELO doesn't drop below the initial value
-          if (updatedProfile.elo < INITIAL_CHESS_ELO) {
-            updatedProfile.elo = INITIAL_CHESS_ELO;
-          }
-
-          // Streak logic: Update only if a video is newly completed.
-          if (newCompletedStatus) {
-            const today = new Date();
-            const todayDateString = dateToDDMMYYYY(today);
-            let newCurrentStreak = prevProfile.currentStreak || 0;
-            let newLongestStreak = prevProfile.longestStreak || 0;
-
-            // Only update streak if it's a new day of activity
-            if (prevProfile.lastActiveDate !== todayDateString) {
-              const lastCompletion = prevProfile.lastActiveDate
-                ? parseDDMMYYYYToDateObj(prevProfile.lastActiveDate)
-                : null;
-
-              if (lastCompletion) {
-                const yesterday = new Date(today);
-                yesterday.setDate(today.getDate() - 1);
-                if (
-                  dateToDDMMYYYY(lastCompletion) === dateToDDMMYYYY(yesterday)
-                ) {
-                  newCurrentStreak = (prevProfile.currentStreak || 0) + 1;
-                } else {
-                  newCurrentStreak = 1; // Reset streak if not consecutive
-                }
-              } else {
-                newCurrentStreak = 1; // First completion or streak broken
-              }
-              updatedProfile.lastActiveDate = todayDateString;
-            }
-            updatedProfile.currentStreak = newCurrentStreak;
-            updatedProfile.longestStreak = Math.max(
-              newLongestStreak,
-              newCurrentStreak
-            );
-          }
-
-          // Check for badges after all profile updates
-          updatedProfile = checkAndAwardChessBadges(
-            updatedProfile,
-            updatedCompletedVideos,
-            structuredChessData
-          );
-          return updatedProfile;
-        });
+        // Use the updatePoints from useUserProfile to update points, ELO, streak, and badges
+        updatePoints(pointsChange, activityDate, updatedCompletedVideos, structuredChessData);
 
         return updatedCompletedVideos;
       });
     },
-    [structuredChessData, setCompletedVideos, setUserProfile]
+    [structuredChessData, setCompletedVideos, updatePoints]
   );
 
   return { completedVideos, userProfile, handleToggleVideoComplete };
