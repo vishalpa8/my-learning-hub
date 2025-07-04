@@ -49,7 +49,11 @@ export function useAIChatHistory() {
 
   // Effect to save chat history to sessionStorage whenever it changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handler = setTimeout(() => {
       try {
         sessionStorage.setItem(
           AI_CHAT_HISTORY_KEY,
@@ -58,7 +62,11 @@ export function useAIChatHistory() {
       } catch (error) {
         console.error("Error saving chat history to sessionStorage:", error);
       }
-    }
+    }, 300); // Debounce for 300ms
+
+    return () => {
+      clearTimeout(handler);
+    };
   }, [chatHistory]);
 
   /**

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Dexie from "dexie";
 import isEqual from "fast-deep-equal";
+import { dateToDDMMYYYY } from "../utils/dateHelpers";
+import { CHESS_USER_PROFILE_KEY } from "../constants/localIndexedDbKeys";
 
 // Use a more specific database name to avoid potential conflicts
 // Keep db instance module-local. Export functions for specific global operations.
@@ -54,7 +56,29 @@ export function useIndexedDb(key, initialValue) {
         // result is { id: key, value: data } or undefined
         if (isMounted) {
           if (result && "value" in result) {
-            const loadedValue = result.value;
+            let loadedValue = result.value;
+
+            // Normalize allActivityDates if this is the user profile key
+            if (key === CHESS_USER_PROFILE_KEY && loadedValue) {
+              // Normalize allActivityDates if it exists and is an array
+              if (Array.isArray(loadedValue.allActivityDates)) {
+                const normalizedDates = loadedValue.allActivityDates.map(dateStr => {
+                  // If it's an ISO string, convert it to DD-MM-YYYY
+                  if (dateStr && dateStr.includes('T') && dateStr.includes('Z')) {
+                    const dateObj = new Date(dateStr);
+                    return dateToDDMMYYYY(dateObj);
+                  } else { // Otherwise, assume it's already DD-MM-YYYY or invalid, keep as is
+                    return dateStr;
+                  }
+                }).filter(Boolean); // Remove any nulls or empty strings
+                loadedValue = { ...loadedValue, allActivityDates: normalizedDates };
+              }
+
+              // Ensure longestStreak is a number, default to 0 if not
+              if (typeof loadedValue.longestStreak !== 'number' || isNaN(loadedValue.longestStreak)) {
+                loadedValue.longestStreak = 0;
+              }
+            }
             
             setValue(loadedValue);
             lastPersistedValue.current = loadedValue; // Crucial: Sync ref with loaded value

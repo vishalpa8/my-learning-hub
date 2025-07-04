@@ -17,7 +17,7 @@ const ProgressCard = ({
     <div className="progress-card-header">
       <span className="progress-card-icon">{icon}</span>
       <h3>{title}</h3>
-      <span className="progress-card-percent">{percent}%</span>
+      <span className="progress-card-percent">{percent.toFixed(1)}%</span>
     </div>
     {total > 0 || (title === "Daily Routine" && completed >= 0) ? (
       <ProgressBarDisplay completed={completed} total={total} label={label} />

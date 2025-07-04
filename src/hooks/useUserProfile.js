@@ -1,6 +1,6 @@
 import { useIndexedDb } from "./useIndexedDb";
 import { CHESS_USER_PROFILE_KEY } from "../constants/localIndexedDbKeys";
-import { dateToDDMMYYYY } from "../utils/dateHelpers";
+import { dateToDDMMYYYY, parseDDMMYYYYToDateObj } from "../utils/dateHelpers";
 import { INITIAL_CHESS_ELO } from "../constants/chessConstants";
 import { checkAndAwardChessBadges } from "../utils/chessUtils";
 
@@ -55,15 +55,15 @@ export function useUserProfile() {
       }
 
       // Recalculate streak based on the updated activity dates
-      const { currentStreak, longestStreak, lastActivityDate } =
-        calculateStreak(newAllActivityDates, prevProfile.longestStreak);
+      const { currentStreak, lastActivityDate } =
+        calculateStreak(newAllActivityDates);
 
       let updatedProfile = {
         ...prevProfile,
         points: Math.max(0, (isNaN(Number(prevProfile.points)) ? 0 : Number(prevProfile.points)) + pointsChange),
         allActivityDates: newAllActivityDates,
         currentStreak,
-        longestStreak,
+        longestStreak: Math.max(prevProfile.longestStreak, currentStreak),
         lastActivityDate,
       };
 
@@ -92,23 +92,25 @@ export function useUserProfile() {
           structuredChessData
         );
       }
-
+      console.log("useUserProfile: Updated profile before return", updatedProfile);
       return updatedProfile;
     });
   };
 
-  const calculateStreak = (activityDates, prevLongestStreak) => {
+  const calculateStreak = (activityDates) => {
     if (!activityDates || activityDates.length === 0) {
       return {
         currentStreak: 0,
-        longestStreak: prevLongestStreak,
+        longestStreak: 0,
         lastActivityDate: null,
       };
     }
 
     const uniqueDates = Array.from(
-      new Set(activityDates.map((date) => dateToDDMMYYYY(new Date(date))))
-    ).sort();
+      new Set(activityDates)
+    ).map(dateStr => parseDDMMYYYYToDateObj(dateStr))
+     .filter(Boolean) // Remove any nulls from parsing errors
+     .sort((a, b) => a.getTime() - b.getTime());
 
     let currentStreak = 0;
     let longestStreak = 0;
@@ -117,10 +119,10 @@ export function useUserProfile() {
     if (uniqueDates.length > 0) {
       currentStreak = 1;
       longestStreak = 1;
-      lastDate = new Date(uniqueDates[0]);
+      lastDate = uniqueDates[0];
 
       for (let i = 1; i < uniqueDates.length; i++) {
-        const currentDate = new Date(uniqueDates[i]);
+        const currentDate = uniqueDates[i];
         const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -133,10 +135,9 @@ export function useUserProfile() {
         lastDate = currentDate;
       }
     }
-
     return {
       currentStreak,
-      longestStreak: Math.max(prevLongestStreak, longestStreak),
+      longestStreak,
       lastActivityDate: lastDate ? dateToDDMMYYYY(lastDate) : null,
     };
   };
@@ -150,10 +151,11 @@ export function useUserProfile() {
       if (prevProfile.earnedBadges[badgeId]) {
         return prevProfile; // Already earned
       }
-      return {
+      const updatedProfile = {
         ...prevProfile,
         earnedBadges: { ...prevProfile.earnedBadges, [badgeId]: true },
       };
+      return updatedProfile;
     });
   };
 

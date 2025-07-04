@@ -774,7 +774,7 @@ const ChatInterface = () => {
         abortControllerRef.current = null;
       }
     },
-    [selectedModel, setMessages, dispatch]
+    [selectedModel, setMessages, dispatch] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   // ===== HANDLERS =====
