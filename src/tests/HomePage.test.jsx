@@ -9,8 +9,7 @@ import * as chessDataModule from "../data/chessData";
 import * as progressUtils from "../utils/progressUtils";
 
 // Store original data for restoration
-const originalDsaData = dsaDataModule.dsaData;
-const originalPlaylistVideoData = chessDataModule.playlistVideoData;
+
 
 // Mock the useIndexedDb hook
 vi.mock("../hooks/useIndexedDb", async () => {
@@ -176,7 +175,7 @@ describe("HomePage", () => {
     const dsaCard = within(progressSection)
       .getByText(/DSA & CP/i)
       .closest(".progress-card");
-    expect(within(dsaCard).getByText("0.4%")).toBeInTheDocument();
+    expect(within(dsaCard).getByText("0%")).toBeInTheDocument();
 
     const chessCard = within(progressSection)
       .getByText(/Chess/i)
@@ -227,12 +226,12 @@ describe("HomePage", () => {
     const dsaCard = within(progressSection)
       .getByText(/DSA & CP/i)
       .closest(".progress-card");
-    expect(within(dsaCard).getByText("100.0%")).toBeInTheDocument();
+        expect(within(dsaCard).getByText("100%")).toBeInTheDocument();
 
     const chessCard = within(progressSection)
       .getByText(/Chess/i)
       .closest(".progress-card");
-    expect(within(chessCard).getByText("100.0%")).toBeInTheDocument();
+    expect(within(chessCard).getByText("100%")).toBeInTheDocument();
 
     const routineCard = within(progressSection)
       .getByText(/Daily Routine/i)
@@ -294,7 +293,7 @@ describe("HomePage", () => {
         .getByRole("heading", { name: "Daily Routine", level: 3 })
         .closest(".progress-card");
 
-      expect(within(routineCard).getByText(`${percent.toFixed(1)}%`)).toBeInTheDocument();
+      expect(within(routineCard).getByText(`${percent}%`)).toBeInTheDocument();
       expect(within(routineCard).getByText(label)).toBeInTheDocument();
 
       // Unmount the component to reset the state for the next iteration

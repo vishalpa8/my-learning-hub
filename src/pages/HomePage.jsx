@@ -26,7 +26,7 @@ const HomePage = () => {
   const dsaProgress = useMemo(() => {
     const completed = Object.keys(completedDsaProblems || {}).length;
     const total = dsaData.length;
-    const percent = total > 0 ? (completed / total) * 100 : 0;
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { completed, total, percent };
   }, [completedDsaProblems]);
 
@@ -36,7 +36,7 @@ const HomePage = () => {
       (acc, playlist) => acc + (playlist?.videos?.length || 0),
       0
     );
-    const percent = total > 0 ? (completed / total) * 100 : 0;
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { completed, total, percent };
   }, [completedChessVideos]);
 

@@ -32,5 +32,6 @@ module.exports = {
     expect: "readonly",
     beforeEach: "readonly",
     afterEach: "readonly",
+    global: "readonly",
   },
 };
