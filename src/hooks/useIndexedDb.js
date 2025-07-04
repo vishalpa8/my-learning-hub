@@ -55,9 +55,7 @@ export function useIndexedDb(key, initialValue) {
         if (isMounted) {
           if (result && "value" in result) {
             const loadedValue = result.value;
-            if (loadedValue && typeof loadedValue === 'object' && !Array.isArray(loadedValue.allActivityDates)) {
-              loadedValue.allActivityDates = []; // Ensure it's an array
-            }
+            
             setValue(loadedValue);
             lastPersistedValue.current = loadedValue; // Crucial: Sync ref with loaded value
           }

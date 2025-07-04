@@ -69,6 +69,7 @@ export const calculateChessProgress = (
 
 export const calculateEngagementProgress = (engagementTasksData) => {
   const todayObj = new Date();
+  todayObj.setHours(0, 0, 0, 0); // Normalize today to the start of the day
   const todayStr = dateToDDMMYYYY(todayObj);
   const allTasks = Object.values(engagementTasksData || {}).flat();
 
