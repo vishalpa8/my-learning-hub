@@ -34,7 +34,31 @@ export async function clearEntireDatabase() {
  * @returns [value, setValue, loading, error]
  */
 export function useIndexedDb(key, initialValue) {
-  const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(() => {
+    if (key === CHESS_USER_PROFILE_KEY && initialValue) {
+      let normalizedValue = { ...initialValue };
+      if (Array.isArray(normalizedValue.allActivityDates)) {
+        normalizedValue.allActivityDates = normalizedValue.allActivityDates
+          .map((dateStr) => {
+            if (dateStr && dateStr.includes("T") && dateStr.includes("Z")) {
+              const dateObj = new Date(dateStr);
+              return dateToDDMMYYYY(dateObj);
+            } else {
+              return dateStr;
+            }
+          })
+          .filter(Boolean);
+      }
+      if (
+        typeof normalizedValue.longestStreak !== "number" ||
+        isNaN(normalizedValue.longestStreak)
+      ) {
+        normalizedValue.longestStreak = 0;
+      }
+      return normalizedValue;
+    }
+    return initialValue;
+  });
   const [hasLoaded, setHasLoaded] = useState(false);
   // This ref will hold the last value that was either loaded from or saved to the DB.
   // Initialize to a unique symbol or undefined to ensure the first save of initialValue happens if DB is empty.
@@ -62,24 +86,30 @@ export function useIndexedDb(key, initialValue) {
             if (key === CHESS_USER_PROFILE_KEY && loadedValue) {
               // Normalize allActivityDates if it exists and is an array
               if (Array.isArray(loadedValue.allActivityDates)) {
-                const normalizedDates = loadedValue.allActivityDates.map(dateStr => {
-                  // If it's an ISO string, convert it to DD-MM-YYYY
-                  if (dateStr && dateStr.includes('T') && dateStr.includes('Z')) {
-                    const dateObj = new Date(dateStr);
-                    return dateToDDMMYYYY(dateObj);
-                  } else { // Otherwise, assume it's already DD-MM-YYYY or invalid, keep as is
-                    return dateStr;
-                  }
-                }).filter(Boolean); // Remove any nulls or empty strings
+                const normalizedDates = loadedValue.allActivityDates
+                  .map((dateStr) => {
+                    // If it's an ISO string, convert it to DD-MM-YYYY
+                    if (dateStr && dateStr.includes("T") && dateStr.includes("Z")) {
+                      const dateObj = new Date(dateStr);
+                      return dateToDDMMYYYY(dateObj);
+                    } else { 
+                      // Otherwise, assume it's already DD-MM-YYYY or invalid, keep as is
+                      return dateStr;
+                    }
+                  })
+                  .filter(Boolean); // Remove any nulls or empty strings
                 loadedValue = { ...loadedValue, allActivityDates: normalizedDates };
               }
 
               // Ensure longestStreak is a number, default to 0 if not
-              if (typeof loadedValue.longestStreak !== 'number' || isNaN(loadedValue.longestStreak)) {
+              if (
+                typeof loadedValue.longestStreak !== "number" ||
+                isNaN(loadedValue.longestStreak)
+              ) {
                 loadedValue.longestStreak = 0;
               }
             }
-            
+
             setValue(loadedValue);
             lastPersistedValue.current = loadedValue; // Crucial: Sync ref with loaded value
           }
