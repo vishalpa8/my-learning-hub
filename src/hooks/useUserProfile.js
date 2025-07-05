@@ -44,10 +44,12 @@ export function useUserProfile() {
       let newAllActivityDates = [...existingActivityDates];
 
       if (activityDate) {
+        // Convert ISO date string to DD-MM-YYYY format for consistent storage
+        const formattedDate = dateToDDMMYYYY(new Date(activityDate));
         if (pointsChange > 0) { // Marking complete, add date
-          newAllActivityDates.push(activityDate);
+          newAllActivityDates.push(formattedDate);
         } else if (pointsChange < 0) { // Unmarking, remove date
-          const index = newAllActivityDates.indexOf(activityDate);
+          const index = newAllActivityDates.indexOf(formattedDate);
           if (index > -1) {
             newAllActivityDates.splice(index, 1);
           }
@@ -55,7 +57,7 @@ export function useUserProfile() {
       }
 
       // Recalculate streak based on the updated activity dates
-      const { currentStreak, lastActivityDate } =
+      const { currentStreak, longestStreak, lastActivityDate } =
         calculateStreak(newAllActivityDates);
 
       let updatedProfile = {
@@ -63,7 +65,7 @@ export function useUserProfile() {
         points: Math.max(0, (isNaN(Number(prevProfile.points)) ? 0 : Number(prevProfile.points)) + pointsChange),
         allActivityDates: newAllActivityDates,
         currentStreak,
-        longestStreak: Math.max(prevProfile.longestStreak, currentStreak),
+        longestStreak: Math.max(prevProfile.longestStreak || 0, longestStreak),
         lastActivityDate,
       };
 
@@ -106,40 +108,78 @@ export function useUserProfile() {
       };
     }
 
-    const uniqueDates = Array.from(
-      new Set(activityDates)
-    ).map(dateStr => parseDDMMYYYYToDateObj(dateStr))
-     .filter(Boolean) // Remove any nulls from parsing errors
-     .sort((a, b) => a.getTime() - b.getTime());
+    // Dates are now stored in DD-MM-YYYY, so parse them correctly
+    const uniqueDates = Array.from(new Set(activityDates))
+      .map(dateStr => parseDDMMYYYYToDateObj(dateStr))
+      .filter(Boolean) // Remove any nulls from parsing errors
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    if (uniqueDates.length === 0) {
+      return { currentStreak: 0, longestStreak: 0, lastActivityDate: null };
+    }
 
     let currentStreak = 0;
     let longestStreak = 0;
     let lastDate = null;
 
-    if (uniqueDates.length > 0) {
-      currentStreak = 1;
-      longestStreak = 1;
-      lastDate = uniqueDates[0];
+    // Check if the most recent activity is today or yesterday to continue the streak
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const mostRecentDate = uniqueDates[uniqueDates.length - 1];
 
-      for (let i = 1; i < uniqueDates.length; i++) {
-        const currentDate = uniqueDates[i];
-        const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffFromToday = (today.getTime() - mostRecentDate.getTime()) / (1000 * 60 * 60 * 24);
 
-        if (diffDays === 1) {
-          currentStreak++;
-        } else if (diffDays > 1) {
-          currentStreak = 1; // Reset streak if not consecutive
-        }
-        longestStreak = Math.max(longestStreak, currentStreak);
-        lastDate = currentDate;
-      }
+    if (diffFromToday > 1) {
+      // If the last activity was more than a day ago, streak is broken
+      return {
+        currentStreak: 0,
+        longestStreak: calculateLongestStreak(uniqueDates), // Recalculate longest streak historically
+        lastActivityDate: dateToDDMMYYYY(mostRecentDate),
+      };
     }
+
+    // If streak is not broken, calculate the current streak
+    currentStreak = 1;
+    lastDate = mostRecentDate;
+
+    for (let i = uniqueDates.length - 2; i >= 0; i--) {
+      const currentDate = uniqueDates[i];
+      const diffTime = lastDate.getTime() - currentDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        currentStreak++;
+      } else if (diffDays > 1) {
+        break; // Streak is broken
+      }
+      lastDate = currentDate;
+    }
+
+    longestStreak = calculateLongestStreak(uniqueDates);
+
     return {
       currentStreak,
       longestStreak,
-      lastActivityDate: lastDate ? dateToDDMMYYYY(lastDate) : null,
+      lastActivityDate: dateToDDMMYYYY(mostRecentDate),
     };
+  };
+
+  // Helper function to calculate the longest streak from a sorted list of unique dates
+  const calculateLongestStreak = (sortedDates) => {
+    if (sortedDates.length === 0) return 0;
+
+    let longest = 1;
+    let current = 1;
+    for (let i = 1; i < sortedDates.length; i++) {
+      const diff = (sortedDates[i].getTime() - sortedDates[i - 1].getTime()) / (1000 * 60 * 60 * 24);
+      if (diff === 1) {
+        current++;
+      } else {
+        longest = Math.max(longest, current);
+        current = 1;
+      }
+    }
+    return Math.max(longest, current);
   };
 
   /**
