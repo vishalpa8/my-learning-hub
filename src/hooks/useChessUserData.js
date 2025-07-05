@@ -33,32 +33,25 @@ export const useChessUserData = (structuredChessData) => {
    */
   const handleToggleVideoComplete = useCallback(
     (videoGlobalId, videoPoints = 10) => {
-      console.log("useChessUserData: Toggling video completion for", videoGlobalId, "with points", videoPoints);
-      setCompletedVideos((prevCompletedVideos) => {
-        const isCurrentlyCompleted = !!prevCompletedVideos[videoGlobalId];
-        const newCompletedStatus = !isCurrentlyCompleted;
+      
 
-        const updatedCompletedVideos = { ...prevCompletedVideos };
-        const currentISODate = new Date().toISOString();
-        const currentDDMMYYYYDate = dateToDDMMYYYY(new Date());
+        setCompletedVideos((prev) => {
+        const isCompleted = !prev[videoGlobalId];
+        const updatedCompletedVideos = {
+          ...prev,
+          [videoGlobalId]: isCompleted,
+        };
 
-        if (newCompletedStatus) {
-          updatedCompletedVideos[videoGlobalId] = currentISODate; // Store completion date as ISO string
-        } else {
-          delete updatedCompletedVideos[videoGlobalId];
-        }
-
-        const pointsChange = newCompletedStatus ? videoPoints : -videoPoints;
-        // Pass the DD-MM-YYYY formatted date for streak calculation
-        const activityDateForStreak = newCompletedStatus ? currentDDMMYYYYDate : dateToDDMMYYYY(new Date(prevCompletedVideos[videoGlobalId]));
-
-        console.log("useChessUserData: isCurrentlyCompleted", isCurrentlyCompleted);
-        console.log("useChessUserData: newCompletedStatus", newCompletedStatus);
-        console.log("useChessUserData: pointsChange", pointsChange);
-        console.log("useChessUserData: activityDateForStreak", activityDateForStreak);
+        const pointsChange = isCompleted ? videoPoints : -videoPoints;
+        const activityDateForStreak = dateToDDMMYYYY(new Date());
 
         // Use the updatePoints from useUserProfile to update points, ELO, streak, and badges
-        updatePoints(pointsChange, activityDateForStreak, updatedCompletedVideos, structuredChessData);
+        updatePoints(
+          pointsChange,
+          activityDateForStreak,
+          updatedCompletedVideos,
+          structuredChessData
+        );
 
         return updatedCompletedVideos;
       });

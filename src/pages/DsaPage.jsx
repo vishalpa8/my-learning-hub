@@ -12,17 +12,15 @@ import {
   DSA_LAST_VISITED_VIEW_DATES_KEY,
 } from "../constants/localIndexedDbKeys";
 import {
-  groupAndSortProblemsByTopic, // Use this for the primary view
-  // groupProblemsByTopicAndPattern, // Keep if needed for other views/features
+  groupAndSortProblemsByTopic,
   getUniqueTopics,
-  getNormalizedDifficulty,
-  getNormalizedTopic,
   calculateOverallProgress,
 } from "../utils/dsaUtils";
 import "../styles/DsaStyles.css";
 import ProblemListView from "../components/dsa/ProblemListView";
 
-// Define viewOptions outside the component as it's constant
+// Custom hook to trace component re-renders
+
 const viewOptions = [
   { key: "dashboard", label: "Dashboard", icon: "📊" },
   { key: "all", label: "All Problems", icon: "📚" },
@@ -32,12 +30,11 @@ const viewOptions = [
 ];
 
 const DsaPage = () => {
-  const {
-    isModalVisible,
-    modalMessage,
-    recordDsaProgress, // Updated to use specific progress recorder
-    closeRewardModal,
-  } = useReward();
+  // console.log("%c[DsaPage] Component rendering or re-rendering.", "color: #4CAF50; font-weight: bold;");
+  // useTraceUpdate(props);
+
+  const { isModalVisible, modalMessage, recordDsaProgress, closeRewardModal } =
+    useReward();
 
   const [completedProblems, setCompletedProblems] = useIndexedDb(
     DSA_COMPLETED_PROBLEMS_KEY,
@@ -48,35 +45,35 @@ const DsaPage = () => {
     "dashboard"
   );
 
-  const [filters, setFilters] = useState({
-    difficulty: "all",
-    topic: "all",
-    pattern: "all",
-    status: "all",
-    searchTerm: "",
+  const [filters, setFilters] = useState(() => {
+    const initialFilters = {
+      difficulty: "all",
+      topic: "all",
+      pattern: "all",
+      status: "all",
+      searchTerm: "",
+    };
+    return initialFilters;
   });
 
   const [userProfile, updatePoints] = useUserProfile();
 
   const [lastVisitedViewDates, setLastVisitedViewDates] = useIndexedDb(
     DSA_LAST_VISITED_VIEW_DATES_KEY,
-    {} // { viewKey: dateString }
+    {}
   );
 
-  const overallProgressStats = useMemo(
-    () => calculateOverallProgress(dsaData, completedProblems),
-    [completedProblems]
-  );
+  const overallProgressStats = useMemo(() => {
+    const stats = calculateOverallProgress(dsaData, completedProblems);
+    return stats;
+  }, [completedProblems]);
 
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     if (isInitialLoad) {
       setIsInitialLoad(false);
-      return;
-    }
-
-    if (recordDsaProgress) {
+    } else if (recordDsaProgress) {
       recordDsaProgress(overallProgressStats.completed);
     }
   }, [overallProgressStats.completed, recordDsaProgress, isInitialLoad]);
@@ -86,15 +83,14 @@ const DsaPage = () => {
       setCompletedProblems((prev) => {
         const newCompleted = { ...prev };
         const isCurrentlyCompleted = !!newCompleted[problemId];
-
         if (isCurrentlyCompleted) {
           delete newCompleted[problemId];
-          updatePoints(-10, newCompleted[problemId]); // Deduct points, pass original completion date for removal
+          updatePoints(-10, newCompleted[problemId]);
         } else {
-          newCompleted[problemId] = new Date().toISOString(); // Store completion date
-          updatePoints(10, newCompleted[problemId]); // Award points with activity date
+          const completionDate = new Date().toISOString();
+          newCompleted[problemId] = completionDate;
+          updatePoints(10, completionDate);
         }
-
         return newCompleted;
       });
     },
@@ -108,14 +104,9 @@ const DsaPage = () => {
   const handleViewChange = useCallback(
     (viewKey) => {
       if (viewKey !== "dashboard") {
-        const today = new Date();
-        const todayStr = dateToDDMMYYYY(today);
-
+        const todayStr = dateToDDMMYYYY(new Date());
         if (lastVisitedViewDates[viewKey] !== todayStr) {
-          setLastVisitedViewDates((prev) => ({
-            ...prev,
-            [viewKey]: todayStr,
-          }));
+          setLastVisitedViewDates((prev) => ({ ...prev, [viewKey]: todayStr }));
         }
       }
       setActiveView(viewKey);
@@ -123,116 +114,86 @@ const DsaPage = () => {
     [setActiveView, setLastVisitedViewDates, lastVisitedViewDates]
   );
 
-  const uniqueTopics = useMemo(() => getUniqueTopics(dsaData), []);
+  const uniqueTopics = useMemo(() => {
+    const topics = getUniqueTopics(dsaData);
+    return topics;
+  }, []);
 
   const baseProblemsForActiveView = useMemo(() => {
-    if (activeView === "dashboard") {
-      return [];
-    }
-    if (activeView === "neetcode150") {
-      return dsaData.filter(
-        (p) => String(p.isNeetCode150).toLowerCase() === "true"
-      );
-    }
-    if (activeView === "striverSdeSheet") {
-      return dsaData.filter(
-        (p) => String(p.isStriverSDESheet).toLowerCase() === "true"
-      );
-    }
-    if (activeView === "lastMoment") {
-      return dsaData.filter(
-        (p) => String(p.isLastMoment).toLowerCase() === "true"
-      );
-    }
-    return dsaData;
+    let problems;
+    if (activeView === "dashboard") problems = [];
+    else if (activeView === "neetcode150")
+      problems = dsaData.filter((p) => p.isNeetCode150);
+    else if (activeView === "striverSdeSheet")
+      problems = dsaData.filter((p) => p.isStriverSDESheet);
+    else if (activeView === "lastMoment")
+      problems = dsaData.filter((p) => p.isLastMoment);
+    else problems = dsaData;
+    return problems;
   }, [activeView]);
 
   const viewProblems = useMemo(() => {
-    const { difficulty, topic, pattern, status, searchTerm } = filters;
-
-    return baseProblemsForActiveView.filter((p) => {
-      const normalizedDifficulty = getNormalizedDifficulty(
-        p.difficulty
-      ).toLowerCase();
-      const normalizedTopic = getNormalizedTopic(p.topic).toLowerCase();
-
-      const difficultyMatch =
-        difficulty === "all" || normalizedDifficulty === difficulty;
-      const topicMatch = topic === "all" || normalizedTopic === topic;
-      const patternMatch =
-        pattern === "all" ||
-        (p.pattern && p.pattern.toLowerCase().includes(pattern));
-      const searchTermMatch =
-        searchTerm === "" ||
-        p.title.toLowerCase().includes(searchTerm) ||
-        (p.subTopic && p.subTopic.toLowerCase().includes(searchTerm));
-      const statusMatch =
-        status === "all" ||
-        (status === "completed" && completedProblems[p.id]) ||
-        (status === "pending" && !completedProblems[p.id]);
-
+    const { difficulty, topic, status, searchTerm } = filters;
+    const filtered = baseProblemsForActiveView.filter((p) => {
       return (
-        difficultyMatch &&
-        topicMatch &&
-        patternMatch &&
-        searchTermMatch &&
-        statusMatch
+        (difficulty === "all" ||
+          p.normalizedDifficulty.toLowerCase() === difficulty) &&
+        (topic === "all" || p.normalizedTopic.toLowerCase() === topic) &&
+        (searchTerm === "" ||
+          p.title.toLowerCase().includes(searchTerm) ||
+          (p.subTopic && p.subTopic.toLowerCase().includes(searchTerm))) &&
+        (status === "all" ||
+          (status === "completed" && completedProblems[p.id]) ||
+          (status === "pending" && !completedProblems[p.id]))
       );
     });
+    return filtered;
   }, [baseProblemsForActiveView, filters, completedProblems]);
 
-  const groupedProblems = useMemo(
-    () => groupAndSortProblemsByTopic(viewProblems, completedProblems),
-    [viewProblems, completedProblems]
-  );
+  const groupedProblems = useMemo(() => {
+    const grouped = groupAndSortProblemsByTopic(
+      viewProblems,
+      completedProblems
+    );
+    return grouped;
+  }, [viewProblems, completedProblems]);
 
-  const calculateDifficultyStats = (problems, completedProblems) => {
+  const calculateDifficultyStats = useCallback((problems, completed) => {
     const stats = {
       easy: { total: 0, completed: 0 },
       medium: { total: 0, completed: 0 },
       hard: { total: 0, completed: 0 },
     };
-
-    if (!problems || problems.length === 0) {
-      return stats;
-    }
-
-    problems.forEach((problem) => {
-      const normalizedDifficultyFromUtil = getNormalizedDifficulty(
-        problem.difficulty
-      );
-      const difficultyKey = normalizedDifficultyFromUtil
-        ? normalizedDifficultyFromUtil.toLowerCase()
-        : null;
-      if (difficultyKey && stats[difficultyKey]) {
-        stats[difficultyKey].total++;
-        if (completedProblems[problem.id]) {
-          stats[difficultyKey].completed++;
+    if (problems?.length) {
+      problems.forEach((problem) => {
+        const difficultyKey = problem.normalizedDifficulty.toLowerCase();
+        if (stats[difficultyKey]) {
+          stats[difficultyKey].total++;
+          if (completed[problem.id]) stats[difficultyKey].completed++;
+        } else if (difficultyKey) {
+          console.warn(
+            `[DsaPage] Difficulty key "${difficultyKey}" for problem "${problem.title}" is not a recognized key in stats object (easy, medium, hard).`
+          );
         }
-      } else if (difficultyKey) {
-        console.warn(
-          `[DsaPage] Difficulty key "${difficultyKey}" for problem "${problem.title}" is not a recognized key in stats object (easy, medium, hard).`
-        );
-      }
-    });
+      });
+    }
     return stats;
-  };
+  }, []);
 
   const currentViewDifficultyStats = useMemo(
     () =>
       calculateDifficultyStats(baseProblemsForActiveView, completedProblems),
-    [baseProblemsForActiveView, completedProblems]
+    [baseProblemsForActiveView, completedProblems, calculateDifficultyStats]
   );
 
   const filteredDifficultyStats = useMemo(
     () => calculateDifficultyStats(viewProblems, completedProblems),
-    [viewProblems, completedProblems]
+    [viewProblems, completedProblems, calculateDifficultyStats]
   );
 
   return (
     <div className="dsa-page-outer">
       <header className="dsa-hero">
-        {/* Hero content remains the same */}
         <div className="dsa-hero-content">
           <h1>
             <span role="img" aria-label="brain">
@@ -357,7 +318,7 @@ const DsaPage = () => {
               data-testid="dashboard-view"
               overallProgress={overallProgressStats}
               totalProblems={dsaData.length}
-              streakData={userProfile} // Pass entire userProfile object
+              streakData={userProfile}
             />
           ) : (
             <ProblemListView

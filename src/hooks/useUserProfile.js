@@ -94,7 +94,7 @@ export function useUserProfile() {
           structuredChessData
         );
       }
-      console.log("useUserProfile: Updated profile before return", updatedProfile);
+      
       return updatedProfile;
     });
   };

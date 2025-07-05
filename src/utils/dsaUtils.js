@@ -1,55 +1,97 @@
-import {
-  difficultyOrder,
-  TOPIC_DISPLAY_ORDER,
-  NORMALIZED_TOPIC_MERGE_MAP,
-} from "../data/dsaData";
+// Difficulty order as an array for sorting and indexing
+export const difficultyOrder = ["Easy", "Medium", "Hard"];
 
-const UNKNOWN_DIFFICULTY_SORT_VALUE = difficultyOrder.length; // Sort unknown difficulties last
+export const TOPIC_DISPLAY_ORDER = [
+  "Arrays",
+  "Strings",
+  "Linked Lists",
+  "Stacks & Queues",
+  "Trees",
+  "Binary Search Trees",
+  "Graphs",
+  "Dynamic Programming",
+  "Backtracking / Recursion",
+  "Greedy",
+  "Heaps",
+  "Sliding Window",
+  "Tries",
+  "Bit Manipulation",
+  "Math & Number Theory",
+  "Geometry",
+  "Sorting & Searching",
+  "Advanced Data Structures & Algorithms",
+];
 
-/**
- * Helper function to get a sortable index for difficulty.
- * @param {string} difficulty - The normalized difficulty string.
- * @returns {number} The sort index for the difficulty.
- */
+export const TOPIC_MERGE_MAP = {
+  Stacks: "Stacks & Queues",
+  Queues: "Stacks & Queues",
+  Stack: "Stacks & Queues",
+  Queue: "Stacks & Queues",
+  "Binary Trees": "Trees",
+  BST: "Binary Search Trees",
+  "Graphs (BFS/DFS)": "Graphs",
+  Recursion: "Backtracking / Recursion",
+  Backtracking: "Backtracking / Recursion",
+  Bitwise: "Bit Manipulation",
+  "Number Theory": "Math & Number Theory",
+  Advanced: "Advanced Data Structures & Algorithms",
+};
+
+export const NORMALIZED_TOPIC_MERGE_MAP = new Map(
+  Object.entries(TOPIC_MERGE_MAP).map(([k, v]) => [k.toLowerCase(), v])
+);
+
+const UNKNOWN_DIFFICULTY_SORT_VALUE = difficultyOrder.length;
+
 const getDifficultyIndex = (difficulty) => {
   const index = difficultyOrder.indexOf(difficulty);
   return index === -1 ? UNKNOWN_DIFFICULTY_SORT_VALUE : index;
 };
 
-/**
- * Normalizes a difficulty string.
- * @param {string} difficulty - The raw difficulty string.
- * @returns {string} The normalized difficulty ("Easy", "Medium", "Hard", or "N/A").
- */
+const difficultyCache = new Map();
 export const getNormalizedDifficulty = (difficulty) => {
-  if (!difficulty) return "N/A";
-  const lowerDifficulty = difficulty.toLowerCase();
-  if (lowerDifficulty.includes("easy")) return "Easy";
-  if (lowerDifficulty.includes("medium")) return "Medium";
-  if (lowerDifficulty.includes("hard")) return "Hard";
-  return "N/A";
+  if (difficultyCache.has(difficulty)) {
+    return difficultyCache.get(difficulty);
+  }
+
+  let normalized = "N/A";
+  if (difficulty) {
+    const lowerDifficulty = difficulty.toLowerCase();
+    if (lowerDifficulty.includes("easy")) normalized = "Easy";
+    else if (lowerDifficulty.includes("medium")) normalized = "Medium";
+    else if (lowerDifficulty.includes("hard")) normalized = "Hard";
+  }
+  difficultyCache.set(difficulty, normalized);
+  return normalized;
 };
 
-/**
- * Normalizes a topic string using a merge map.
- * @param {string} topic - The raw topic string.
- * @returns {string} The normalized topic string.
- */
+const topicCache = new Map();
 export const getNormalizedTopic = (topic) => {
-  if (!topic) return "Miscellaneous";
-  const lowerTopic = topic.toLowerCase().trim();
-  return NORMALIZED_TOPIC_MERGE_MAP.get(lowerTopic) || topic; // Fallback to original if not in map
+  if (topicCache.has(topic)) {
+    return topicCache.get(topic);
+  }
+
+  let normalized = "Miscellaneous";
+  if (topic) {
+    const lowerTopic = topic.toLowerCase().trim();
+    normalized = NORMALIZED_TOPIC_MERGE_MAP.get(lowerTopic) || topic;
+  }
+  topicCache.set(topic, normalized);
+  return normalized;
 };
 
-/**
- * Extracts unique, normalized topics from the DSA data, sorted by TOPIC_DISPLAY_ORDER.
- * @param {Array<Object>} problemsData - The array of DSA problem objects.
- * @returns {Array<string>} An array of unique, sorted topic names.
- */
+export const preprocessDsaData = (data) => {
+  return data.map(problem => ({
+    ...problem,
+    normalizedDifficulty: getNormalizedDifficulty(problem.difficulty),
+    normalizedTopic: getNormalizedTopic(problem.topic)
+  }));
+};
+
 export const getUniqueTopics = (problemsData) => {
   const topics = new Set();
   problemsData.forEach((p) => topics.add(getNormalizedTopic(p.topic)));
-  return Array.from(topics).sort((a, b) => {
+  const sortedTopics = Array.from(topics).sort((a, b) => {
     const indexA = TOPIC_DISPLAY_ORDER.indexOf(a);
     const indexB = TOPIC_DISPLAY_ORDER.indexOf(b);
     if (indexA !== -1 && indexB !== -1) return indexA - indexB;
@@ -57,115 +99,79 @@ export const getUniqueTopics = (problemsData) => {
     if (indexB !== -1) return 1;
     return a.localeCompare(b);
   });
+  return sortedTopics;
 };
 
-/**
- * Extracts unique patterns from the DSA data.
- * @param {Array<Object>} problemsData - The array of DSA problem objects.
- * @returns {Array<string>} An array of unique pattern names, sorted alphabetically.
- */
 export const getUniquePatterns = (problemsData) => {
   const patterns = new Set();
   problemsData.forEach((p) => {
     if (p.pattern) {
-      p.pattern
-        .split(",")
-        .map((pat) => pat.trim())
-        .forEach((pat) => patterns.add(pat));
+      p.pattern.split(",").map((pat) => pat.trim()).forEach((pat) => patterns.add(pat));
     }
   });
-  return Array.from(patterns).sort();
+  const sortedPatterns = Array.from(patterns).sort();
+  return sortedPatterns;
 };
 
-/**
- * Calculates overall progress based on completed problems.
- * @param {Array<Object>} problemsData - The full list of DSA problems.
- * @param {Object.<string, boolean>} completedProblemsMap - An object mapping problem IDs to completion status.
- * @returns {{completed: number, total: number, percent: number}} Progress statistics.
- */
 export const calculateOverallProgress = (problemsData, completedProblemsMap) => {
   const total = problemsData.length;
   const completed = Object.keys(completedProblemsMap || {}).filter(
     (id) => !!completedProblemsMap[id]
   ).length;
-  return {
+  const result = {
     completed,
     total,
     percent: total > 0 ? (completed / total) * 100 : 0,
   };
+  return result;
 };
 
-/**
- * Groups problems by topic, sorts them by difficulty and title, and marks completion status.
- * @param {Array<Object>} problems - The array of problems to group and sort.
- * @param {Object.<string, boolean>} completedProblemsMap - An object mapping problem IDs to their completion status.
- * @returns {Map<string, Array<Object>>} A Map where keys are topic names and values are arrays of sorted problem objects,
- * each augmented with an `isCompleted` property.
- */
 export const groupAndSortProblemsByTopic = (problems, completedProblemsMap) => {
   const grouped = new Map();
 
   problems.forEach(problem => {
-    const topic = getNormalizedTopic(problem.topic);
+    const topic = problem.normalizedTopic;
     const problemWithStatus = {
       ...problem,
-      isCompleted: !!completedProblemsMap[problem.id], // Add completion status
+      isCompleted: !!completedProblemsMap[problem.id],
     };
-
     if (!grouped.has(topic)) {
       grouped.set(topic, []);
     }
     grouped.get(topic).push(problemWithStatus);
   });
 
-  // Sort topics based on TOPIC_DISPLAY_ORDER
   const sortedTopics = new Map(
     [...grouped.entries()].sort(([topicA], [topicB]) => {
       const indexA = TOPIC_DISPLAY_ORDER.indexOf(topicA);
       const indexB = TOPIC_DISPLAY_ORDER.indexOf(topicB);
       if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-      if (indexA !== -1) return -1; // topicA is in order, topicB is not
-      if (indexB !== -1) return 1;  // topicB is in order, topicA is not
-      return topicA.localeCompare(topicB); // Fallback to alphabetical if not in order
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return topicA.localeCompare(topicB);
     })
   );
 
-  // Sort problems within each topic
   sortedTopics.forEach((problemsInTopic) => {
     problemsInTopic.sort((a, b) => {
-      const difficultyIndexA = getDifficultyIndex(getNormalizedDifficulty(a.difficulty));
-      const difficultyIndexB = getDifficultyIndex(getNormalizedDifficulty(b.difficulty));
-
+      const difficultyIndexA = getDifficultyIndex(a.normalizedDifficulty);
+      const difficultyIndexB = getDifficultyIndex(b.normalizedDifficulty);
       if (difficultyIndexA !== difficultyIndexB) {
         return difficultyIndexA - difficultyIndexB;
       }
       return (a.title || "").localeCompare(b.title || "");
     });
   });
-
   return sortedTopics;
 };
 
-
-/**
- * Groups problems by topic and then by pattern, sorts them, and marks completion status.
- * @param {Array<Object>} problems - The array of problems to group and sort.
- * @param {Object.<string, boolean>} completedProblemsMap - An object mapping problem IDs to their completion status.
- * @returns {Map<string, Map<string, Array<Object>>>} A Map where keys are topic names,
- * and values are Maps where keys are pattern names and values are arrays of sorted problem objects,
- * each augmented with an `isCompleted` property.
- */
 export const groupProblemsByTopicAndPattern = (problems, completedProblemsMap) => {
   const groupedByTopic = new Map();
 
   problems.forEach(problem => {
-    const topic = getNormalizedTopic(problem.topic);
+    const topic = problem.normalizedTopic;
     const mainPattern = problem.pattern ? problem.pattern.split(" - Covered in ")[0].trim() : "General";
-    const problemWithStatus = {
-      ...problem,
-      isCompleted: !!completedProblemsMap[problem.id],
-    };
-
+    const problemWithStatus = { ...problem, isCompleted: !!completedProblemsMap[problem.id] };
     if (!groupedByTopic.has(topic)) {
       groupedByTopic.set(topic, new Map());
     }
@@ -176,7 +182,6 @@ export const groupProblemsByTopicAndPattern = (problems, completedProblemsMap) =
     patternsMap.get(mainPattern).push(problemWithStatus);
   });
 
-  // Sort topics
   const sortedTopics = new Map(
     [...groupedByTopic.entries()].sort(([topicA], [topicB]) => {
       const indexA = TOPIC_DISPLAY_ORDER.indexOf(topicA);
@@ -188,18 +193,15 @@ export const groupProblemsByTopicAndPattern = (problems, completedProblemsMap) =
     })
   );
 
-  // Sort patterns within each topic and problems within each pattern
   sortedTopics.forEach(patternsMap => {
     const sortedPatternsMap = new Map(
-      [...patternsMap.entries()].sort(([patternA], [patternB]) =>
-        patternA.localeCompare(patternB)
-      )
+      [...patternsMap.entries()].sort(([patternA], [patternB]) => patternA.localeCompare(patternB))
     );
-    patternsMap.clear(); // Clear original and repopulate with sorted
+    patternsMap.clear();
     sortedPatternsMap.forEach((problemsInPattern, pattern) => {
       problemsInPattern.sort((a, b) => {
-        const difficultyIndexA = getDifficultyIndex(getNormalizedDifficulty(a.difficulty));
-        const difficultyIndexB = getDifficultyIndex(getNormalizedDifficulty(b.difficulty));
+        const difficultyIndexA = getDifficultyIndex(a.normalizedDifficulty);
+        const difficultyIndexB = getDifficultyIndex(b.normalizedDifficulty);
         if (difficultyIndexA !== difficultyIndexB) {
           return difficultyIndexA - difficultyIndexB;
         }
@@ -208,6 +210,5 @@ export const groupProblemsByTopicAndPattern = (problems, completedProblemsMap) =
       patternsMap.set(pattern, problemsInPattern);
     });
   });
-
   return sortedTopics;
 };
