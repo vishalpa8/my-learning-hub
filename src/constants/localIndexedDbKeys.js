@@ -70,3 +70,6 @@ export const SEEN_NUGGETS_KEY = "seenNuggets";
  * Expected value: An array of message objects, e.g., `[{ role: "user", content: "Hello" }, { role: "model", content: "Hi there!" }]`
  */
 export const AI_CHAT_HISTORY_KEY = "aiChatHistory";
+
+/** Key for storing the custom order of DSA problems. Expected value: An object mapping view keys to an array of problem IDs. */
+export const DSA_CUSTOM_PROBLEM_ORDER_KEY = "dsaCustomProblemOrder";

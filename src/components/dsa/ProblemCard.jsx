@@ -17,11 +17,7 @@ import { getNormalizedDifficulty } from "../../utils/dsaUtils";
  * @param {function(string): void} props.onToggleComplete - Callback function to toggle the completion status.
  * @param {boolean} [props.showPatternTruncated=false] - If true, truncates the pattern display (e.g., removes " - Covered in ...").
  */
-const ProblemCard = ({
-  problem,
-  onToggleComplete,
-  showPatternTruncated = false,
-}) => {
+const ProblemCard = ({ problem, onToggleComplete, showPatternTruncated, dragHandleProps }) => {
   const normalizedDifficulty = getNormalizedDifficulty(problem.difficulty);
   const difficultyClass = `difficulty-${normalizedDifficulty.toLowerCase()}`;
   const cardClasses = `problem-item ${difficultyClass} ${
@@ -49,24 +45,29 @@ const ProblemCard = ({
       }}
     >
       <div className="problem-main-content">
-        <h3 className="problem-title">
-          {problem.problemLink ? (
-            <a
-              href={problem.problemLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="problem-title-link"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent card's main navigation onClick
-                // Link will navigate on its own
-              }}
-            >
-              {problem.title}
-            </a>
-          ) : (
-            problem.title
-          )}
-        </h3>
+        <div className="problem-card-header">
+          <div className="drag-handle" {...dragHandleProps}>
+            <span className="drag-icon">☰</span>
+          </div>
+          <h3 className="problem-title">
+            {problem.problemLink ? (
+              <a
+                href={problem.problemLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="problem-title-link"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card's main navigation onClick
+                  // Link will navigate on its own
+                }}
+              >
+                {problem.title}
+              </a>
+            ) : (
+              problem.title
+            )}
+          </h3>
+        </div>
         <div className="problem-meta-tags">
           <span className={`problem-difficulty ${difficultyClass}`}>
             {normalizedDifficulty}

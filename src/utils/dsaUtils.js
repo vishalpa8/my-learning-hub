@@ -126,10 +126,15 @@ export const calculateOverallProgress = (problemsData, completedProblemsMap) => 
   return result;
 };
 
-export const groupAndSortProblemsByTopic = (problems, completedProblemsMap) => {
+export const groupAndSortProblemsByTopic = (
+  problems,
+  completedProblemsMap,
+  customProblemOrder = {}
+) => {
   const grouped = new Map();
 
-  problems.forEach(problem => {
+  // Group problems by topic first
+  problems.forEach((problem) => {
     const topic = problem.normalizedTopic;
     const problemWithStatus = {
       ...problem,
@@ -141,6 +146,41 @@ export const groupAndSortProblemsByTopic = (problems, completedProblemsMap) => {
     grouped.get(topic).push(problemWithStatus);
   });
 
+  // If the custom order is in the old array format, don't sort within topics
+  if (Array.isArray(customProblemOrder)) {
+    // The `problems` array is already sorted correctly by `problemsInView`
+    // so we just need to sort the topics themselves.
+  } else {
+    // Sort problems within each topic based on custom order or default
+    for (const [topic, problemsInTopic] of grouped.entries()) {
+      const orderForTopic = customProblemOrder ? customProblemOrder[topic] : null;
+      if (orderForTopic) {
+        const problemMap = new Map(problemsInTopic.map((p) => [p.id, p]));
+        const orderedProblems = orderForTopic
+          .map((id) => problemMap.get(id))
+          .filter(Boolean);
+        const orderedIds = new Set(orderForTopic);
+        problemsInTopic.forEach((p) => {
+          if (!orderedIds.has(p.id)) {
+            orderedProblems.push(p);
+          }
+        });
+        grouped.set(topic, orderedProblems);
+      } else {
+        // Default sort if no custom order exists for this topic
+        problemsInTopic.sort((a, b) => {
+          const difficultyIndexA = getDifficultyIndex(a.normalizedDifficulty);
+          const difficultyIndexB = getDifficultyIndex(b.normalizedDifficulty);
+          if (difficultyIndexA !== difficultyIndexB) {
+            return difficultyIndexA - difficultyIndexB;
+          }
+          return a.title.localeCompare(b.title);
+        });
+      }
+    }
+  }
+
+  // Sort the topics themselves according to the display order
   const sortedTopics = new Map(
     [...grouped.entries()].sort(([topicA], [topicB]) => {
       const indexA = TOPIC_DISPLAY_ORDER.indexOf(topicA);
@@ -152,16 +192,6 @@ export const groupAndSortProblemsByTopic = (problems, completedProblemsMap) => {
     })
   );
 
-  sortedTopics.forEach((problemsInTopic) => {
-    problemsInTopic.sort((a, b) => {
-      const difficultyIndexA = getDifficultyIndex(a.normalizedDifficulty);
-      const difficultyIndexB = getDifficultyIndex(b.normalizedDifficulty);
-      if (difficultyIndexA !== difficultyIndexB) {
-        return difficultyIndexA - difficultyIndexB;
-      }
-      return (a.title || "").localeCompare(b.title || "");
-    });
-  });
   return sortedTopics;
 };
 

@@ -10,6 +10,7 @@ import {
   DSA_COMPLETED_PROBLEMS_KEY,
   DSA_LAST_ACTIVE_VIEW_KEY,
   DSA_LAST_VISITED_VIEW_DATES_KEY,
+  DSA_CUSTOM_PROBLEM_ORDER_KEY,
 } from "../constants/localIndexedDbKeys";
 import {
   groupAndSortProblemsByTopic,
@@ -61,6 +62,11 @@ const DsaPage = () => {
   const [lastVisitedViewDates, setLastVisitedViewDates] = useIndexedDb(
     DSA_LAST_VISITED_VIEW_DATES_KEY,
     {}
+  );
+
+  const [customProblemOrder, setCustomProblemOrder] = useIndexedDb(
+    DSA_CUSTOM_PROBLEM_ORDER_KEY,
+    {} // Initial value is an empty object
   );
 
   const overallProgressStats = useMemo(() => {
@@ -132,9 +138,60 @@ const DsaPage = () => {
     return problems;
   }, [activeView]);
 
+  const problemsInView = useMemo(() => {
+    const problemMap = new Map(
+      baseProblemsForActiveView.map((p) => [p.id, p])
+    );
+    const viewOrder = customProblemOrder[activeView];
+
+    if (!viewOrder) {
+      return baseProblemsForActiveView;
+    }
+
+    // Backward compatibility: if viewOrder is an array, it's the old format
+    if (Array.isArray(viewOrder)) {
+      const orderedProblems = viewOrder
+        .map((id) => problemMap.get(id))
+        .filter(Boolean);
+      const seenIds = new Set(viewOrder);
+      baseProblemsForActiveView.forEach((p) => {
+        if (!seenIds.has(p.id)) {
+          orderedProblems.push(p);
+        }
+      });
+      return orderedProblems;
+    }
+
+    const orderedProblems = [];
+    const seenIds = new Set();
+
+    // New format: viewOrder is an object of topics
+    for (const topic in viewOrder) {
+      if (Object.prototype.hasOwnProperty.call(viewOrder, topic)) {
+        if (Array.isArray(viewOrder[topic])) {
+          viewOrder[topic].forEach((problemId) => {
+            if (problemMap.has(problemId) && !seenIds.has(problemId)) {
+              orderedProblems.push(problemMap.get(problemId));
+              seenIds.add(problemId);
+            }
+          });
+        }
+      }
+    }
+
+    // Add any remaining problems that weren't in the custom order
+    baseProblemsForActiveView.forEach((p) => {
+      if (!seenIds.has(p.id)) {
+        orderedProblems.push(p);
+      }
+    });
+
+    return orderedProblems;
+  }, [baseProblemsForActiveView, customProblemOrder, activeView]);
+
   const viewProblems = useMemo(() => {
     const { difficulty, topic, status, searchTerm } = filters;
-    const filtered = baseProblemsForActiveView.filter((p) => {
+    const filtered = problemsInView.filter((p) => {
       return (
         (difficulty === "all" ||
           p.normalizedDifficulty.toLowerCase() === difficulty) &&
@@ -148,15 +205,16 @@ const DsaPage = () => {
       );
     });
     return filtered;
-  }, [baseProblemsForActiveView, filters, completedProblems]);
+  }, [problemsInView, filters, completedProblems]);
 
   const groupedProblems = useMemo(() => {
     const grouped = groupAndSortProblemsByTopic(
       viewProblems,
-      completedProblems
+      completedProblems,
+      customProblemOrder[activeView]
     );
     return grouped;
-  }, [viewProblems, completedProblems]);
+  }, [viewProblems, completedProblems, customProblemOrder, activeView]);
 
   const calculateDifficultyStats = useCallback((problems, completed) => {
     const stats = {
@@ -181,14 +239,51 @@ const DsaPage = () => {
   }, []);
 
   const currentViewDifficultyStats = useMemo(
-    () =>
-      calculateDifficultyStats(baseProblemsForActiveView, completedProblems),
-    [baseProblemsForActiveView, completedProblems, calculateDifficultyStats]
+    () => calculateDifficultyStats(problemsInView, completedProblems),
+    [problemsInView, completedProblems, calculateDifficultyStats]
   );
 
   const filteredDifficultyStats = useMemo(
     () => calculateDifficultyStats(viewProblems, completedProblems),
     [viewProblems, completedProblems, calculateDifficultyStats]
+  );
+
+  const onDragEnd = useCallback(
+    (result) => {
+      const { destination, source } = result;
+
+      if (!destination) {
+        return;
+      }
+
+      // Prevent dragging between different topics
+      if (source.droppableId !== destination.droppableId) {
+        return;
+      }
+
+      const topic = source.droppableId;
+      const problemsInTopic = groupedProblems.get(topic);
+
+      if (!problemsInTopic) {
+        return;
+      }
+
+      const newProblemsInTopic = Array.from(problemsInTopic);
+      const [movedProblem] = newProblemsInTopic.splice(source.index, 1);
+      newProblemsInTopic.splice(destination.index, 0, movedProblem);
+
+      const newProblemIdsInTopic = newProblemsInTopic.map((p) => p.id);
+
+      setCustomProblemOrder((prev) => {
+        const newOrder = { ...prev };
+        if (!newOrder[activeView]) {
+          newOrder[activeView] = {};
+        }
+        newOrder[activeView][topic] = newProblemIdsInTopic;
+        return newOrder;
+      });
+    },
+    [activeView, groupedProblems, setCustomProblemOrder]
   );
 
   return (
@@ -329,6 +424,7 @@ const DsaPage = () => {
               currentViewDifficultyStats={currentViewDifficultyStats}
               filteredDifficultyStats={filteredDifficultyStats}
               lastVisitedDate={lastVisitedViewDates[activeView] || "Never"}
+              onDragEnd={onDragEnd}
             />
           )}
         </section>

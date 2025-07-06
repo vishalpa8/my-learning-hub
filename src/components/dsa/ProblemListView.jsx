@@ -2,6 +2,7 @@ import React from "react";
 import ProblemCard from "./ProblemCard";
 import { Doughnut } from "react-chartjs-2"; // Changed from Pie to Doughnut
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 /**
  * Renders a list of DSA problems, grouped by topic.
@@ -16,6 +17,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
  * @param {object} [props.currentViewDifficultyStats] - Stats for easy, medium, hard problems in the current view.
  * @param {object} [props.filteredDifficultyStats] - Stats for easy, medium, hard problems for the *currently filtered* list.
  * @param {string} [props.lastVisitedDate] - The date string when this view was last visited.
+ * @param {function} props.onDragEnd - Callback function for when a drag ends.
  */
 
 // Custom plugin to draw text in the center of the doughnut chart
@@ -70,6 +72,7 @@ const ProblemListView = ({
   currentViewDifficultyStats,
   filteredDifficultyStats,
   lastVisitedDate,
+  onDragEnd,
 }) => {
   // Determine if there are any problems to display.
   // groupedProblems is a Map, so check its size.
@@ -270,35 +273,59 @@ const ProblemListView = ({
         </section>
       )}
       <section id="problems-section">
-        <div id="problems-container">
-          {hasProblems ? (
-            Array.from(groupedProblems.entries()).map(
-              ([topic, problemsInTopic]) =>
-                // Only render topic group if it has problems
-                problemsInTopic.length > 0 ? (
-                  <div key={topic} className="topic-group">
-                    <h3 className="topic-header">{topic}</h3>
-                    {/* Removed pattern iteration - problems are now directly under topics */}
-                    <ul className="problem-list">
-                      {problemsInTopic.map((problem) => (
-                        <ProblemCard
-                          key={problem.id}
-                          problem={problem} // This problem object now has `isCompleted`
-                          onToggleComplete={onToggleProblemComplete}
-                          showPatternTruncated={showPatternFilter} // Still useful for ProblemCard
-                        />
-                      ))}
-                    </ul>
-                  </div>
-                ) : null
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div id="problems-container">
+            {hasProblems ? (
+              Array.from(groupedProblems.entries()).map(
+                ([topic, problemsInTopic]) =>
+                  // Only render topic group if it has problems
+                  problemsInTopic.length > 0 ? (
+                    <div key={topic} className="topic-group">
+                      <h3 className="topic-header">{topic}</h3>
+                      <Droppable droppableId={topic}>
+                        {(provided) => (
+                          <ul
+                            className="problem-list"
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                          >
+                            {problemsInTopic.map((problem, index) => (
+                              <Draggable
+                                key={problem.id}
+                                draggableId={problem.id}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <li
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                  >
+                                    <ProblemCard
+                                      problem={problem} // This problem object now has `isCompleted`
+                                      onToggleComplete={onToggleProblemComplete}
+                                      showPatternTruncated={showPatternFilter} // Still useful for ProblemCard
+                                      dragHandleProps={provided.dragHandleProps}
+                                    />
+                                  </li>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </ul>
+                        )}
+                      </Droppable>
+                    </div>
+                  ) : null
+              )
             )
-          ) : (
+           : (
             <p className="no-problems-message">
               No problems match your filters, or no problems available for this
               view.
             </p>
           )}
-        </div>
+          </div>
+        </DragDropContext>
       </section>
     </div>
   );
