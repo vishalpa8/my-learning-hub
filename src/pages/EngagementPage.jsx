@@ -795,6 +795,7 @@ const EngagementPage = () => {
               }));
             },
             onReorderSubtasks: handleReorderSubtasks,
+            onUpdateTaskText: updateTaskText,
           }}
           userChoseToKeepParentOpen={
             !!tasksUserChoseToKeepOpen[taskToViewDetails?.id]

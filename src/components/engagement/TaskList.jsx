@@ -14,15 +14,6 @@ import {
 
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
-function formatTime12Hour(timeStr) {
-  if (!timeStr) return "--:--";
-  const [h, m] = timeStr.split(":");
-  let hour = parseInt(h, 10);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12 || 12;
-  return `${hour}:${m} ${ampm}`;
-}
-
 const initialNewTaskFormState = {
   text: "",
   time: "",
@@ -193,10 +184,6 @@ const TaskList = ({
 
   const handleCurrentEditTextChange = useCallback((e) => {
     setEditState((prev) => ({ ...prev, text: e.target.value }));
-  }, []);
-
-  const handleCurrentEditTimeChange = useCallback((e) => {
-    setEditState((prev) => ({ ...prev, time: e.target.value }));
   }, []);
 
   const handleSaveEditDetails = useCallback(() => {
@@ -398,7 +385,7 @@ const TaskList = ({
             <input
               type="time"
               value={newTaskForm.time}
-              onChange={handleTimeChange}
+              onChange={(e) => handleNewTaskFormChange("time", e.target.value)}
               className="task-time-input"
               aria-label="Set time for new task"
               disabled={!allowTaskCreation}
@@ -688,7 +675,12 @@ const TaskList = ({
                                 <input
                                   type="time"
                                   value={editState.time}
-                                  onChange={handleCurrentEditTimeChange}
+                                  onChange={(e) =>
+                                    setEditState({
+                                      ...editState,
+                                      time: e.target.value,
+                                    })
+                                  }
                                   className="task-time-select-inline task-edit-time-select"
                                   aria-label={`Editing time for task: ${task.text}`}
                                 />
@@ -710,16 +702,14 @@ const TaskList = ({
                             ) : (
                               <div
                                 className="task-view-content"
-                                onClick={() =>
-                                  onToggleTask(task.id, task.displayDate)
-                                }
-                                title="Click to toggle complete/incomplete"
+                                onClick={() => onViewTaskDetails(task)}
+                                title="Click to view task details"
                                 role="button"
                                 tabIndex={0}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
-                                    onToggleTask(task.id, task.displayDate);
+                                    onViewTaskDetails(task);
                                   }
                                 }}
                               >
@@ -775,15 +765,6 @@ const TaskList = ({
                                       </span>
                                     )}
                                 </div>
-
-                                <span
-                                  className="task-time-display"
-                                  aria-label={`Scheduled time: ${formatTime12Hour(
-                                    task.time
-                                  )}`}
-                                >
-                                  {formatTime12Hour(task.time)}
-                                </span>
                               </div>
                             )}
                           </div>
@@ -799,19 +780,6 @@ const TaskList = ({
                               title="Edit task"
                             >
                               ✏️
-                            </button>
-                          )}
-                          {!isEditingThisTask(task.id) && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onViewTaskDetails(task);
-                              }}
-                              className="view-details-btn task-action-icon-btn"
-                              aria-label={`View details for task "${task.text}"`}
-                              title="View task details"
-                            >
-                              ℹ️
                             </button>
                           )}
                           {!isEditingThisTask(task.id) && (
