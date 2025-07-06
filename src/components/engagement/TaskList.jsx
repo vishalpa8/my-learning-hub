@@ -625,7 +625,7 @@ const TaskList = ({
                               tabIndex={0}
                               role="button"
                             >
-                              ⋮⋮
+                              ☰
                             </span>
                           )}
 
