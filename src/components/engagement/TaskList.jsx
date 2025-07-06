@@ -65,11 +65,6 @@ const TaskList = ({
     setNewTaskForm((prev) => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleTimeChange = useCallback((e) => {
-    setNewTaskForm((prev) => ({ ...prev, time: e.target.value }));
-    setUserManuallySetNewTaskTime(true);
-  }, []);
-
   const resetEditDetailsState = useCallback(() => {
     setEditState(initialEditState);
   }, []);

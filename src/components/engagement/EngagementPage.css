@@ -663,13 +663,13 @@
 }
 
 .task-text {
-  line-height: var(--line-height-base, 1.6);
+  line-height: normal;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .task-time-display {
-  margin-top: var(--spacing-xxs, 2px);
+  /* Removed margin-top for better vertical alignment */
   min-width: 90px;
   display: inline-block;
   padding: 2px 4px;
@@ -911,8 +911,8 @@
 .task-view-content {
   flex-grow: 1;
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xxs, 2px);
+  align-items: center; /* Align items vertically */
+  gap: var(--spacing-sm, 0.75rem); /* Adjust gap for horizontal layout */
   cursor: pointer;
   padding: var(--spacing-xxs, 2px) 0;
   outline: none;
@@ -924,7 +924,7 @@
   align-items: center;
   gap: var(--spacing-xs);
   font-size: 0.85em;
-  margin-top: var(--spacing-xxs);
+  /* Removed margin-top for better vertical alignment */
   color: var(--text-muted-color);
 }
 
