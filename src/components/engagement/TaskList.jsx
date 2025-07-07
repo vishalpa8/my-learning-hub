@@ -576,7 +576,7 @@ const TaskList = ({
         </form>
         {!allowTaskCreation && (
           <p className="task-list-tip past-date-restriction">
-            Task creation is not allowed for past dates.
+            Task creation and edit is not allowed for past dates.
           </p>
         )}
         {tasks.length === 0 ? (
@@ -678,6 +678,7 @@ const TaskList = ({
                                   }
                                   className="task-time-select-inline task-edit-time-select"
                                   aria-label={`Editing time for task: ${task.text}`}
+                                  disabled={isPastDate(task.displayDate)}
                                 />
                                 <div className="task-edit-actions">
                                   <button
@@ -710,6 +711,12 @@ const TaskList = ({
                               >
                                 <span className="task-text">
                                   {task.text}
+                                  {task.edited && (
+                                    <span className="edited-indicator">
+                                      {" "}
+                                      (edited)
+                                    </span>
+                                  )}
                                   {task.link && (
                                     <>
                                       {" "}
@@ -773,6 +780,7 @@ const TaskList = ({
                               className="edit-pencil-btn task-action-icon-btn"
                               aria-label={`Edit task "${task.text}"`}
                               title="Edit task"
+                              disabled={isPastDate(task.displayDate)}
                             >
                               ✏️
                             </button>

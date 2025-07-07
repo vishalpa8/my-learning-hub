@@ -18,6 +18,7 @@ import {
   isWithinInterval,
   dateToDDMMYYYY,
   parseDDMMYYYYToDateObj,
+  isPastDate,
 } from "../utils/dateHelpers";
 import { v4 as uuidv4 } from "uuid";
 import isEqual from "fast-deep-equal";
@@ -500,7 +501,11 @@ const EngagementPage = () => {
 
   const updateTaskText = useCallback(
     (id, newText) => {
-      updateTaskInState(id, (task) => ({ ...task, text: newText.trim() }));
+      updateTaskInState(id, (task) => ({
+        ...task,
+        text: newText.trim(),
+        edited: true,
+      }));
     },
     [updateTaskInState]
   );
@@ -800,6 +805,7 @@ const EngagementPage = () => {
           userChoseToKeepParentOpen={
             !!tasksUserChoseToKeepOpen[taskToViewDetails?.id]
           }
+          isTaskInPast={isPastDate(taskToViewDetails?.displayDate)}
         />
       )}
     </main>

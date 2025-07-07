@@ -1287,3 +1287,10 @@
     display: none !important;
   }
 }
+
+.edited-indicator {
+  font-size: 0.8em;
+  color: var(--text-muted-color);
+  margin-left: 4px;
+  font-style: italic;
+}

@@ -10,7 +10,7 @@ import {
   dateToDDMMYYYY,
   parseDDMMYYYYToDateObj,
   ddmmyyyyToYYYYMMDD,
-  yyyymmddToDDMMYYYY
+  yyyymmddToDDMMYYYY,
 } from "../../utils/dateHelpers";
 import { ENGAGEMENT_ALREADY_PROMPTED_FOR_COMPLETE_KEY } from "../../constants/localIndexedDbKeys";
 import { useIndexedDb } from "../../hooks/useIndexedDb";
@@ -21,6 +21,7 @@ const TaskDetailsModal = ({
   task,
   taskActions,
   userChoseToKeepParentOpen,
+  isTaskInPast,
 }) => {
   const {
     onUpdateDescription,
@@ -147,7 +148,7 @@ const TaskDetailsModal = ({
   };
 
   // Handlers: End Date
-  
+
   const handleSaveEndDate = () => {
     if (task && onUpdateTaskEndDate) {
       onUpdateTaskEndDate(task.id, currentEndDate || null);
@@ -371,17 +372,27 @@ const TaskDetailsModal = ({
         onClose={onClose} // Do NOT reset hasPromptedThisStreak here!
         title={`Details for Task: ${task.text}`}
       >
+        {isTaskInPast && (
+          <div className="past-task-warning">
+            <p>
+              This is a past task. You can view its details, but you cannot edit
+              it.
+            </p>
+          </div>
+        )}
         <div className="task-details-modal-content">
           <p className="task-details-meta">
             {task.endDate ? (
               <>
-                <strong>From:</strong> {dateToDDMMYYYY(parseDDMMYYYYToDateObj(task.date))}
+                <strong>From:</strong>{" "}
+                {dateToDDMMYYYY(parseDDMMYYYYToDateObj(task.date))}
                 <strong className="meta-separator">To:</strong>{" "}
                 {dateToDDMMYYYY(parseDDMMYYYYToDateObj(task.endDate))}
               </>
             ) : (
               <>
-                <strong>Date:</strong> {dateToDDMMYYYY(parseDDMMYYYYToDateObj(task.date))}
+                <strong>Date:</strong>{" "}
+                {dateToDDMMYYYY(parseDDMMYYYYToDateObj(task.date))}
               </>
             )}
             <strong className="meta-separator">Time:</strong> {formattedTime}
@@ -407,17 +418,20 @@ const TaskDetailsModal = ({
                   placeholder="Add or edit description..."
                   rows="4"
                   className="task-details-textarea"
+                  disabled={isTaskInPast}
                 />
                 <div className="description-actions">
                   <button
                     onClick={handleSaveDescription}
                     className="btn-primary btn-small task-details-btn"
+                    disabled={isTaskInPast}
                   >
                     Save
                   </button>
                   <button
                     onClick={handleCancelDescriptionEdit}
                     className="btn-secondary btn-small task-details-btn"
+                    disabled={isTaskInPast}
                   >
                     Cancel
                   </button>
@@ -432,12 +446,14 @@ const TaskDetailsModal = ({
                       <button
                         onClick={() => setEditingDescription(true)}
                         className="btn-link edit-description-btn"
+                        disabled={isTaskInPast}
                       >
                         Edit Description
                       </button>
                       <button
                         onClick={handleClearDescription}
                         className="btn-link clear-description-btn"
+                        disabled={isTaskInPast}
                       >
                         Clear Description
                       </button>
@@ -449,6 +465,7 @@ const TaskDetailsModal = ({
                     <button
                       onClick={() => setEditingDescription(true)}
                       className="btn-link edit-description-btn"
+                      disabled={isTaskInPast}
                     >
                       + Add Description
                     </button>
@@ -471,6 +488,7 @@ const TaskDetailsModal = ({
                   placeholder="Add or edit URL (e.g., https://example.com)"
                   className="task-details-input"
                   autoFocus
+                  disabled={isTaskInPast}
                 />
                 {linkError && (
                   <p className="error-message input-error-message">
@@ -481,12 +499,14 @@ const TaskDetailsModal = ({
                   <button
                     onClick={handleSaveLink}
                     className="btn-primary btn-small task-details-btn"
+                    disabled={isTaskInPast}
                   >
                     Save Link
                   </button>
                   <button
                     onClick={handleCancelLinkEdit}
                     className="btn-secondary btn-small task-details-btn"
+                    disabled={isTaskInPast}
                   >
                     Cancel
                   </button>
@@ -508,12 +528,14 @@ const TaskDetailsModal = ({
                       <button
                         onClick={() => setEditingLink(true)}
                         className="btn-link edit-link-btn"
+                        disabled={isTaskInPast}
                       >
                         Edit Link
                       </button>
                       <button
                         onClick={handleClearLink}
                         className="btn-link clear-description-btn"
+                        disabled={isTaskInPast}
                       >
                         Clear Link
                       </button>
@@ -523,6 +545,7 @@ const TaskDetailsModal = ({
                   <button
                     onClick={() => setEditingLink(true)}
                     className="btn-link add-link-btn"
+                    disabled={isTaskInPast}
                   >
                     + Add Link
                   </button>
@@ -539,22 +562,27 @@ const TaskDetailsModal = ({
                 <input
                   type="date"
                   value={ddmmyyyyToYYYYMMDD(currentEndDate)}
-                  onChange={(e) => setCurrentEndDate(yyyymmddToDDMMYYYY(e.target.value))}
+                  onChange={(e) =>
+                    setCurrentEndDate(yyyymmddToDDMMYYYY(e.target.value))
+                  }
                   onKeyDown={handleEndDateKeyDown}
                   min={ddmmyyyyToYYYYMMDD(minEndDateInput)}
                   className="task-details-input"
                   autoFocus
+                  disabled={isTaskInPast}
                 />
                 <div className="end-date-actions">
                   <button
                     onClick={handleSaveEndDate}
                     className="btn-primary btn-small task-details-btn"
+                    disabled={isTaskInPast}
                   >
                     Save
                   </button>
                   <button
                     onClick={handleCancelEndDateEdit}
                     className="btn-secondary btn-small task-details-btn"
+                    disabled={isTaskInPast}
                   >
                     Cancel
                   </button>
@@ -564,17 +592,21 @@ const TaskDetailsModal = ({
               <div className="end-date-display-area">
                 {task.endDate ? (
                   <>
-                    <p className="end-date-text">{dateToDDMMYYYY(parseDDMMYYYYToDateObj(task.endDate))}</p>
+                    <p className="end-date-text">
+                      {dateToDDMMYYYY(parseDDMMYYYYToDateObj(task.endDate))}
+                    </p>
                     <div className="description-view-actions">
                       <button
                         onClick={() => setEditingEndDate(true)}
                         className="btn-link edit-end-date-btn"
+                        disabled={isTaskInPast}
                       >
                         Edit End Date
                       </button>
                       <button
                         onClick={handleClearEndDate}
                         className="btn-link clear-end-date-btn"
+                        disabled={isTaskInPast}
                       >
                         Clear End Date
                       </button>
@@ -584,6 +616,7 @@ const TaskDetailsModal = ({
                   <button
                     onClick={() => setEditingEndDate(true)}
                     className="btn-link add-end-date-btn"
+                    disabled={isTaskInPast}
                   >
                     + Add End Date
                   </button>
@@ -639,12 +672,14 @@ const TaskDetailsModal = ({
                   onKeyDown={handleSubtaskKeyDown}
                   placeholder="Add a new subtask..."
                   className="subtask-input"
-                  disabled={subtaskLoading}
+                  disabled={subtaskLoading || isTaskInPast}
                   tabIndex={0}
                 />
                 <button
                   onClick={handleAddSubtaskClick}
-                  disabled={!newSubtaskText.trim() || subtaskLoading}
+                  disabled={
+                    !newSubtaskText.trim() || subtaskLoading || isTaskInPast
+                  }
                   className="btn-primary btn-small add-subtask-btn task-details-btn"
                   tabIndex={0}
                 >
@@ -762,6 +797,7 @@ const TaskDetailsModal = ({
                                       handleEditSubtaskClick(subtask)
                                     }
                                     tabIndex={0}
+                                    disabled={isTaskInPast}
                                   >
                                     ✏️
                                   </button>
@@ -772,6 +808,7 @@ const TaskDetailsModal = ({
                                       handleDeleteSubtaskClick(subtask.id)
                                     }
                                     tabIndex={0}
+                                    disabled={isTaskInPast}
                                   >
                                     🗑️
                                   </button>
@@ -860,6 +897,7 @@ TaskDetailsModal.propTypes = {
     onReorderSubtasks: PropTypes.func.isRequired,
   }).isRequired,
   userChoseToKeepParentOpen: PropTypes.bool,
+  isTaskInPast: PropTypes.bool.isRequired,
 };
 
 export default TaskDetailsModal;
