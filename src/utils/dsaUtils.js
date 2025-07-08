@@ -3,6 +3,8 @@ export const difficultyOrder = ["Easy", "Medium", "Hard"];
 
 export const TOPIC_DISPLAY_ORDER = [
   "Arrays",
+  "Two Pointers",
+  "Matrix",
   "Strings",
   "Linked Lists",
   "Stacks & Queues",
@@ -30,11 +32,15 @@ export const TOPIC_MERGE_MAP = {
   "Binary Trees": "Trees",
   BST: "Binary Search Trees",
   "Graphs (BFS/DFS)": "Graphs",
+  XOR: "Bit Manipulation",
   Recursion: "Backtracking / Recursion",
   Backtracking: "Backtracking / Recursion",
   Bitwise: "Bit Manipulation",
   "Number Theory": "Math & Number Theory",
   Advanced: "Advanced Data Structures & Algorithms",
+  "Array & Hashing": "Arrays",
+  Sorting: "Sorting & Searching",
+  Searching: "Sorting & Searching",
 };
 
 export const NORMALIZED_TOPIC_MERGE_MAP = new Map(
@@ -81,10 +87,10 @@ export const getNormalizedTopic = (topic) => {
 };
 
 export const preprocessDsaData = (data) => {
-  return data.map(problem => ({
+  return data.map((problem) => ({
     ...problem,
     normalizedDifficulty: getNormalizedDifficulty(problem.difficulty),
-    normalizedTopic: getNormalizedTopic(problem.topic)
+    normalizedTopic: getNormalizedTopic(problem.topic),
   }));
 };
 
@@ -106,14 +112,20 @@ export const getUniquePatterns = (problemsData) => {
   const patterns = new Set();
   problemsData.forEach((p) => {
     if (p.pattern) {
-      p.pattern.split(",").map((pat) => pat.trim()).forEach((pat) => patterns.add(pat));
+      p.pattern
+        .split(",")
+        .map((pat) => pat.trim())
+        .forEach((pat) => patterns.add(pat));
     }
   });
   const sortedPatterns = Array.from(patterns).sort();
   return sortedPatterns;
 };
 
-export const calculateOverallProgress = (problemsData, completedProblemsMap) => {
+export const calculateOverallProgress = (
+  problemsData,
+  completedProblemsMap
+) => {
   const total = problemsData.length;
   const completed = Object.keys(completedProblemsMap || {}).filter(
     (id) => !!completedProblemsMap[id]
@@ -153,7 +165,9 @@ export const groupAndSortProblemsByTopic = (
   } else {
     // Sort problems within each topic based on custom order or default
     for (const [topic, problemsInTopic] of grouped.entries()) {
-      const orderForTopic = customProblemOrder ? customProblemOrder[topic] : null;
+      const orderForTopic = customProblemOrder
+        ? customProblemOrder[topic]
+        : null;
       if (orderForTopic) {
         const problemMap = new Map(problemsInTopic.map((p) => [p.id, p]));
         const orderedProblems = orderForTopic
@@ -195,13 +209,21 @@ export const groupAndSortProblemsByTopic = (
   return sortedTopics;
 };
 
-export const groupProblemsByTopicAndPattern = (problems, completedProblemsMap) => {
+export const groupProblemsByTopicAndPattern = (
+  problems,
+  completedProblemsMap
+) => {
   const groupedByTopic = new Map();
 
-  problems.forEach(problem => {
+  problems.forEach((problem) => {
     const topic = problem.normalizedTopic;
-    const mainPattern = problem.pattern ? problem.pattern.split(" - Covered in ")[0].trim() : "General";
-    const problemWithStatus = { ...problem, isCompleted: !!completedProblemsMap[problem.id] };
+    const mainPattern = problem.pattern
+      ? problem.pattern.split(" - Covered in ")[0].trim()
+      : "General";
+    const problemWithStatus = {
+      ...problem,
+      isCompleted: !!completedProblemsMap[problem.id],
+    };
     if (!groupedByTopic.has(topic)) {
       groupedByTopic.set(topic, new Map());
     }
@@ -223,9 +245,11 @@ export const groupProblemsByTopicAndPattern = (problems, completedProblemsMap) =
     })
   );
 
-  sortedTopics.forEach(patternsMap => {
+  sortedTopics.forEach((patternsMap) => {
     const sortedPatternsMap = new Map(
-      [...patternsMap.entries()].sort(([patternA], [patternB]) => patternA.localeCompare(patternB))
+      [...patternsMap.entries()].sort(([patternA], [patternB]) =>
+        patternA.localeCompare(patternB)
+      )
     );
     patternsMap.clear();
     sortedPatternsMap.forEach((problemsInPattern, pattern) => {

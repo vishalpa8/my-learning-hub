@@ -1,9 +1,6 @@
-
-
 import { preprocessDsaData } from "../utils/dsaUtils";
 
 const rawDsaData = [
-
   {
     id: "gfg_binary-indexed-tree-or-fenwick-tree-2",
     title: "Fenwick Tree (Binary Indexed Tree)",
@@ -462,7 +459,7 @@ const rawDsaData = [
   {
     id: "lc_118",
     title: "Pascal's Triangle",
-    topic: "Arrays",
+    topic: "Dynamic Programming",
     subTopic: "Dynamic Programming / Combinatorics",
     difficulty: "Easy",
     problemLink: "https://leetcode.com/problems/pascals-triangle/",
@@ -476,7 +473,7 @@ const rawDsaData = [
   {
     id: "lc_121",
     title: "Best Time to Buy and Sell Stock",
-    topic: "Arrays",
+    topic: "Greedy",
     subTopic: "Greedy / Kadane's Variation",
     difficulty: "Easy",
     problemLink:
@@ -500,7 +497,7 @@ const rawDsaData = [
   {
     id: "lc_136",
     title: "Single Number",
-    topic: "Arrays",
+    topic: "Bit Manipulation",
     subTopic: "XOR",
     difficulty: "Easy",
     problemLink: "https://leetcode.com/problems/single-number/",
@@ -561,7 +558,7 @@ const rawDsaData = [
   {
     id: "lc_26",
     title: "Remove Duplicates from Sorted Array",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Two Pointers",
     difficulty: "Easy",
     problemLink:
@@ -583,7 +580,7 @@ const rawDsaData = [
   {
     id: "lc_268",
     title: "Missing Number",
-    topic: "Arrays",
+    topic: "Bit Manipulation",
     subTopic: "Sum / XOR / Cyclic Sort",
     difficulty: "Easy",
     problemLink: "https://leetcode.com/problems/missing-number/",
@@ -604,7 +601,7 @@ const rawDsaData = [
   {
     id: "lc_27",
     title: "Remove Element",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Two Pointers",
     difficulty: "Easy",
     problemLink: "https://leetcode.com/problems/remove-element/",
@@ -624,7 +621,7 @@ const rawDsaData = [
   {
     id: "lc_283",
     title: "Move Zeroes",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Two Pointers",
     difficulty: "Easy",
     problemLink: "https://leetcode.com/problems/move-zeroes/",
@@ -644,7 +641,7 @@ const rawDsaData = [
   {
     id: "lc_485",
     title: "Max Consecutive Ones",
-    topic: "Arrays",
+    topic: "Sliding Window",
     subTopic: "Sliding Window / Iteration",
     difficulty: "Easy",
     problemLink: "https://leetcode.com/problems/max-consecutive-ones/",
@@ -702,7 +699,7 @@ const rawDsaData = [
   {
     id: "lc_88",
     title: "Merge Sorted Array",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Two Pointers",
     difficulty: "Easy",
     problemLink: "https://leetcode.com/problems/merge-sorted-array/",
@@ -776,7 +773,7 @@ const rawDsaData = [
   {
     id: "gfg_find-a-repeating-and-a-missing-number",
     title: "Find a repeating and a missing number",
-    topic: "Arrays",
+    topic: "Bit Manipulation",
     subTopic: "Math / Bit Manipulation / Hashing",
     difficulty: "Medium",
     problemLink:
@@ -806,7 +803,7 @@ const rawDsaData = [
   {
     id: "lc_11",
     title: "Container With Most Water",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Two Pointers",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/container-with-most-water/",
@@ -842,7 +839,7 @@ const rawDsaData = [
   {
     id: "lc_1423",
     title: "Maximum Points You Can Obtain from Cards",
-    topic: "Arrays",
+    topic: "Sliding Window",
     subTopic: "Sliding Window variation",
     difficulty: "Medium",
     problemLink:
@@ -858,7 +855,7 @@ const rawDsaData = [
   {
     id: "lc_15",
     title: "3Sum",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Two Pointers + Sorting",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/3sum/",
@@ -877,7 +874,7 @@ const rawDsaData = [
   {
     id: "lc_153",
     title: "Find Minimum in Rotated Sorted Array",
-    topic: "Arrays",
+    topic: "Binary Search",
     subTopic: "Binary Search",
     difficulty: "Medium",
     problemLink:
@@ -893,7 +890,7 @@ const rawDsaData = [
   {
     id: "lc_18",
     title: "4Sum",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Two Pointers + Sorting (Extension of 3Sum)",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/4sum/",
@@ -962,7 +959,7 @@ const rawDsaData = [
   {
     id: "lc_31",
     title: "Next Permutation",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Permutations / Two Pointers",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/next-permutation/",
@@ -976,7 +973,7 @@ const rawDsaData = [
   {
     id: "lc_33",
     title: "Search in Rotated Sorted Array",
-    topic: "Arrays",
+    topic: "Binary Search",
     subTopic: "Binary Search",
     difficulty: "Medium",
     problemLink:
@@ -997,7 +994,7 @@ const rawDsaData = [
   {
     id: "lc_45",
     title: "Jump Game II",
-    topic: "Arrays",
+    topic: "Greedy",
     subTopic: "Greedy / BFS",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/jump-game-ii/",
@@ -1017,7 +1014,7 @@ const rawDsaData = [
   {
     id: "lc_48",
     title: "Rotate Image",
-    topic: "Arrays",
+    topic: "Matrix",
     subTopic: "In-place Matrix Rotation",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/rotate-image/",
@@ -1039,7 +1036,7 @@ const rawDsaData = [
   {
     id: "lc_54",
     title: "Spiral Matrix",
-    topic: "Arrays",
+    topic: "Matrix",
     subTopic: "Simulation / Matrix Traversal",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/spiral-matrix/",
@@ -1060,7 +1057,7 @@ const rawDsaData = [
   {
     id: "lc_540",
     title: "Single Element in a Sorted Array",
-    topic: "Arrays",
+    topic: "Binary Search",
     subTopic: "Binary Search / XOR",
     difficulty: "Medium",
     problemLink:
@@ -1076,7 +1073,7 @@ const rawDsaData = [
   {
     id: "lc_55",
     title: "Jump Game",
-    topic: "Arrays",
+    topic: "Dynamic Programming",
     subTopic: "Greedy / DP",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/jump-game/",
@@ -1097,7 +1094,7 @@ const rawDsaData = [
   {
     id: "lc_56",
     title: "Merge Intervals",
-    topic: "Arrays",
+    topic: "Matrix",
     subTopic: "Sorting, Interval Merging",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/merge-intervals/",
@@ -1116,7 +1113,7 @@ const rawDsaData = [
   {
     id: "lc_73",
     title: "Set Matrix Zeroes",
-    topic: "Arrays",
+    topic: "Matrix",
     subTopic: "In-place Marking / Constant Space",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/set-matrix-zeroes/",
@@ -1138,7 +1135,7 @@ const rawDsaData = [
   {
     id: "lc_75",
     title: "Sort Colors",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Dutch National Flag Algorithm",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/sort-colors/",
@@ -1158,7 +1155,7 @@ const rawDsaData = [
   {
     id: "lc_84",
     title: "Largest Rectangle in Histogram",
-    topic: "Arrays",
+    topic: "Stack",
     subTopic: "Stack",
     difficulty: "Hard",
     problemLink:
@@ -1174,7 +1171,7 @@ const rawDsaData = [
   {
     id: "lc_minimum-size-subarray-sum",
     title: "Minimum Size Subarray Sum",
-    topic: "Arrays",
+    topic: "Sliding Window",
     subTopic: "Sliding Window",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/minimum-size-subarray-sum/",
@@ -1193,7 +1190,7 @@ const rawDsaData = [
   {
     id: "gfg_count-number-of-subarrays-with-given-xor-k",
     title: "Count number of subarrays with given Xor K",
-    topic: "Arrays",
+    topic: "Bit Manipulation",
     subTopic: "Prefix XOR / Hashing",
     difficulty: "Hard",
     problemLink:
@@ -1208,7 +1205,7 @@ const rawDsaData = [
   {
     id: "gfg_counting-inversions",
     title: "Counting Inversions",
-    topic: "Arrays",
+    topic: "Sorting",
     subTopic: "Divide and Conquer / Merge Sort",
     difficulty: "Hard",
     problemLink: "https://www.geeksforgeeks.org/counting-inversions/",
@@ -1222,7 +1219,7 @@ const rawDsaData = [
   {
     id: "gfg_find-median-row-wise-sorted-matrix",
     title: "Find median in a row-wise sorted matrix",
-    topic: "Arrays",
+    topic: "Binary Search",
     subTopic: "Binary Search on Answer / Sorting",
     difficulty: "Hard",
     problemLink:
@@ -1237,7 +1234,7 @@ const rawDsaData = [
   {
     id: "gfg_k-th-element-of-two-sorted-arrays",
     title: "K-th Element of Two Sorted Arrays",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Binary Search on Partitions / Two Pointers",
     difficulty: "Hard",
     problemLink:
@@ -1252,7 +1249,7 @@ const rawDsaData = [
   {
     id: "lc_315",
     title: "Count of Smaller Numbers After Self",
-    topic: "Arrays",
+    topic: "Sorting",
     subTopic: "Merge Sort with inversion count / Fenwick Tree",
     difficulty: "Hard",
     problemLink:
@@ -1268,7 +1265,7 @@ const rawDsaData = [
   {
     id: "lc_4",
     title: "Median of Two Sorted Arrays",
-    topic: "Arrays",
+    topic: "Binary Search",
     subTopic: "Binary Search on partitions",
     difficulty: "Hard",
     problemLink: "https://leetcode.com/problems/median-of-two-sorted-arrays/",
@@ -1283,7 +1280,7 @@ const rawDsaData = [
   {
     id: "lc_41",
     title: "First Missing Positive",
-    topic: "Arrays",
+    topic: "Sorting",
     subTopic: "In-place Hashing / Cyclic Sort",
     difficulty: "Hard",
     problemLink: "https://leetcode.com/problems/first-missing-positive/",
@@ -1297,7 +1294,7 @@ const rawDsaData = [
   {
     id: "lc_42",
     title: "Trapping Rain Water",
-    topic: "Arrays",
+    topic: "Two Pointers",
     subTopic: "Two Pointers / Stack / DP",
     difficulty: "Hard",
     problemLink: "https://leetcode.com/problems/trapping-rain-water/",
@@ -1316,7 +1313,7 @@ const rawDsaData = [
   {
     id: "lc_85",
     title: "Maximal Rectangle",
-    topic: "Arrays",
+    topic: "Dynamic Programming",
     subTopic: "Stack + DP",
     difficulty: "Hard",
     problemLink: "https://leetcode.com/problems/maximal-rectangle/",
@@ -1330,7 +1327,7 @@ const rawDsaData = [
   {
     id: "lc_candy",
     title: "Candy",
-    topic: "Arrays",
+    topic: "Greedy",
     subTopic: "Greedy",
     difficulty: "Hard",
     problemLink: "https://leetcode.com/problems/candy/",
@@ -4389,7 +4386,7 @@ const rawDsaData = [
   {
     id: "lc_502",
     title: "IPO",
-    topic: "Heaps",
+    topic: "Greedy",
     subTopic: "Greedy, Two Heaps",
     difficulty: "Hard",
     problemLink: "https://leetcode.com/problems/ipo/",
@@ -6142,7 +6139,7 @@ const rawDsaData = [
   {
     id: "lc_3",
     title: "Longest Substring Without Repeating Characters",
-    topic: "Strings",
+    topic: "Slinding Window",
     subTopic: "Sliding Window + Hash Map",
     difficulty: "Medium",
     problemLink:
@@ -6177,7 +6174,7 @@ const rawDsaData = [
   {
     id: "lc_424",
     title: "Longest Repeating Character Replacement",
-    topic: "Strings",
+    topic: "Sliding Window",
     subTopic: "Sliding Window",
     difficulty: "Medium",
     problemLink:
@@ -6227,7 +6224,7 @@ const rawDsaData = [
   {
     id: "lc_567",
     title: "Permutation in String",
-    topic: "Strings",
+    topic: "Sliding Window",
     subTopic: "Sliding Window + Frequency Map",
     difficulty: "Medium",
     problemLink: "https://leetcode.com/problems/permutation-in-string/",
@@ -6752,7 +6749,7 @@ const rawDsaData = [
   {
     id: "lc_76",
     title: "Minimum Window Substring",
-    topic: "Strings",
+    topic: "Sliding Window",
     subTopic: "Sliding Window + Frequency Map",
     difficulty: "Hard",
     problemLink: "https://leetcode.com/problems/minimum-window-substring/",
