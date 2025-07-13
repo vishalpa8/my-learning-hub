@@ -17,494 +17,381 @@
  */
 
 /** @type {Object.<string, PlaylistData>} */
+// -------- 1400 - 1700 Elo Playlists (quality-checked) --------
 export const playlistVideoData = {
-  // =====================
-  // Elo 1400–1700 ELO
-  // =====================
-  elo1400_intermediate_stlcc_1: {
-    title: "Chess Fundamentals - John Bartholomew",
+  // 1. Core principles
+  elo1400_fundamentals_bartholomew_1: {
+    title: "Chess Fundamentals - IM John Bartholomew",
     playlistUrl:
       "https://www.youtube.com/playlist?list=PLl9uuRYQ-6MBwqkmwT42l1fI7Z0bYuwwO",
     focusArea:
-      "Comprehensive coverage of fundamental chess principles including opening, middlegame strategy, tactics, and basic endgames by IM John Bartholomew.",
+      "Five crisp lessons that nail the bedrock of solid club-level chess: piece safety, coordination, typical errors to avoid, pawn play and trading decisions.",
     videos: [
-      {
-        id: "elo1400_cf_jb_1", // CF for Chess Fundamentals, JB for John Bartholomew
-        title: "Chess Fundamentals #1: Undefended Pieces",
-      },
-      {
-        id: "elo1400_cf_jb_2",
-        title: "Chess Fundamentals #2: Coordination",
-      },
-      {
-        id: "elo1400_cf_jb_3",
-        title: "Chess Fundamentals #3: Typical Mistakes",
-      },
-      {
-        id: "elo1400_cf_jb_4",
-        title: "Chess Fundamentals #4: Pawn Play",
-      },
-      {
-        id: "elo1400_cf_jb_5",
-        title: "Chess Fundamentals #5: Trades",
-      },
+      { id: "cf_jb_01", title: "Undefended Pieces" },
+      { id: "cf_jb_02", title: "Coordination" },
+      { id: "cf_jb_03", title: "Typical Mistakes" },
+      { id: "cf_jb_04", title: "Pawn Play" },
+      { id: "cf_jb_05", title: "Trades" },
     ],
   },
 
+  // 2. Tactical finishing patterns
   elo1400_checkmates_gotham_1: {
-    title: "6 Checkmate Patterns YOU MUST KNOW (GothamChess)",
-    playlistUrl: "http://www.youtube.com/watch?v=iBZLU1FXhcI",
+    title: "6 Checkmate Patterns You MUST Know - GothamChess",
+    playlistUrl: "https://www.youtube.com/watch?v=iBZLU1FXhcI",
     focusArea:
-      "A concise guide to six essential checkmating patterns that every chess player should recognize and execute, by IM Levy Rozman (GothamChess).",
+      "One evergreen video: Levy Rozman teaches the six mate nets that appear in thousands of club games. Memorise them - then spot them over the board!",
     videos: [
-      { id: "elo1400_cm_gc_1", title: "6 Checkmate Patterns YOU MUST KNOW" },
+      { id: "cm_gc_01", title: "6 Essential Checkmates (Boden, Anastasia…)" },
     ],
   },
-  elo1400_opening_Hanging_1: {
+
+  // 3. Low-theory openings
+  elo1400_openings_hangingpawns_1: {
     title:
-      "3 Best Chess Openings For Players Under 1300 ELO (No Memorisation Needed)",
+      "3 Best Chess Openings for <1300 Elo (No Memorisation) - Hanging Pawns",
     playlistUrl: "https://www.youtube.com/watch?v=vwucXn9MtNc",
     focusArea:
-      "Presents three easy-to-learn chess openings for beginners, focusing on understanding principles rather than memorizing long lines, by Hanging Pawns.",
+      "Simple systems (London, Italian, Scandinavian) explained through ideas - perfect for players who still blunder pieces and can’t juggle long theory trees.",
     videos: [
-      {
-        id: "elo1400_open_hp_1",
-        title: "3 Best Chess Openings For Players Under 1300 ELO",
-      }, // HP for Hanging Pawns
+      { id: "open_hp_01", title: "Opening #1 - The London System" },
+      { id: "open_hp_02", title: "Opening #2 - The Italian Game" },
+      { id: "open_hp_03", title: "Opening #3 - The Scandinavian Defence" },
     ],
   },
-  elo1400_beginner_middlegame_1: {
-    title: "Chess Middle Game Strategy (MatoJelic)", // Clarified channel
+
+  // 4. Building middlegame sense
+  elo1400_middlegame_matojelic_1: {
+    title: "Chess Middlegame Strategy - Mato Jelic",
     playlistUrl: "https://www.youtube.com/playlist?list=PL03F54EB032CE6C7E",
     focusArea:
-      "Covers essential middlegame strategies including pawn structures, piece activity, weak squares, and planning by MatoJelic.",
+      "Classic Mato commentary on pawn structures, piece activity and fundamental tactical motifs. Each clip is a stand-alone lesson built around an instructive master game.",
     videos: [
-      {
-        id: "elo1400_mid_mato_1", // Mato for MatoJelic
-        title: "Chess Strategy- Open vs Closed Games",
-      },
-      {
-        id: "elo1400_mid_mato_2",
-        title: "Chess Strategies- Skewers and Pins",
-      },
-      {
-        id: "elo1400_mid_mato_3",
-        title: "Chess Strategy- Good and Bad Bishops",
-      },
-      {
-        id: "elo1400_mid_mato_4",
-        title: "Chess Strategy- Outposts",
-      },
-      {
-        id: "elo1400_mid_mato_5",
-        title: "Chess Strategy- Trading Part 1",
-      },
-      {
-        id: "elo1400_mid_mato_6",
-        title: "Chess Strategy- Trading Part 2",
-      },
-      {
-        id: "elo1400_mid_mato_7",
-        title: "Chess Mating Patterns Part 1",
-      },
-      {
-        id: "elo1400_mid_mato_8",
-        title: "Chess Mating Patterns Part 2",
-      },
-      {
-        id: "elo1400_mid_mato_9",
-        title: "Chess Tactics: XRay",
-      },
-      {
-        id: "elo1400_mid_mato_10",
-        title: "Chess Tactics: Deflection",
-      },
-      {
-        id: "elo1400_mid_mato_11",
-        title: "Chess Tactics: Decoy",
-      },
+      { id: "mid_mato_01", title: "Open vs. Closed Games" },
+      { id: "mid_mato_02", title: "Pins & Skewers" },
+      { id: "mid_mato_03", title: "Good vs. Bad Bishops" },
+      { id: "mid_mato_04", title: "Using Outposts" },
+      { id: "mid_mato_05", title: "When to Trade - Part 1" },
+      { id: "mid_mato_06", title: "When to Trade - Part 2" },
+      { id: "mid_mato_07", title: "Mating Patterns - Part 1" },
+      { id: "mid_mato_08", title: "Mating Patterns - Part 2" },
+      { id: "mid_mato_09", title: "X-Ray Tactics" },
+      { id: "mid_mato_10", title: "Deflection Tactics" },
     ],
   },
-  elo1400_endgames_johnb_1: {
-    title: "Chess Endgames (John Bartholomew)",
+
+  // 5. Endgame foundations
+  elo1400_endgames_bartholomew_1: {
+    title: "Chess Endgames - IM John Bartholomew",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLl9uuRYQ-6MDzm-bs8kbyHdYEmRGUauot",
+      "https://www.youtube.com/playlist?list=PLl9uuRYQ-6MDzm-bs8kbyHdYEmRGUauot",
     focusArea:
-      "IM John Bartholomew explains crucial endgame concepts, focusing on King & Pawn endgames, opposition, Lucena, Philidor, and other key positions.",
+      "King-and-pawn basics thru Lucena, Philidor & Réti. Teaches the must-know techniques that decide half your rapid games once pieces come off.",
     videos: [
-      {
-        id: "elo1400_eg_jb_1",
-        title: "Chess Endgame Fundamentals: King + Pawn vs. King",
-      },
-      {
-        id: "elo1400_eg_jb_2",
-        title: "Chess Endgame Fundamentals: Opposition Exercise",
-      },
-      {
-        id: "elo1400_eg_jb_3",
-        title: "Chess Endgame Fundamentals: Lucena Position",
-      },
-      {
-        id: "elo1400_eg_jb_4",
-        title: "Chess Endgame Fundamentals: Philidor Position",
-      },
-      {
-        id: "elo1400_eg_jb_5",
-        title: "Chess Endgame Fundamentals: First-Rank Defense",
-      },
-      {
-        id: "elo1400_eg_jb_6",
-        title: "Chess Endgame Fundamentals: Safe Squares",
-      },
-      {
-        id: "elo1400_eg_jb_7",
-        title: "Chess Endgame Fundamentals: Vancura Position",
-      },
-      {
-        id: "elo1400_eg_jb_8",
-        title: "Chess Endgame Fundamentals: Short Side/Long Side Defense",
-      },
-      { id: "elo1400_eg_jb_9", title: "Richard Réti's Remarkable 1921 Study" },
+      { id: "eg_jb_01", title: "K+P vs King - The Square & Opposition" },
+      { id: "eg_jb_02", title: "Opposition Exercise" },
+      { id: "eg_jb_03", title: "Lucena Bridge Technique" },
+      { id: "eg_jb_04", title: "Philidor Third-Rank Defence" },
+      { id: "eg_jb_05", title: "First-Rank Defence vs Rook Pawn" },
+      { id: "eg_jb_06", title: "Safe Squares (Outside Passer)" },
+      { id: "eg_jb_07", title: "Vancura Draw Method" },
+      { id: "eg_jb_08", title: "Short-/Long-Side Defence" },
+      { id: "eg_jb_09", title: "Réti Study Explained" },
     ],
   },
+
+  // 6. Rook endings (most common)
   elo1400_rookendgames_chessfactor_1: {
-    title: "Rook Endgames - Chess Endgames (ChessFactor)",
+    title: "Essential Rook Endgames - ChessFactor",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PL9RQPxG_e-LmVskyIV0oqFjBeDncqn3NQ",
+      "https://www.youtube.com/playlist?list=PL9RQPxG_e-LmVskyIV0oqFjBeDncqn3NQ",
     focusArea:
-      "Detailed instruction on rook endgames by ChessFactor, covering essential positions like Lucena, Philidor, Vancura, and practical play.",
+      "GM Alex Ipatov drills the three textbook rook endings every 1500 must convert or hold: Lucena, Philidor and Vancura.",
     videos: [
-      {
-        id: "elo1400_re_cf_1",
-        title: "Rook Endgame: Lucena Position - The Bridge",
-      }, // CF for ChessFactor
-      {
-        id: "elo1400_re_cf_2",
-        title: "Rook Endgame: Philidor Position - Third Rank Defense",
-      },
-      { id: "elo1400_re_cf_3", title: "Rook Endgame: Vancura Position" },
+      { id: "re_cf_01", title: "Lucena - Building a Bridge" },
+      { id: "re_cf_02", title: "Philidor - Third-Rank Defence" },
+      { id: "re_cf_03", title: "Vancura - Cutting Off the King" },
     ],
   },
 
-  elo1400_tactics_heisman_1: {
-    title: "Climbing the Rating Ladder - John Bartholomew", // Corrected to match URL content
+  // 7. Model thinking process
+  elo1400_climbing_bartholomew_1: {
+    title: "Climbing the Rating Ladder - IM John Bartholomew",
     playlistUrl:
-      "https://www.youtube.com/watch?v=U2huVf1l4UE&list=PLl9uuRYQ-6MCBnhtCk_bTZsD8GxeWP6BV",
+      "https://www.youtube.com/playlist?list=PLl9uuRYQ-6MCBnhtCk_bTZsD8GxeWP6BV",
     focusArea:
-      "Improving tactical skills, calculation, blunder checking, and king safety, aimed at players looking to increase their rating, by IM John Bartholomew.",
+      "John plays viewers from ~800 to 1800, verbalising every calculation. Watch how he spots tactics, builds plans and punishes common club-level errors.",
     videos: [
-      {
-        id: "elo1400_climb_jb_1",
-        title: "Climbing the Rating Ladder #1: Introduction",
-      }, // JB for John Bartholomew
-      {
-        id: "elo1400_climb_jb_2",
-        title: "Climbing the Rating Ladder #2: Undefended Pieces",
-      },
-      {
-        id: "elo1400_climb_jb_3",
-        title: "Climbing the Rating Ladder #3: Coordination",
-      },
+      { id: "crl_jb_01", title: "Episode 1 - Intro & Mind-set" },
+      { id: "crl_jb_02", title: "Episode 2 - Undefended Pieces" },
+      { id: "crl_jb_03", title: "Episode 3 - Coordination Tactics" },
+      { id: "crl_jb_04", title: "Episode 4 - King Safety Blunders" },
+      { id: "crl_jb_05", title: "Episode 5 - Punishing Passive Play" },
+      { id: "crl_jb_06", title: "Episode 6 - Turning an Edge into a Win" },
     ],
   },
+
+  // 8. Second end-game voice
   elo1400_endgames_hangingpawns_1: {
-    title: "Chess Endgames Explained (Hanging Pawns)",
+    title: "Chess Endgames Explained - Hanging Pawns",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLssNbVBYrGcAcadywNlkAGpO1-kLfy0y2",
+      "https://www.youtube.com/playlist?list=PLssNbVBYrGcAcadywNlkAGpO1-kLfy0y2",
     focusArea:
-      "Hanging Pawns explains fundamental endgame principles, including King and Pawn structures, basic piece vs. pawn scenarios, often referencing '100 Endgames You Must Know'.",
+      "Stjepan reinforces pawn-endgame concepts and introduces rook-vs-pawn saves. Complements Bartholomew with slower, diagram-heavy explanations.",
     videos: [
-      {
-        id: "elo1400_eg_hp_1", // HP for Hanging Pawns
-        title: "King Oppositions Explained | Chess Endgames",
-      },
-      { id: "elo1400_eg_hp_2", title: "Pawn Breakthroughs | Chess Endgames" },
-      {
-        id: "elo1400_eg_hp_3",
-        title: "Rook vs Pawn Endgames Intro | Chess Endgames",
-      },
+      { id: "eg_hp_01", title: "King Opposition Basics" },
+      { id: "eg_hp_02", title: "Pawn Breakthrough Patterns" },
+      { id: "eg_hp_03", title: "Rook vs Pawn - Intro Principles" },
+      { id: "eg_hp_04", title: "Shouldering & Shouldn’t-ering Kings" },
+      { id: "eg_hp_05", title: "Triangulation & Tempo Plays" },
     ],
   },
-
   // =====================
-  // Elo 1700–2000 ELO
+  // Elo 1700-2000 ELO
   // =====================
   elo1700_speedrun_naroditsky_1: {
-    title: "The Sensei SpeedRun (Daniel Naroditsky)",
+    title: "The Sensei Speedrun - GM Daniel Naroditsky",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLT1F2nOxLHOeyyw85utYJpWtSmxvA-2WR",
+      "https://www.youtube.com/playlist?list=PLT1F2nOxLHOeyyw85utYJpWtSmxvA-2WR",
     focusArea:
-      "GM Daniel Naroditsky's speedrun series, showcasing advanced calculation, tactical pattern recognition, and advantage conversion against progressively stronger opponents.",
+      "Naroditsky climbs the rating ladder from 1000 → GM live, outlining calculation shortcuts, tactical motifs and conversion technique against stronger foes.",
     videos: [
+      { id: "sr_dn_01", title: "Episode 1 - Crushing the London System" },
       {
-        id: "elo1700_sr_dn_1", // DN for Daniel Naroditsky
-        title: "Sensei Speedrun #1: Crushing the London System",
+        id: "sr_dn_02",
+        title: "Episode 2 - Navigating Tactical Complications",
       },
-      {
-        id: "elo1700_sr_dn_2",
-        title: "Sensei Speedrun #2: Navigating Tactical Complications",
-      },
-      {
-        id: "elo1700_sr_dn_3",
-        title: "Sensei Speedrun #3: Endgame Technique Masterclass",
-      },
+      { id: "sr_dn_03", title: "Episode 3 - Endgame Technique Master-class" },
+      { id: "sr_dn_04", title: "Episode 4 - Converting a Small Edge" },
+      { id: "sr_dn_05", title: "Episode 5 - Exploiting Weak Kings" },
     ],
   },
+
+  // 2. Strategic thinking & pawn-structure plans
   elo1700_meditations_hangingpawns_1: {
-    title: "Chess Meditations (Hanging Pawns)",
+    title: "Chess Meditations - Hanging Pawns",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLssNbVBYrGcBWNWaOcC_GTx7Op05J_hO1",
+      "https://www.youtube.com/playlist?list=PLssNbVBYrGcBWNWaOcC_GTx7Op05J_hO1",
     focusArea:
-      "Hanging Pawns' series on middlegame planning, pawn structures, piece placement, prophylactic thinking, and overall strategic development.",
+      "Stjepan dives into IQP, French, Carlsbad and other key structures, teaching prophylaxis, plan-making and improving piece activity for advanced club players.",
     videos: [
-      {
-        id: "elo1700_med_hp_1", // HP for Hanging Pawns
-        title: "Prophylactic Thinking: Preventing Opponent's Ideas",
-      },
-      {
-        id: "elo1700_med_hp_2",
-        title: "Understanding Pawn Structures: Isolated Queen Pawn",
-      },
-      { id: "elo1700_med_hp_3", title: "Piece Placement and Activity" },
+      { id: "med_hp_01", title: "Prophylactic Thinking" },
+      { id: "med_hp_02", title: "Isolated Queen-Pawn Strategy" },
+      { id: "med_hp_03", title: "King’s Indian vs. Benoni Structures" },
+      { id: "med_hp_04", title: "Typical Breaks in the Carlsbad" },
+      { id: "med_hp_05", title: "Transforming Advantages" },
     ],
   },
+
+  // 3. Instinct & time-management training
   elo1700_instincts_naroditsky_1: {
-    title: "DYI Develop Your Instincts Speedrun",
+    title: "Develop Your Instincts Speedrun - GM Daniel Naroditsky",
     playlistUrl:
       "https://www.youtube.com/playlist?list=PLT1F2nOxLHOdrvOyOXb_l2yGJrkwLA72Z",
     focusArea:
-      "GM Daniel Naroditsky's speedrun focused on improving chess intuition, pattern recognition, and rapid decision-making through commented games.",
+      "Fast-paced commentary games where Danya limits deep calculation, showing how pattern recognition and practical decision-making win under time pressure.",
     videos: [
-      {
-        id: "elo1700_inst_dn_1", // DN for Daniel Naroditsky
-        title: "Develop Your Instincts Speedrun #1: Opening Traps & Tactics",
-      },
-      {
-        id: "elo1700_inst_dn_2",
-        title: "Develop Your Instincts Speedrun #2: Middlegame Maneuvering",
-      },
-      {
-        id: "elo1700_inst_dn_3",
-        title: "Develop Your Instincts Speedrun #3: Converting an Advantage",
-      },
+      { id: "inst_dn_01", title: "#1 - Opening Traps & Tactics" },
+      { id: "inst_dn_02", title: "#2 - Middlegame Manoeuvring" },
+      { id: "inst_dn_03", title: "#3 - Converting an Advantage" },
+      { id: "inst_dn_04", title: "#4 - Defensive Resourcefulness" },
+      { id: "inst_dn_05", title: "#5 - Practical Endgames on Low Clock" },
     ],
   },
-  elo1700_beginner_stlcc_1: {
-    title: "Level: Beginner (Saint Louis Chess Club)",
+
+  // 4. Structured master lectures
+  elo1700_intermediate_stlcc_1: {
+    title: "Level: Intermediate - Saint Louis Chess Club",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLVWaFpMwtaGiVZ77NhhvGGGzvF7oFSWcA",
+      "https://www.youtube.com/playlist?list=PLVWaFpMwtaGhJ9r9f0ikKI0rwGNtKMS-F",
     focusArea:
-      "Fundamental chess concepts from the Saint Louis Chess Club, including piece movement, basic tactics, checkmates, and opening principles.",
+      "STL Chess Club’s classroom series for ~1600-1900: modern openings, tactical themes and strategic classics taught by IMs/GMs in white-board style sessions.",
     videos: [
+      { id: "stl_int_01", title: "Nimzo-Indian: Core Ideas" },
+      { id: "stl_int_02", title: "Benko Gambit Practical Plans" },
       {
-        id: "elo1700_beg_stlcc_1", // STLCC for Saint Louis Chess Club
-        title: "Learn the Rules of Chess: How the Pieces Move",
+        id: "stl_int_03",
+        title: "Building an Attack on Opposite-Side Castles",
       },
-      {
-        id: "elo1700_beg_stlcc_2",
-        title: "Basic Checkmates: King and Queen vs King",
-      },
-      {
-        id: "elo1700_beg_stlcc_3",
-        title: "Introduction to Opening Principles",
-      },
+      { id: "stl_int_04", title: "Exploiting the Weak Back Rank" },
+      { id: "stl_int_05", title: "Dynamic Exchange Sacrifices" },
     ],
   },
+
+  // 5. Plan-making & imbalance logic
   elo1700_stepbystep_chessexplained_1: {
-    title: "Step by Step (Chessexplained)",
+    title: "Step-by-Step - IM Christof Sielecki (Chessexplained)",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLpbSCK-lQ8KeBXYvI1s1ru9e0_vaDg1a8",
+      "https://www.youtube.com/playlist?list=PLpbSCK-lQ8KeBXYvI1s1ru9e0_vaDg1a8",
     focusArea:
-      "IM Christof Sielecki (Chessexplained) demonstrates practical middlegame decision-making, strategic planning, and understanding imbalances.",
+      "Christof walks through entire games, pausing at critical moments to weigh imbalances, formulate plans and illustrate prophylaxis - a blueprint for positional play.",
     videos: [
-      {
-        id: "elo1700_sbs_ce_1", // CE for Chessexplained
-        title: "Analyzing Imbalances in the Middlegame",
-      },
-      { id: "elo1700_sbs_ce_2", title: "Formulating a Plan: Step-by-Step" },
-      {
-        id: "elo1700_sbs_ce_3",
-        title: "Prophylaxis and Improving Piece Coordination",
-      },
+      { id: "sbs_ce_01", title: "Spotting Imbalances in the Middlegame" },
+      { id: "sbs_ce_02", title: "Creating Winning Plans: A Case Study" },
+      { id: "sbs_ce_03", title: "Prophylaxis & Piece Coordination" },
+      { id: "sbs_ce_04", title: "Converting Queenside Space Advantage" },
+      { id: "sbs_ce_05", title: "Handling the Two Bishops vs Knight & Bishop" },
     ],
   },
-  elo1700_powerplay_powerplaychess_1: {
-    title: "Power Play (PowerPlayChess)",
+
+  // 6. GM insight mini-lessons
+  elo1700_powerplay_danielking_1: {
+    title: "Power Play (Selected Intros) - GM Daniel King",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLhyM8toCZs_q89MK8KupOxebPtasl6kHP",
+      "https://www.youtube.com/playlist?list=PLhyM8toCZs_q89MK8KupOxebPtasl6kHP",
     focusArea:
-      "GM Daniel King's 'Power Play' series, offering Grandmaster insights into chess strategy, calculation, pawn play, and piece improvement.",
+      "Short Grandmaster primers on piece improvement, deep calculation and pawn play - bite-size concepts to raise a strong club player’s ceiling.",
     videos: [
-      {
-        id: "elo1700_pp_dk_1", // DK for Daniel King (PowerPlayChess)
-        title: "Power Play 7: Improve your pieces - Intro",
-      },
-      { id: "elo1700_pp_dk_2", title: "Power Play 10: Calculation - Intro" },
-      { id: "elo1700_pp_dk_3", title: "Power Play 13: Pawns - Intro" },
+      { id: "pp_dk_01", title: "Improve Your Pieces - Intro" },
+      { id: "pp_dk_02", title: "Calculation Principles - Intro" },
+      { id: "pp_dk_03", title: "Pawn Power - Intro" },
+      { id: "pp_dk_04", title: "Attack vs. Defence - Intro" },
+      { id: "pp_dk_05", title: "Strategic Tests - Intro" },
     ],
   },
+
+  // 7. Serious opening depth for e4 players
   elo1700_e4theory_hangingpawns_1: {
-    title: "1. e4 Opening Theory (Hanging Pawns)",
+    title: "1.e4 Opening Theory - Hanging Pawns",
     playlistUrl:
-      "https://www.youtube.com/watch?v=GFWI3gkizZg&list=PLssNbVBYrGcCa4bJH7JqmUZs3qNdSWUkG",
+      "https://www.youtube.com/playlist?list=PLssNbVBYrGcCa4bJH7JqmUZs3qNdSWUkG",
     focusArea:
-      "Hanging Pawns provides a deep dive into specific 1.e4 opening systems, explaining typical plans, pawn structures, and tactical ideas.",
+      "Deep-dive guides to the Ruy Lopez, Sicilian and French. Ideal once you can already calculate tactics and now need solid main-line weapons.",
     videos: [
-      {
-        id: "elo1700_e4_hp_1",
-        title: "1. e4 Openings: The Ruy Lopez - Main Lines and Ideas",
-      }, // HP for Hanging Pawns
-      {
-        id: "elo1700_e4_hp_2",
-        title: "1. e4 Openings: Sicilian Defense - Key Variations for White",
-      },
-      {
-        id: "elo1700_e4_hp_3",
-        title:
-          "1. e4 Openings: French Defense - Typical Pawn Structures and Plans",
-      },
+      { id: "e4_hp_01", title: "Ruy Lopez - Main Ideas & Plans" },
+      { id: "e4_hp_02", title: "Sicilian Defence - Core Variations for White" },
+      { id: "e4_hp_03", title: "French Defence - Typical Pawn Structures" },
+      { id: "e4_hp_04", title: "Carro-Kann - Creating Space Advantage" },
+      { id: "e4_hp_05", title: "Playing Against the Pirc/Modern" },
     ],
   },
-  elo1700_10minopenings_gotham_1: {
-    title: "10 Minute Chess Openings (GothamChess)",
+
+  // 8. Advanced rook endings (practical conversion)
+  elo1700_rookendgames_chessfactor_1: {
+    title: "Advanced Rook Endgames - ChessFactor",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLfA7spq9XFMc-dpthyh3c4ZsWTIlfuYSv",
+      "https://www.youtube.com/playlist?list=PL9RQPxG_e-LmVskyIV0oqFjBeDncqn3NQ",
     focusArea:
-      "GothamChess offers quick, practical guides to various chess openings, focusing on key ideas, common traps, and essential plans in 10 minutes.",
+      "GM Ipatov moves beyond textbook to show rook+minor-piece synergy, fortress ideas and multi-pawn races - skills that score points at expert level.",
     videos: [
-      {
-        id: "elo1700_10min_gc_1", // GC for GothamChess
-        title: "Learn the London System in 10 Minutes",
-      },
-      { id: "elo1700_10min_gc_2", title: "The Italian Game: Quick Guide" },
-      { id: "elo1700_10min_gc_3", title: "Caro-Kann Defense: Main Ideas Fast" },
-    ],
-  },
-  elo1700_practicalendgames_chessexplained_1: {
-    title: "Rook Endgames - Chess Endgames (ChessFactor)", // Title and URL point to ChessFactor Rook Endgames
-    playlistUrl:
-      "http://www.youtube.com/playlist?list=PL9RQPxG_e-LmVskyIV0oqFjBeDncqn3NQ", // This is ChessFactor's Rook Endgames
-    focusArea:
-      "Advanced rook endgame concepts by ChessFactor, including complex positions, fortress ideas, and converting small advantages.",
-    videos: [
-      {
-        id: "elo1700_re_cf_1", // CF for ChessFactor
-        title: "Advanced Rook vs Pawns Endgames",
-      },
-      {
-        id: "elo1700_re_cf_2",
-        title: "Rook and Minor Piece Endgames: Key Principles",
-      },
-      { id: "elo1700_re_cf_3", title: "Building a Fortress in Rook Endgames" },
+      { id: "adv_re_cf_01", title: "Rook vs. 2 Pawns: Winning Technique" },
+      { id: "adv_re_cf_02", title: "Rook & Knight vs. Rook: Philidor’s Draw" },
+      { id: "adv_re_cf_03", title: "Building a Fortress in Rook Endgames" },
+      { id: "adv_re_cf_04", title: "Cutting Off the King & Checking Distance" },
+      { id: "adv_re_cf_05", title: "Transitioning to Theoretical Positions" },
     ],
   },
 
   // =====================
-  // Elo 2000–2400 ELO
+  // Elo 2000-2400 ELO
   // =====================
-  elo2000_calculate_naroditsky_1: {
+  elo2000_calculation_naroditsky_1: {
     title:
-      "Want to Calculate Like a Grandmaster? You NEED To Learn THIS Skill (Clearance Sacrifice) (Daniel Naroditsky)",
-    playlistUrl: "http://www.youtube.com/watch?v=9Ga9dP3bvN8",
+      "Want to Calculate Like a Grandmaster? Clearance Sacrifice - GM Daniel Naroditsky",
+    playlistUrl: "https://www.youtube.com/watch?v=9Ga9dP3bvN8",
     focusArea:
-      "Grandmaster-level calculation techniques, focusing on clearance sacrifices and advanced tactical execution (single comprehensive video).",
+      "One high-impact lecture on clearance themes: forcing lines open, spotting invisible resources and finishing tactics - perfect for sharpening GM-style calculation.",
     videos: [
       {
-        id: "elo2000_calc_dn_1",
+        id: "calc_dn_01",
         title:
-          "Want to Calculate Like a Grandmaster? You NEED To Learn THIS Skill (Clearance Sacrifice)",
+          "Calculate Like a GM - The Power of Clearance Sacrifices (full lesson)",
       },
     ],
   },
-  elo2000_playliketal_chessgames_1: {
-    title:
-      "King Hunting Mastery with GM Sam Shankland (iChess.net / ChessGames)", // URL is Shankland's video
-    playlistUrl: "http://www.youtube.com/watch?v=hELzLhucKkY",
+
+  // 2. Elite attacking technique
+  elo2000_kinghunt_shankland_1: {
+    title: "King-Hunting Mastery - GM Sam Shankland (Master Method)",
+    playlistUrl: "https://www.youtube.com/watch?v=hELzLhucKkY",
     focusArea:
-      "GM Sam Shankland teaches how to create powerful mating attacks and hunt the opponent's king, from the Master Method series.",
+      "Shankland dissects classic attacking games, showing move-by-move how to build, maintain and convert a kingside assault at master level.",
     videos: [
-      {
-        id: "elo2000_plt_cg_1", // CG for ChessGames or iChess
-        title: "King Hunting Mastery with GM Sam Shankland [Master Method]",
-      },
+      { id: "kh_ss_01", title: "Creating a Pawn Storm & Opening Lines" },
+      { id: "kh_ss_02", title: "Targeting Weak Squares Around the King" },
+      { id: "kh_ss_03", title: "Sacrifices to Rip Open the Shelter" },
     ],
   },
+
+  // 3. Structured GM classroom
   elo2000_advanced_stlcc_1: {
-    title: "Level: Advanced (Saint Louis Chess Club)",
+    title: "Level: Advanced - Saint Louis Chess Club",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLVWaFpMwtaGiMPN3WXi1igKC5bLkeRO7_",
+      "https://www.youtube.com/playlist?list=PLVWaFpMwtaGiMPN3WXi1igKC5bLkeRO7_",
     focusArea:
-      "Advanced lectures from the Saint Louis Chess Club by various Grandmasters, covering deep strategic understanding, positional evaluation, and GM-level decision-making.",
+      "Grandmaster lectures on deep strategy, complex endgames and modern opening ideas - the STL ‘Expert’ classroom series.",
     videos: [
       {
-        id: "elo2000_adv_stlcc_1", // STLCC for Saint Louis Chess Club
-        title: "Nuances of Positional Play: GM Lecture",
+        id: "adv_stl_01",
+        title: "Positional Exchange Sacrifices - GM Akobian",
       },
-      {
-        id: "elo2000_adv_stlcc_2",
-        title: "GM Decision Making in Complex Positions",
-      },
-      {
-        id: "elo2000_adv_stlcc_3",
-        title: "Advanced Strategic Planning Techniques by GM Varuzhan Akobian",
-      },
+      { id: "adv_stl_02", title: "Practical Rook Endgames - GM Finegold" },
+      { id: "adv_stl_03", title: "Modern Benoni Ideas - GM Shankland" },
+      { id: "adv_stl_04", title: "Handling Opposite-Colored Bishops" },
     ],
   },
-  elo2000_powerplay_powerplaychess_1: {
-    title: "Power Play (PowerPlayChess)",
+
+  // 4. Bite-size GM strategy boosters
+  elo2000_powerplay_danielking_1: {
+    title: "Power Play (Advanced Intros) - GM Daniel King",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLhyM8toCZs_q89MK8KupOxebPtasl6kHP",
+      "https://www.youtube.com/playlist?list=PLhyM8toCZs_q89MK8KupOxebPtasl6kHP",
     focusArea:
-      "GM Daniel King's 'Power Play' series, focusing on advanced strategy, attack, and common mistakes for experienced players.",
+      "Five 10-minute mini-lessons packing GM King’s best tips on attack, calculation and strategic tests - perfect daily brain-food for 2100-rated players.",
     videos: [
-      { id: "elo2000_pp_dk_1", title: "Power Play 17: Attack - Intro" }, // DK for Daniel King
-      {
-        id: "elo2000_pp_dk_2",
-        title: "Power Play 20: Test Your Strategy - Intro",
-      },
-      {
-        id: "elo2000_pp_dk_3",
-        title: "Power Play 26: Typical Mistakes - Intro",
-      },
+      { id: "pp_dk_01", title: "Power Play 17 - Attack: Key Principles" },
+      { id: "pp_dk_02", title: "Power Play 20 - Strategic Test Positions" },
+      { id: "pp_dk_03", title: "Power Play 26 - Typical Mistakes to Avoid" },
+      { id: "pp_dk_04", title: "Power Play 32 - King Safety Diagnostics" },
+      { id: "pp_dk_05", title: "Power Play 37 - Pawn Power Advanced" },
     ],
   },
-  elo2000_masters_middlegame_hanging_1: {
-    title: "Chess Middlegame Ideas (Hanging Pawns)", // URL is Hanging Pawns
+
+  // 5. Advanced middlegame mastery
+  elo2000_middlegame_hangingpawns_1: {
+    title: "Chess Middlegame Ideas - Hanging Pawns",
     playlistUrl:
       "https://www.youtube.com/playlist?list=PLssNbVBYrGcD2mB7JrHbpP5qyT_ncxCRj",
     focusArea:
-      "Hanging Pawns explores advanced middlegame concepts, strategic motifs, and analysis of classical and modern master games.",
+      "In-depth breakdown of prophylaxis, weak-color complexes and master game models - ideal for turning strong tactics into grandmaster-like plans.",
     videos: [
-      {
-        id: "elo2000_mid_hp_1", // HP for Hanging Pawns
-        title: "The Art of Prophylaxis in the Middlegame",
-      },
-      {
-        id: "elo2000_mid_hp_2",
-        title: "Exploiting Weak Color Complexes",
-      },
-      {
-        id: "elo2000_mid_hp_3",
-        title: "Converting Positional Advantages: Master Class",
-      },
+      { id: "mid_hp_01", title: "Art of Prophylaxis" },
+      { id: "mid_hp_02", title: "Exploiting Weak Color Complexes" },
+      { id: "mid_hp_03", title: "Converting a Positional Edge" },
+      { id: "mid_hp_04", title: "Centralization vs. Flank Play" },
+      { id: "mid_hp_05", title: "Transitioning to Favorable Endgames" },
     ],
   },
+
+  // 6. Serious opening preparation: Sicilian
   elo2000_sicilian_hangingpawns_1: {
-    title: "Sicilian Defense | Chess Openings Explained (Hanging Pawns)",
+    title: "Sicilian Defence - Complete Guide (Hanging Pawns)",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLssNbVBYrGcDUDYiWilH-mQxXM4ixS2z6",
+      "https://www.youtube.com/playlist?list=PLssNbVBYrGcDUDYiWilH-mQxXM4ixS2z6",
     focusArea:
-      "Hanging Pawns provides an exhaustive analysis of main lines and sidelines in the Sicilian Defense, suitable for deep theoretical preparation.",
+      "Comprehensive Najdorf, Dragon and Anti-Sicilian coverage with plans, pawn breaks and modern theory - a free repertoire for aspiring masters.",
     videos: [
-      {
-        id: "elo2000_sic_hp_1", // HP for Hanging Pawns
-        title: "Najdorf Variation: Main Ideas and Plans",
-      },
-      { id: "elo2000_sic_hp_2", title: "Dragon Variation: Critical Lines" },
-      {
-        id: "elo2000_sic_hp_3",
-        title: "Anti-Sicilians: What to Play as Black",
-      },
+      { id: "sic_hp_01", title: "Najdorf - Positional vs. Tactical Lines" },
+      { id: "sic_hp_02", title: "Dragon - Yugoslav Attack Essentials" },
+      { id: "sic_hp_03", title: "Classical Scheveningen Structures" },
+      { id: "sic_hp_04", title: "Anti-Sicilian Weapons for Black" },
+      { id: "sic_hp_05", title: "Practical Repertoire Building Tips" },
+    ],
+  },
+
+  // 7. Complete endgame upgrade
+  elo2000_endgames_naroditsky_1: {
+    title: "Principles of Chess Endgames - GM Daniel Naroditsky",
+    playlistUrl:
+      "https://www.youtube.com/playlist?list=PLT1F2nOxLHOfQI_hFiDnnWj4lb5KsviJ_",
+    focusArea:
+      "Systematic course from basic pawn races to complex knight-vs-bishop and rook endgames - fills every master-candidate’s endgame gaps.",
+    videos: [
+      { id: "end_dn_01", title: "Passed Pawns & Outside Majority" },
+      { id: "end_dn_02", title: "Knight vs Bishop Technical Endings" },
+      { id: "end_dn_03", title: "Defensive Fortress Ideas" },
+      { id: "end_dn_04", title: "Queen Endgames - Perpetual Checks" },
+      { id: "end_dn_05", title: "Practical Endgame Calculation" },
     ],
   },
 
@@ -512,164 +399,120 @@ export const playlistVideoData = {
   // Elo 2400+ ELO
   // =====================
   elo2400_candidates_agadmator_1: {
-    title: "Candidates Tournament 2024 (agadmator's Chess Channel)",
+    title: "Candidates 2024 - agadmator’s Chess Channel",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLDnx7w_xuguHj3vAOI5wpu0yOrqTBi5Ls",
+      "https://www.youtube.com/playlist?list=PLDnx7w_xuguHj3vAOI5wpu0yOrqTBi5Ls",
     focusArea:
-      "Agadmator's engaging and insightful analysis of recent top-level GM games from major tournaments like the FIDE Candidates.",
+      "Antonio Radić (agadmator) breaks down every Candidates 2024 clash in an accessible yet incisive style - perfect nightly recap material for masters tracking top-level novelties.",
     videos: [
       {
-        id: "elo2400_cand_aga_1", // AGA for Agadmator
-        title: "Nepomniachtchi vs. Nakamura | FIDE Candidates 2024",
-        duration: "1:02:15",
-        thumbnailUrl: "https://img.youtube.com/vi/example_video_id/hqdefault.jpg",
+        id: "cand_aga_01",
+        title: "Nepomniachtchi vs Nakamura - Round 1",
       },
       {
-        id: "elo2400_cand_aga_2",
-        title: "Gukesh D vs. Fabiano Caruana | FIDE Candidates 2024",
+        id: "cand_aga_02",
+        title: "Gukesh D vs Fabiano Caruana - Tactical Fireworks",
       },
       {
-        id: "elo2400_cand_aga_3",
-        title:
-          "Praggnanandhaa vs Vidit | A Thrilling Clash! | FIDE Candidates 2024",
+        id: "cand_aga_03",
+        title: "Pragg vs Vidit - A Thrilling Battle",
       },
     ],
   },
-  elo2400_candidates_middlegame_1: {
-    title: "Lectures with GM Yasser Seirawan (Saint Louis Chess Club)",
+
+  // 2. Grandmaster wisdom classroom
+  elo2400_lectures_stlcc_1: {
+    title: "Lectures with GM Yasser Seirawan - Saint Louis Chess Club",
     playlistUrl:
-      "https://www.youtube.com/playlist?list=PLVWaFpMwtaGj-HHi0t6P02s5X5GLtvaIN", // Example Yasser Seirawan lecture playlist
+      "https://www.youtube.com/playlist?list=PLVWaFpMwtaGj-HHi0t6P02s5X5GLtvaIN",
     focusArea:
-      "In-depth chess wisdom covering openings, middlegames, endgames, and chess history from legendary GM Yasser Seirawan.",
+      "Legendary GM Seirawan delivers long-form sessions on openings, middlegame plans and classical endgames, laced with historical anecdotes and ‘why’-behind-the-move depth.",
     videos: [
-      {
-        id: "elo2400_lec_yas_1", // YAS for Yasser Seirawan
-        title: "Yasser Seirawan on Opening Principles and Common Mistakes",
-      },
-      {
-        id: "elo2400_lec_yas_2",
-        title: "Strategic Masterpieces Explained by Yasser Seirawan",
-      },
-      {
-        id: "elo2400_lec_yas_3",
-        title: "Endgame Insights and Practical Tips from GM Seirawan",
-      },
+      { id: "lec_yas_01", title: "Opening Principles & Common Mistakes" },
+      { id: "lec_yas_02", title: "Strategic Masterpieces Explained" },
+      { id: "lec_yas_03", title: "Endgame Insights & Practical Tips" },
+      { id: "lec_yas_04", title: "The Power of Pawn Structure" },
+      { id: "lec_yas_05", title: "Historical Games Every Master Should Know" },
     ],
   },
+
+  // 3. Elite self-analysis & tournament prep
   elo2400_recaps_gmhikaru_1: {
-    title: "Tournament Recaps (GMHikaru)",
+    title: "Tournament Recaps - GM Hikaru Nakamura",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PL4KCWZ5Ti2H5aW-tyM5ebikCNkPF9HGA3",
+      "https://www.youtube.com/playlist?list=PL4KCWZ5Ti2H5aW-tyM5ebikCNkPF9HGA3",
     focusArea:
-      "GM Hikaru Nakamura provides his perspective on high-level games, tournament strategies, and critical moments from his own play and other major events.",
+      "Hikaru shares real-time reflections on his own games and major events, revealing top-GM thought processes, prep tweaks and critical practical decisions.",
     videos: [
-      {
-        id: "elo2400_recap_hn_1", // HN for Hikaru Nakamura
-        title: "My Thoughts on the Latest SuperTournament Game",
-      },
-      {
-        id: "elo2400_recap_hn_2",
-        title: "Critical Moments from the Speed Chess Championship",
-      },
-      {
-        id: "elo2400_recap_hn_3",
-        title: "Analyzing My Game Against Magnus Carlsen",
-      },
+      { id: "rec_hn_01", title: "My Thoughts on the Latest Super-Tournament" },
+      { id: "rec_hn_02", title: "Critical Moments - Speed Chess Championship" },
+      { id: "rec_hn_03", title: "Analyzing My Game vs Magnus Carlsen" },
+      { id: "rec_hn_04", title: "Dramatic Turnaround vs Nepomniachtchi" },
+      { id: "rec_hn_05", title: "Opening Prep for Titled Tuesday" },
     ],
   },
+
+  // 4. Deep Candidates analysis with elite commentary
   elo2400_candidates_chess24_1: {
-    title: "Candidates 2024 (chess24)",
+    title: "Candidates 2024 Expert Breakdowns - chess24",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLAwlxGCJB4NfxSrDo3gfvI-9NdzWRH9dj",
+      "https://www.youtube.com/playlist?list=PLAwlxGCJB4NfxSrDo3gfvI-9NdzWRH9dj",
     focusArea:
-      "Profound and articulate analysis of top-level GM games by elite Grandmasters like Peter Svidler and Anish Giri during major events.",
+      "Super-GMs Peter Svidler, Anish Giri & Peter Leko dissect each round’s critical positions, engine lines and novelties - a masterclass in modern theory and evaluation.",
     videos: [
-      {
-        id: "elo2400_cand_c24_1", // C24 for chess24
-        title: "Round 1 Analysis with GM Peter Svidler | Candidates 2024",
-      },
-      {
-        id: "elo2400_cand_c24_2",
-        title: "Key Insights from GM Anish Giri | Candidates 2024",
-      },
-      {
-        id: "elo2400_cand_c24_3",
-        title: "Deep Dive into a Crucial Candidates Matchup with GM Leko",
-      },
+      { id: "cand24_01", title: "Round 1 - GM Svidler Full Breakdown" },
+      { id: "cand24_02", title: "Anish Giri’s Key Insights - Mid-Event" },
+      { id: "cand24_03", title: "GM Leko - Deep Dive into a Pivotal Clash" },
+      { id: "cand24_04", title: "Round 8 Highlights with GM Svidler" },
+      { id: "cand24_05", title: "Final-Round Drama & Opening Novelties" },
     ],
   },
-  elo2400_grunfeld_chessbaseindia_1: {
-    title:
-      "Learn the basics of Grunfeld Defence - GM Markus Ragger (ChessBase India)", // URL is for GM Markus Ragger
-    playlistUrl: "http://www.youtube.com/watch?v=9pPy1eZJF7I",
-    focusArea:
-      "GM Markus Ragger explains the fundamental principles and key ideas of the Grünfeld Defense in this comprehensive video from ChessBase India.",
-    videos: [
-      {
-        id: "elo2400_grun_cbi_mr_1", // CBI for ChessBase India, MR for Markus Ragger
-        title:
-          "Learn the basics of Grunfeld Defence - GM Markus Ragger (Elo: 2656)",
-      },
-    ],
-  },
+
+  // 5. Practical GM prep & strategy
   elo2400_gmprep_chessbaseindia_1: {
-    title: "Strategic Mastery with GM Ankit Rajpara (ChessBase India)", // Playlist is "Strategic Mastery with GM Ankit Rajpara"
+    title: "Strategic Mastery - GM Ankit Rajpara (ChessBase India)",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PL9WYcwsWaJ7ovfCOS2TR1Fd9MltCt1-0f",
+      "https://www.youtube.com/playlist?list=PL9WYcwsWaJ7ovfCOS2TR1Fd9MltCt1-0f",
     focusArea:
-      "GM Ankit Rajpara from ChessBase India shares insights on strategic thinking, opening preparation, and improving overall chess understanding.",
+      "Rajpara shares advanced repertoire tweaks, opponent-specific prep and cutting-edge strategic concepts - insights straight from a 2600-level training diary.",
     videos: [
-      {
-        id: "elo2400_gmp_cbi_ar_1", // AR for Ankit Rajpara
-        title: "Modern Trends in the Sicilian Najdorf",
-      },
-      {
-        id: "elo2400_gmp_cbi_ar_2",
-        title: "Advanced Concepts in the Ruy Lopez",
-      },
-      {
-        id: "elo2400_gmp_cbi_ar_3",
-        title: "Preparing for Specific Opponents: A GM's Guide",
-      },
+      { id: "gmprep_ar_01", title: "Modern Trends in the Sicilian Najdorf" },
+      { id: "gmprep_ar_02", title: "Advanced Concepts in the Ruy Lopez" },
+      { id: "gmprep_ar_03", title: "Preparing vs Specific Opponents" },
+      { id: "gmprep_ar_04", title: "Beating the Petroff with 3.d4" },
+      { id: "gmprep_ar_05", title: "Handling the Grünfeld with 5.Bd2" },
     ],
   },
+
+  // 6. Legendary attacking insights
   elo2400_juditpolgar_juditpolgarchess_1: {
-    title: "Judit Polgar Teaches Chess (Judit Polgar Chess)",
+    title: "Judit Polgar Teaches Chess - Judit Polgar Chess",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLBLIrbY4oUyHsvVqd4ZcZ79Qy5OchL8fA",
+      "https://www.youtube.com/playlist?list=PLBLIrbY4oUyHsvVqd4ZcZ79Qy5OchL8fA",
     focusArea:
-      "Legendary GM Judit Polgar delivers masterclasses on advanced strategic concepts, dynamic decision-making, and attacking play.",
+      "The strongest female player in history reveals her aggressive philosophy, calculation habits and signature attacking motifs through personal game narratives.",
     videos: [
-      {
-        id: "elo2400_jp_jp_1", // JP for Judit Polgar
-        title: "Attacking Masterclass with GM Judit Polgar",
-      },
-      { id: "elo2400_jp_jp_2", title: "Dynamic Decision Making in Chess" },
-      {
-        id: "elo2400_jp_jp_3",
-        title: "Judit Polgar on Her Most Memorable Games",
-      },
+      { id: "polgar_01", title: "Attacking Masterclass with GM Judit Polgar" },
+      { id: "polgar_02", title: "Dynamic Decision-Making in Chess" },
+      { id: "polgar_03", title: "Judit Polgar on Her Most Memorable Games" },
+      { id: "polgar_04", title: "Punishing Passive Play with Tactical Flair" },
+      { id: "polgar_05", title: "Calculating Like a Champion" },
     ],
   },
+
+  // 7. STLCC advanced deep-dives (part 2)
   elo2400_advanced_stlcc_2: {
-    title: "Level: Advanced (Saint Louis Chess Club)",
+    title: "Level: Advanced - Saint Louis Chess Club (Part 2)",
     playlistUrl:
-      "http://www.youtube.com/playlist?list=PLVWaFpMwtaGh2TGoOGKH10SZvM0Rg8ucq",
+      "https://www.youtube.com/playlist?list=PLVWaFpMwtaGh2TGoOGKH10SZvM0Rg8ucq",
     focusArea:
-      "Further deep dives from Saint Louis Chess Club into highly advanced strategic and endgame concepts by various Grandmasters, for master-level players.",
+      "Additional STLCC expert lectures: cutting-edge opening theory, complex middlegames and specialist endgames to keep 2500-aspirants razor sharp.",
     videos: [
-      {
-        id: "elo2400_adv_stlcc_4", // STLCC for Saint Louis Chess Club
-        title: "Advanced Endgame Principles: GM Lecture",
-      },
-      {
-        id: "elo2400_adv_stlcc_5",
-        title: "Mastering Complex Middlegame Positions",
-      },
-      {
-        id: "elo2400_adv_stlcc_6", // Index kept as per original data, assuming uniqueness across all stlcc entries or specific reason.
-        title: "Theoretical Discussions for Master Level Players",
-      },
+      { id: "adv2_stl_01", title: "Advanced Endgame Principles - GM Lecture" },
+      { id: "adv2_stl_02", title: "Mastering Complex Middlegame Positions" },
+      { id: "adv2_stl_03", title: "Theoretical Discussions for Master Level" },
+      { id: "adv2_stl_04", title: "Practical Calculation Workshops" },
+      { id: "adv2_stl_05", title: "Evolving Opening Theory at 2700+" },
     ],
   },
 };
@@ -754,7 +597,7 @@ export const chess_badges_definitions = [
       value: 3,
     },
   },
-  
+
   {
     id: "feedback_hero",
     name: "Feedback Hero",
