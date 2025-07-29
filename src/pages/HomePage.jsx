@@ -7,7 +7,7 @@ import ProgressCard from "../components/shared/ProgressCard";
 import QuickLinkCard from "../components/shared/QuickLinkCard";
 import ToastContainer from "../components/shared/ToastContainer";
 import { useIndexedDb, clearEntireDatabase } from "../hooks/useIndexedDb"; // Assumes clearEntireDatabase is exported
-import { runAllNormalizations } from "../utils/comprehensiveDataCleanup";
+import { runComprehensiveDataCleanup } from "../utils/comprehensiveDataCleanup";
 import useToast from "../hooks/useToast";
 import Dexie from "dexie";
 import {
@@ -117,7 +117,7 @@ const HomePage = () => {
         "keyval-store": "id",
       });
       
-      await runAllNormalizations(db);
+      await runComprehensiveDataCleanup(db);
       setShowFixDataModal(false);
       showSuccess("Data issues have been fixed! The page will reload in 2 seconds to apply changes.", 2000);
       setTimeout(() => {
