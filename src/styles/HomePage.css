@@ -308,6 +308,19 @@
   line-height: var(--line-height-sm);
 }
 
+.setting-item.data-clean {
+  background: #d4edda;
+  border-left: 4px solid #28a745;
+}
+
+.setting-item.data-clean h4 {
+  color: #155724;
+}
+
+.setting-item.data-clean p {
+  color: #155724;
+}
+
 .btn-warning {
   background-color: #f39c12;
   color: var(--background-color, #fff);
@@ -323,6 +336,16 @@
 .btn-warning:hover,
 .btn-warning:focus-visible {
   background-color: #e67e22;
+}
+
+.btn-warning:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-warning:disabled:hover {
+  background-color: #bdc3c7;
 }
 
 .btn-danger {

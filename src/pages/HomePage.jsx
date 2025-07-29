@@ -1,5 +1,5 @@
 // HomePage.jsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import Modal from "../components/shared/Modal"; // Import the Modal component
@@ -7,7 +7,7 @@ import ProgressCard from "../components/shared/ProgressCard";
 import QuickLinkCard from "../components/shared/QuickLinkCard";
 import ToastContainer from "../components/shared/ToastContainer";
 import { useIndexedDb, clearEntireDatabase } from "../hooks/useIndexedDb"; // Assumes clearEntireDatabase is exported
-import { runComprehensiveDataCleanup } from "../utils/comprehensiveDataCleanup";
+import { runComprehensiveDataCleanup, validateDatabase } from "../utils/comprehensiveDataCleanup";
 import useToast from "../hooks/useToast";
 import Dexie from "dexie";
 import {
@@ -27,7 +27,32 @@ const HomePage = () => {
   const [engagementTasksData] = useIndexedDb(ENGAGEMENT_TASKS_KEY, {});
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
   const [showFixDataModal, setShowFixDataModal] = useState(false);
+  const [hasDataIssues, setHasDataIssues] = useState(false);
+  const [isCheckingData, setIsCheckingData] = useState(true);
   const { toasts, showSuccess, showError, hideToast } = useToast();
+
+  // Check for data issues on component mount
+  useEffect(() => {
+    const checkDataIntegrity = async () => {
+      try {
+        const db = new Dexie("my-learning-hub-db");
+        db.version(1).stores({
+          "keyval-store": "id",
+        });
+        
+        const report = await validateDatabase(db);
+        setHasDataIssues(report.summary.totalIssues > 0);
+        setIsCheckingData(false);
+      } catch (error) {
+        console.error('Error checking data integrity:', error);
+        // If validation fails, show the button as a safety measure
+        setHasDataIssues(true);
+        setIsCheckingData(false);
+      }
+    };
+
+    checkDataIntegrity();
+  }, []);
 
   const dsaProgress = useMemo(() => {
     const completed = Object.keys(completedDsaProblems || {}).length;
@@ -119,6 +144,11 @@ const HomePage = () => {
       
       await runComprehensiveDataCleanup(db);
       setShowFixDataModal(false);
+      
+      // Re-check for data issues after cleanup
+      const postCleanupReport = await validateDatabase(db);
+      setHasDataIssues(postCleanupReport.summary.totalIssues > 0);
+      
       showSuccess("Data issues have been fixed! The page will reload in 2 seconds to apply changes.", 2000);
       setTimeout(() => {
         window.location.reload();
@@ -289,16 +319,37 @@ const HomePage = () => {
         </h3>
         
         <div className="advanced-settings-group">
-          <div className="setting-item">
-            <h4>🔧 Fix Data Issues</h4>
-            <p>
-              Fix inconsistent data types, remove duplicate entries, and clean up corrupted records.
-              This preserves your progress while fixing data integrity issues.
-            </p>
-            <button onClick={handleFixDataIssues} className="btn-warning">
-              Fix Data Issues
-            </button>
-          </div>
+          {isCheckingData && (
+            <div className="setting-item">
+              <h4>🔍 Checking Data Integrity</h4>
+              <p>Scanning your data for any integrity issues...</p>
+              <button className="btn-warning" disabled>
+                Checking...
+              </button>
+            </div>
+          )}
+          
+          {!isCheckingData && hasDataIssues && (
+            <div className="setting-item">
+              <h4>🔧 Fix Data Issues</h4>
+              <p>
+                Data integrity issues detected. Fix inconsistent data types, remove duplicate entries, 
+                and clean up corrupted records. This preserves your progress while fixing data integrity issues.
+              </p>
+              <button onClick={handleFixDataIssues} className="btn-warning">
+                Fix Data Issues
+              </button>
+            </div>
+          )}
+          
+          {!isCheckingData && !hasDataIssues && (
+            <div className="setting-item data-clean">
+              <h4>✅ Data Integrity Status</h4>
+              <p>
+                Your data is clean and consistent! No integrity issues detected.
+              </p>
+            </div>
+          )}
           
           <div className="setting-item">
             <h4>🗑️ Reset All Progress</h4>
