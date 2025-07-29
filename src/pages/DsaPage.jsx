@@ -90,8 +90,10 @@ const DsaPage = () => {
         const newCompleted = { ...prev };
         const isCurrentlyCompleted = !!newCompleted[problemId];
         if (isCurrentlyCompleted) {
+          // Save the completion date before deleting
+          const completionDate = newCompleted[problemId];
           delete newCompleted[problemId];
-          updatePoints(-10, newCompleted[problemId]);
+          updatePoints(-10, completionDate);
         } else {
           const completionDate = new Date().toISOString();
           newCompleted[problemId] = completionDate;

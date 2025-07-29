@@ -5,7 +5,11 @@ import { Link } from "react-router-dom";
 import Modal from "../components/shared/Modal"; // Import the Modal component
 import ProgressCard from "../components/shared/ProgressCard";
 import QuickLinkCard from "../components/shared/QuickLinkCard";
+import ToastContainer from "../components/shared/ToastContainer";
 import { useIndexedDb, clearEntireDatabase } from "../hooks/useIndexedDb"; // Assumes clearEntireDatabase is exported
+import { runAllNormalizations } from "../utils/comprehensiveDataCleanup";
+import useToast from "../hooks/useToast";
+import Dexie from "dexie";
 import {
   DSA_COMPLETED_PROBLEMS_KEY,
   CHESS_LEARNING_PROGRESS_KEY,
@@ -22,6 +26,8 @@ const HomePage = () => {
   const [completedChessVideos] = useIndexedDb(CHESS_LEARNING_PROGRESS_KEY, {});
   const [engagementTasksData] = useIndexedDb(ENGAGEMENT_TASKS_KEY, {});
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
+  const [showFixDataModal, setShowFixDataModal] = useState(false);
+  const { toasts, showSuccess, showError, hideToast } = useToast();
 
   const dsaProgress = useMemo(() => {
     const completed = Object.keys(completedDsaProblems || {}).length;
@@ -87,12 +93,42 @@ const HomePage = () => {
     try {
       await clearEntireDatabase();
       setShowResetConfirmModal(false);
-      window.location.reload();
+      showSuccess("All progress has been reset! The page will reload in 2 seconds.", 2000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error) {
       console.error("Failed to delete IndexedDB:", error);
       setShowResetConfirmModal(false);
-      alert(
+      showError(
         "Could not clear the database. Please check the console for the specific error."
+      );
+    }
+  };
+
+  const handleFixDataIssues = async () => {
+    setShowFixDataModal(true);
+  };
+
+  const confirmFixDataIssues = async () => {
+    try {
+      const db = new Dexie("my-learning-hub-db");
+      db.version(1).stores({
+        "keyval-store": "id",
+      });
+      
+      await runAllNormalizations(db);
+      setShowFixDataModal(false);
+      showSuccess("Data issues have been fixed! The page will reload in 2 seconds to apply changes.", 2000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to fix data issues:", error);
+      setShowFixDataModal(false);
+      showError(
+        "Could not fix data issues. Please check the console for the specific error or try resetting all progress.",
+        6000
       );
     }
   };
@@ -243,7 +279,7 @@ const HomePage = () => {
         </ul>
       </section>
 
-      {/* Reset Progress Section */}
+      {/* Advanced Settings Section */}
       <section className="home-reset-section card-style">
         <h3>
           <span role="img" aria-label="warning">
@@ -251,14 +287,43 @@ const HomePage = () => {
           </span>{" "}
           Advanced Settings
         </h3>
-        <p>
-          Reset all your learning progress across DSA, Chess, Daily Routine, and
-          rewards. This action is irreversible.
-        </p>
-        <button onClick={handleResetAllProgress} className="btn-danger">
-          Reset All Progress
-        </button>
+        
+        <div className="advanced-settings-group">
+          <div className="setting-item">
+            <h4>🔧 Fix Data Issues</h4>
+            <p>
+              Fix inconsistent data types, remove duplicate entries, and clean up corrupted records.
+              This preserves your progress while fixing data integrity issues.
+            </p>
+            <button onClick={handleFixDataIssues} className="btn-warning">
+              Fix Data Issues
+            </button>
+          </div>
+          
+          <div className="setting-item">
+            <h4>🗑️ Reset All Progress</h4>
+            <p>
+              Reset all your learning progress across DSA, Chess, Daily Routine, and
+              rewards. This action is irreversible.
+            </p>
+            <button onClick={handleResetAllProgress} className="btn-danger">
+              Reset All Progress
+            </button>
+          </div>
+        </div>
       </section>
+
+      {/* Fix Data Issues Modal */}
+      <Modal
+        isOpen={showFixDataModal}
+        onClose={() => setShowFixDataModal(false)}
+        title="Fix Data Issues"
+        isConfirmation={true}
+        confirmationMessage="This will fix data inconsistencies, remove duplicates, and clean up corrupted records. Your progress will be preserved. Do you want to continue?"
+        onConfirm={confirmFixDataIssues}
+        confirmText="Yes, Fix Issues"
+        cancelText="Cancel"
+      />
 
       {/* Reset Confirmation Modal */}
       <Modal
@@ -271,6 +336,9 @@ const HomePage = () => {
         confirmText="Yes, Reset All"
         cancelText="Cancel"
       />
+      
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onRemoveToast={hideToast} />
     </main>
   );
 };

@@ -20,7 +20,6 @@
 .task-details-modal-content [disabled] {
   cursor: not-allowed;
   opacity: 0.6;
-  background-color: #f0f0f0; /* A slightly different shade for disabled inputs */
 }
 
 .task-details-modal-content .btn-link[disabled] {

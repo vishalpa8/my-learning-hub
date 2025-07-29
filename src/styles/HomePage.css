@@ -263,33 +263,83 @@
   box-shadow: 0 1px 4px rgba(44, 62, 80, 0.03);
 }
 
-/* Reset Progress Section */
+/* Advanced Settings Section */
 .home-reset-section {
-  /* Assuming .card-style provides base background, padding, border-radius, shadow */
-  /* Overrides or additions for a "warning" feel */
-  background-color: var(--danger-bg-light, #fff3f3); /* Light red background */
-  border: 1px solid var(--danger-border-color, #f7c5c5); /* Light red border */
-  padding: var(--spacing-lg); /* Use global spacing or customize */
-  margin-top: 2.5rem; /* Custom margin */
-  text-align: center; /* Center content */
-  border-radius: var(
-    --border-radius-lg
-  ); /* Added for consistency with other cards */
-  box-shadow: 0 2px 8px rgba(192, 57, 43, 0.1); /* Subtle red shadow */
+  background-color: var(--danger-bg-light, #fff3f3);
+  border: 1px solid var(--danger-border-color, #f7c5c5);
+  padding: var(--spacing-lg);
+  margin-top: 2.5rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 2px 8px rgba(192, 57, 43, 0.1);
 }
 
 .home-reset-section h3 {
-  color: var(--danger-color-dark, #c0392b); /* Darker red for heading */
-  font-size: 1.18rem; /* Custom font size, consistent with other section titles */
-  font-weight: var(--font-weight-bold); /* Global bold font weight */
-  margin-bottom: 0.8rem;
+  color: var(--danger-color-dark, #c0392b);
+  font-size: 1.18rem;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
-.home-reset-section p {
-  color: var(--text-muted-color); /* Global muted text color */
-  font-size: var(--font-size-sm); /* Smaller font for descriptive text */
-  margin-bottom: 1.2rem;
+.advanced-settings-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.setting-item {
+  background: var(--background-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.setting-item h4 {
+  color: var(--primary-color-dark);
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 0.5rem;
+}
+
+.setting-item p {
+  color: var(--text-muted-color);
+  font-size: var(--font-size-sm);
+  margin-bottom: 1rem;
   line-height: var(--line-height-sm);
+}
+
+.btn-warning {
+  background-color: #f39c12;
+  color: var(--background-color, #fff);
+  border: none;
+  padding: 0.7em 1.6em;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.btn-warning:hover,
+.btn-warning:focus-visible {
+  background-color: #e67e22;
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+  color: var(--background-color, #fff);
+  border: none;
+  padding: 0.7em 1.6em;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.btn-danger:hover,
+.btn-danger:focus-visible {
+  background-color: #c0392b;
 }
 
 /* Responsive styles */
